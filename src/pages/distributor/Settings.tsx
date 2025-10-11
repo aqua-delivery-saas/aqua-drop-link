@@ -20,6 +20,24 @@ const Settings = () => {
       card: true,
       pix: true,
     },
+    businessHours: [
+      { day: "Segunda-feira", open: "08:00", close: "18:00", active: true },
+      { day: "Terça-feira", open: "08:00", close: "18:00", active: true },
+      { day: "Quarta-feira", open: "08:00", close: "18:00", active: true },
+      { day: "Quinta-feira", open: "08:00", close: "18:00", active: true },
+      { day: "Sexta-feira", open: "08:00", close: "18:00", active: true },
+      { day: "Sábado", open: "08:00", close: "13:00", active: true },
+      { day: "Domingo", open: "08:00", close: "12:00", active: false },
+    ],
+    discounts: {
+      tier1: { min: 5, max: 10, percentage: 5 },
+      tier2: { min: 11, max: 999, percentage: 10 },
+    },
+    loyalty: {
+      enabled: true,
+      ordersRequired: 10,
+      reward: "1 galão grátis",
+    },
   });
 
   const handleSave = () => {
@@ -40,6 +58,29 @@ const Settings = () => {
         ...settings.paymentMethods,
         [method]: !settings.paymentMethods[method],
       },
+    });
+  };
+
+  const handleBusinessHourChange = (index: number, field: string, value: string | boolean) => {
+    const newHours = [...settings.businessHours];
+    newHours[index] = { ...newHours[index], [field]: value };
+    setSettings({ ...settings, businessHours: newHours });
+  };
+
+  const handleDiscountChange = (tier: 'tier1' | 'tier2', field: string, value: number) => {
+    setSettings({
+      ...settings,
+      discounts: {
+        ...settings.discounts,
+        [tier]: { ...settings.discounts[tier], [field]: value },
+      },
+    });
+  };
+
+  const handleLoyaltyChange = (field: string, value: boolean | number | string) => {
+    setSettings({
+      ...settings,
+      loyalty: { ...settings.loyalty, [field]: value },
     });
   };
 
@@ -129,6 +170,148 @@ const Settings = () => {
                 />
                 <Label htmlFor="pix" className="cursor-pointer">Pix (Manual)</Label>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Horário de Atendimento</CardTitle>
+              <CardDescription>Configure os dias e horários de funcionamento</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {settings.businessHours.map((schedule, index) => (
+                <div key={schedule.day} className="flex items-center gap-4 p-3 border rounded-lg">
+                  <div className="flex items-center space-x-2 min-w-[140px]">
+                    <Checkbox
+                      id={`day-${index}`}
+                      checked={schedule.active}
+                      onCheckedChange={(checked) => 
+                        handleBusinessHourChange(index, "active", checked as boolean)
+                      }
+                    />
+                    <Label htmlFor={`day-${index}`} className="cursor-pointer font-medium">
+                      {schedule.day}
+                    </Label>
+                  </div>
+                  {schedule.active && (
+                    <div className="flex items-center gap-2 flex-1">
+                      <Input
+                        type="time"
+                        value={schedule.open}
+                        onChange={(e) => handleBusinessHourChange(index, "open", e.target.value)}
+                        className="w-32"
+                      />
+                      <span className="text-muted-foreground">até</span>
+                      <Input
+                        type="time"
+                        value={schedule.close}
+                        onChange={(e) => handleBusinessHourChange(index, "close", e.target.value)}
+                        className="w-32"
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Desconto por Quantidade</CardTitle>
+              <CardDescription>Configure descontos progressivos automáticos</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Faixa 1 de Desconto</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    value={settings.discounts.tier1.min}
+                    onChange={(e) => handleDiscountChange('tier1', 'min', Number(e.target.value))}
+                    className="w-20"
+                  />
+                  <span className="text-muted-foreground">a</span>
+                  <Input
+                    type="number"
+                    value={settings.discounts.tier1.max}
+                    onChange={(e) => handleDiscountChange('tier1', 'max', Number(e.target.value))}
+                    className="w-20"
+                  />
+                  <span className="text-muted-foreground">galões =</span>
+                  <Input
+                    type="number"
+                    value={settings.discounts.tier1.percentage}
+                    onChange={(e) => handleDiscountChange('tier1', 'percentage', Number(e.target.value))}
+                    className="w-20"
+                  />
+                  <span className="text-muted-foreground">% desconto</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Faixa 2 de Desconto</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Acima de</span>
+                  <Input
+                    type="number"
+                    value={settings.discounts.tier2.min}
+                    onChange={(e) => handleDiscountChange('tier2', 'min', Number(e.target.value))}
+                    className="w-20"
+                  />
+                  <span className="text-muted-foreground">galões =</span>
+                  <Input
+                    type="number"
+                    value={settings.discounts.tier2.percentage}
+                    onChange={(e) => handleDiscountChange('tier2', 'percentage', Number(e.target.value))}
+                    className="w-20"
+                  />
+                  <span className="text-muted-foreground">% desconto</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Programa de Fidelização</CardTitle>
+              <CardDescription>Recompense clientes cadastrados por compras recorrentes</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="loyalty-enabled"
+                  checked={settings.loyalty.enabled}
+                  onCheckedChange={(checked) => handleLoyaltyChange("enabled", checked as boolean)}
+                />
+                <Label htmlFor="loyalty-enabled" className="cursor-pointer">
+                  Ativar programa de fidelização
+                </Label>
+              </div>
+              {settings.loyalty.enabled && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="orders-required">A cada quantos pedidos?</Label>
+                    <Input
+                      id="orders-required"
+                      type="number"
+                      value={settings.loyalty.ordersRequired}
+                      onChange={(e) => handleLoyaltyChange("ordersRequired", Number(e.target.value))}
+                      className="w-32"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reward">Recompensa</Label>
+                    <Input
+                      id="reward"
+                      value={settings.loyalty.reward}
+                      onChange={(e) => handleLoyaltyChange("reward", e.target.value)}
+                      placeholder="Ex: 1 galão grátis"
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    ⚠️ Disponível apenas para clientes cadastrados
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 

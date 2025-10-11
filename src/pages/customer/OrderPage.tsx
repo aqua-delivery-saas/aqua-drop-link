@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/Logo";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, Clock, Gift } from "lucide-react";
 import { toast } from "sonner";
 
 interface Product {
@@ -26,11 +27,78 @@ const OrderPage = () => {
     { id: "5", name: "Água Mineral Bonafont", price: 9.50 },
   ];
 
+  // Mock de configurações da distribuidora
+  const distributorConfig = {
+    businessHours: [
+      { day: 0, open: "08:00", close: "12:00", active: false }, // Domingo
+      { day: 1, open: "08:00", close: "18:00", active: true },  // Segunda
+      { day: 2, open: "08:00", close: "18:00", active: true },  // Terça
+      { day: 3, open: "08:00", close: "18:00", active: true },  // Quarta
+      { day: 4, open: "08:00", close: "18:00", active: true },  // Quinta
+      { day: 5, open: "08:00", close: "18:00", active: true },  // Sexta
+      { day: 6, open: "08:00", close: "13:00", active: true },  // Sábado
+    ],
+    discounts: [
+      { min: 5, max: 10, percentage: 5 },
+      { min: 11, max: 999, percentage: 10 },
+    ],
+    loyalty: {
+      enabled: true,
+      ordersRequired: 10,
+      reward: "1 galão grátis",
+    },
+  };
+
+  // Mock de cliente logado (simulando 8 pedidos já feitos)
+  const mockCustomer = {
+    isLoggedIn: false, // Mude para true para testar o programa de fidelização
+    name: "João Silva",
+    orderCount: 8,
+  };
+
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+
+  // Verificar se está aberta
+  useEffect(() => {
+    const checkIfOpen = () => {
+      const now = new Date();
+      const currentDay = now.getDay();
+      const currentTime = now.toTimeString().slice(0, 5);
+      
+      const todaySchedule = distributorConfig.businessHours.find(s => s.day === currentDay);
+      
+      if (!todaySchedule || !todaySchedule.active) {
+        setIsOpen(false);
+        return;
+      }
+      
+      setIsOpen(currentTime >= todaySchedule.open && currentTime <= todaySchedule.close);
+    };
+
+    checkIfOpen();
+    const interval = setInterval(checkIfOpen, 60000); // Verificar a cada minuto
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Calcular desconto baseado na quantidade
+  const calculateDiscount = (qty: number): number => {
+    const discount = distributorConfig.discounts.find(
+      d => qty >= d.min && qty <= d.max
+    );
+    return discount ? discount.percentage : 0;
+  };
+
+  // Calcular progresso da fidelização
+  const loyaltyProgress = mockCustomer.isLoggedIn 
+    ? (mockCustomer.orderCount % distributorConfig.loyalty.ordersRequired)
+    : 0;
+  const loyaltyRemaining = distributorConfig.loyalty.ordersRequired - loyaltyProgress;
 
   const handleQuantityChange = (delta: number) => {
     setQuantity(Math.max(1, quantity + delta));
@@ -38,6 +106,11 @@ const OrderPage = () => {
 
   const handleOrder = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isOpen) {
+      toast.error("Distribuidora fechada no momento");
+      return;
+    }
 
     if (!selectedProduct || !address || !paymentMethod) {
       toast.error("Preencha todos os campos obrigatórios");
@@ -48,13 +121,20 @@ const OrderPage = () => {
 
     setTimeout(() => {
       const product = products.find(p => p.id === selectedProduct);
+      const subtotal = (product?.price || 0) * quantity;
+      const discountPercentage = calculateDiscount(quantity);
+      const discountAmount = subtotal * (discountPercentage / 100);
+      const total = subtotal - discountAmount;
+
       navigate("/order/confirmation", {
         state: {
           product: product?.name,
           quantity,
           address,
           paymentMethod,
-          total: (product?.price || 0) * quantity,
+          subtotal,
+          discount: discountAmount,
+          total,
           distributor: "Distribuidora Água Pura",
         },
       });
@@ -63,17 +143,61 @@ const OrderPage = () => {
   };
 
   const selectedProductData = products.find(p => p.id === selectedProduct);
+  const subtotal = selectedProductData ? selectedProductData.price * quantity : 0;
+  const discountPercentage = calculateDiscount(quantity);
+  const discountAmount = subtotal * (discountPercentage / 100);
+  const total = subtotal - discountAmount;
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card shadow-sm">
         <div className="container mx-auto px-4 py-4">
-          <Logo size="md" />
-          <p className="text-sm text-muted-foreground mt-1">Distribuidora Água Pura</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <Logo size="md" />
+              <p className="text-sm text-muted-foreground mt-1">Distribuidora Água Pura</p>
+            </div>
+            <Badge variant={isOpen ? "default" : "destructive"} className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {isOpen ? "Aberta" : "Fechada"}
+            </Badge>
+          </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
+      <main className="container mx-auto px-4 py-8 max-w-2xl space-y-4">
+        {!isOpen && (
+          <Card className="border-destructive bg-destructive/10">
+            <CardContent className="pt-6">
+              <p className="text-center text-destructive font-medium">
+                ⚠️ Distribuidora fechada no momento. Volte durante o horário de atendimento.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {distributorConfig.loyalty.enabled && mockCustomer.isLoggedIn && (
+          <Card className="border-primary bg-primary/5">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <Gift className="h-8 w-8 text-primary" />
+                <div className="flex-1">
+                  <p className="font-medium text-primary">Programa de Fidelização Ativo</p>
+                  <p className="text-sm text-muted-foreground">
+                    Faltam apenas {loyaltyRemaining} pedidos para ganhar: {distributorConfig.loyalty.reward}
+                  </p>
+                  <div className="w-full bg-muted rounded-full h-2 mt-2">
+                    <div 
+                      className="bg-primary h-2 rounded-full transition-all"
+                      style={{ width: `${(loyaltyProgress / distributorConfig.loyalty.ordersRequired) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="shadow-xl">
           <CardHeader>
             <CardTitle className="text-3xl">Fazer Pedido</CardTitle>
@@ -123,11 +247,27 @@ const OrderPage = () => {
                     <Plus className="h-4 w-4" />
                   </Button>
                   {selectedProductData && (
-                    <span className="ml-4 text-muted-foreground">
-                      Total: <span className="text-primary font-bold text-xl">
-                        R$ {(selectedProductData.price * quantity).toFixed(2)}
-                      </span>
-                    </span>
+                    <div className="ml-4 flex-1">
+                      {discountPercentage > 0 ? (
+                        <div className="space-y-1">
+                          <p className="text-sm text-muted-foreground">
+                            Subtotal: <span className="line-through">R$ {subtotal.toFixed(2)}</span>
+                          </p>
+                          <p className="text-sm text-green-600 font-medium">
+                            Desconto ({discountPercentage}%): -R$ {discountAmount.toFixed(2)}
+                          </p>
+                          <p className="text-primary font-bold text-xl">
+                            Total: R$ {total.toFixed(2)}
+                          </p>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          Total: <span className="text-primary font-bold text-xl">
+                            R$ {total.toFixed(2)}
+                          </span>
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
