@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
@@ -9,8 +10,13 @@ const OrderConfirmation = () => {
   const navigate = useNavigate();
   const orderData = location.state;
 
+  useEffect(() => {
+    if (!orderData) {
+      navigate("/");
+    }
+  }, [orderData, navigate]);
+
   if (!orderData) {
-    navigate("/");
     return null;
   }
 
