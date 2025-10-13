@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/Logo";
 import { Minus, Plus, Clock, Gift } from "lucide-react";
 import { toast } from "sonner";
+import { getDistribuidoraBySlug } from "@/data/mockData";
+import { Helmet } from "react-helmet-async";
 
 interface Product {
   id: string;
@@ -20,38 +22,35 @@ const OrderPage = () => {
   const navigate = useNavigate();
   const { distributorSlug } = useParams();
   
-  const products: Product[] = [
-    { id: "1", name: "Água Mineral Crystal", price: 8.50 },
-    { id: "2", name: "Água Mineral Indaiá", price: 9.00 },
-    { id: "3", name: "Água Mineral São Lourenço", price: 7.50 },
-    { id: "5", name: "Água Mineral Bonafont", price: 9.50 },
-  ];
+  const distribuidora = getDistribuidoraBySlug(distributorSlug || "");
+  
+  if (!distribuidora) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>Distribuidora não encontrada</CardTitle>
+            <CardDescription>A distribuidora que você procura não existe.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => navigate("/")} className="w-full">
+              Voltar para Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-  // Mock de configurações da distribuidora
-  const distributorConfig = {
-    businessHours: [
-      { day: 0, open: "08:00", close: "12:00", active: false }, // Domingo
-      { day: 1, open: "08:00", close: "18:00", active: true },  // Segunda
-      { day: 2, open: "08:00", close: "18:00", active: true },  // Terça
-      { day: 3, open: "08:00", close: "18:00", active: true },  // Quarta
-      { day: 4, open: "08:00", close: "18:00", active: true },  // Quinta
-      { day: 5, open: "08:00", close: "18:00", active: true },  // Sexta
-      { day: 6, open: "08:00", close: "13:00", active: true },  // Sábado
-    ],
-    discounts: [
-      { min: 5, max: 10, percentage: 5 },
-      { min: 11, max: 999, percentage: 10 },
-    ],
-    loyalty: {
-      enabled: true,
-      ordersRequired: 10,
-      reward: "1 galão grátis",
-    },
-  };
+  const products = distribuidora.products.map(p => ({
+    id: p.id.toString(),
+    name: p.name,
+    price: p.price
+  }));
 
   // Mock de cliente logado (simulando 8 pedidos já feitos)
   const mockCustomer = {
-    isLoggedIn: false, // Mude para true para testar o programa de fidelização
+    isLoggedIn: false,
     name: "João Silva",
     orderCount: 8,
   };
@@ -67,38 +66,44 @@ const OrderPage = () => {
   useEffect(() => {
     const checkIfOpen = () => {
       const now = new Date();
-      const currentDay = now.getDay();
+      const currentDay = now.toLocaleDateString('pt-BR', { weekday: 'long' });
       const currentTime = now.toTimeString().slice(0, 5);
       
-      const todaySchedule = distributorConfig.businessHours.find(s => s.day === currentDay);
+      const todaySchedule = distribuidora.businessHours.find(
+        s => s.dia_semana.toLowerCase() === currentDay.toLowerCase()
+      );
       
-      if (!todaySchedule || !todaySchedule.active) {
+      if (!todaySchedule || !todaySchedule.ativo) {
         setIsOpen(false);
         return;
       }
       
-      setIsOpen(currentTime >= todaySchedule.open && currentTime <= todaySchedule.close);
+      setIsOpen(currentTime >= todaySchedule.hora_abertura && currentTime <= todaySchedule.hora_fechamento);
     };
 
     checkIfOpen();
-    const interval = setInterval(checkIfOpen, 60000); // Verificar a cada minuto
+    const interval = setInterval(checkIfOpen, 60000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [distribuidora]);
 
   // Calcular desconto baseado na quantidade
   const calculateDiscount = (qty: number): number => {
-    const discount = distributorConfig.discounts.find(
-      d => qty >= d.min && qty <= d.max
-    );
-    return discount ? discount.percentage : 0;
+    const { tier1, tier2 } = distribuidora.discounts;
+    
+    if (qty >= tier2.min) {
+      return tier2.percentage;
+    } else if (qty >= tier1.min && qty <= tier1.max) {
+      return tier1.percentage;
+    }
+    return 0;
   };
 
   // Calcular progresso da fidelização
   const loyaltyProgress = mockCustomer.isLoggedIn 
-    ? (mockCustomer.orderCount % distributorConfig.loyalty.ordersRequired)
+    ? (mockCustomer.orderCount % distribuidora.loyalty.ordersRequired)
     : 0;
-  const loyaltyRemaining = distributorConfig.loyalty.ordersRequired - loyaltyProgress;
+  const loyaltyRemaining = distribuidora.loyalty.ordersRequired - loyaltyProgress;
 
   const handleQuantityChange = (delta: number) => {
     setQuantity(Math.max(1, quantity + delta));
@@ -135,7 +140,10 @@ const OrderPage = () => {
           subtotal,
           discount: discountAmount,
           total,
-          distributor: "Distribuidora Água Pura",
+          distributor: distribuidora.nome,
+          whatsappUrl: `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(
+            `Olá! Pedido:\n\nProduto: ${product?.name}\nQtd: ${quantity}\nTotal: R$ ${total.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}`
+          )}`,
         },
       });
       setLoading(false);
@@ -148,22 +156,32 @@ const OrderPage = () => {
   const discountAmount = subtotal * (discountPercentage / 100);
   const total = subtotal - discountAmount;
 
+  const pageTitle = `${distribuidora.nome} - Pedido de Água`;
+  const pageDescription = distribuidora.descricao_curta;
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <Logo size="md" />
-              <p className="text-sm text-muted-foreground mt-1">Distribuidora Água Pura</p>
+    <>
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta name="keywords" content={distribuidora.palavras_chave} />
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        <header className="border-b bg-card shadow-sm">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <Logo size="md" />
+                <p className="text-sm text-muted-foreground mt-1">{distribuidora.nome}</p>
+              </div>
+              <Badge variant={isOpen ? "default" : "destructive"} className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {isOpen ? "Aberta" : "Fechada"}
+              </Badge>
             </div>
-            <Badge variant={isOpen ? "default" : "destructive"} className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              {isOpen ? "Aberta" : "Fechada"}
-            </Badge>
           </div>
-        </div>
-      </header>
+        </header>
 
       <main className="container mx-auto px-4 py-8 max-w-2xl space-y-4">
         {!isOpen && (
@@ -176,7 +194,7 @@ const OrderPage = () => {
           </Card>
         )}
 
-        {distributorConfig.loyalty.enabled && mockCustomer.isLoggedIn && (
+        {distribuidora.loyalty.enabled && mockCustomer.isLoggedIn && (
           <Card className="border-primary bg-primary/5">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
@@ -184,12 +202,12 @@ const OrderPage = () => {
                 <div className="flex-1">
                   <p className="font-medium text-primary">Programa de Fidelização Ativo</p>
                   <p className="text-sm text-muted-foreground">
-                    Faltam apenas {loyaltyRemaining} pedidos para ganhar: {distributorConfig.loyalty.reward}
+                    Faltam apenas {loyaltyRemaining} pedidos para ganhar: {distribuidora.loyalty.reward}
                   </p>
                   <div className="w-full bg-muted rounded-full h-2 mt-2">
                     <div 
                       className="bg-primary h-2 rounded-full transition-all"
-                      style={{ width: `${(loyaltyProgress / distributorConfig.loyalty.ordersRequired) * 100}%` }}
+                      style={{ width: `${(loyaltyProgress / distribuidora.loyalty.ordersRequired) * 100}%` }}
                     />
                   </div>
                 </div>
@@ -327,6 +345,7 @@ const OrderPage = () => {
         )}
       </main>
     </div>
+    </>
   );
 };
 

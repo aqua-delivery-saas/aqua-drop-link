@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { Logo } from "@/components/Logo";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -13,8 +14,24 @@ const Settings = () => {
   const navigate = useNavigate();
   const [settings, setSettings] = useState({
     name: "Distribuidora Água Pura",
-    address: "Rua das Águas, 123 - Centro",
-    whatsapp: "(11) 99999-9999",
+    slug: "distribuidora-agua-pura",
+    whatsapp: "5521999999999",
+    
+    // Structured address
+    rua: "Rua das Palmeiras",
+    numero: "123",
+    bairro: "Copacabana",
+    cidade: "Rio de Janeiro",
+    estado: "RJ",
+    cep: "22070-000",
+    
+    // SEO metadata
+    descricao_curta: "Distribuidora de água mineral em Copacabana com entrega rápida e preços competitivos.",
+    palavras_chave: "água mineral, galão de água, entrega de água, copacabana",
+    email_contato: "contato@aguapura.com.br",
+    telefone: "21 3333-4444",
+    site: "https://aguapura.com.br",
+    
     paymentMethods: {
       cash: true,
       card: true,
@@ -106,35 +123,177 @@ const Settings = () => {
           <Card>
             <CardHeader>
               <CardTitle>Informações da Empresa</CardTitle>
-              <CardDescription>Dados básicos da sua distribuidora</CardDescription>
+              <CardDescription>
+                Dados básicos e de contato da sua distribuidora
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Nome da Distribuidora</Label>
+                <Label htmlFor="name">Nome da Empresa</Label>
                 <Input
                   id="name"
                   value={settings.name}
                   onChange={handleChange}
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="address">Endereço</Label>
+                <Label htmlFor="slug">Slug (URL)</Label>
                 <Input
-                  id="address"
-                  value={settings.address}
+                  id="slug"
+                  value={settings.slug}
+                  onChange={handleChange}
+                  placeholder="distribuidora-agua-pura"
+                />
+                <p className="text-sm text-muted-foreground">
+                  URL de acesso: /order/{settings.slug}
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="whatsapp">WhatsApp</Label>
+                  <Input
+                    id="whatsapp"
+                    value={settings.whatsapp}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="telefone">Telefone</Label>
+                  <Input
+                    id="telefone"
+                    value={settings.telefone}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="email_contato">Email de Contato</Label>
+                <Input
+                  id="email_contato"
+                  type="email"
+                  value={settings.email_contato}
                   onChange={handleChange}
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="whatsapp">Número de WhatsApp</Label>
+                <Label htmlFor="site">Site (opcional)</Label>
                 <Input
-                  id="whatsapp"
-                  type="tel"
-                  value={settings.whatsapp}
+                  id="site"
+                  type="url"
+                  value={settings.site}
+                  onChange={handleChange}
+                  placeholder="https://seusite.com.br"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Endereço Completo</CardTitle>
+              <CardDescription>
+                Informações de localização estruturadas para SEO
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="rua">Rua/Avenida</Label>
+                  <Input
+                    id="rua"
+                    value={settings.rua}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="numero">Número</Label>
+                  <Input
+                    id="numero"
+                    value={settings.numero}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="bairro">Bairro</Label>
+                <Input
+                  id="bairro"
+                  value={settings.bairro}
                   onChange={handleChange}
                 />
+              </div>
+              
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="cidade">Cidade</Label>
+                  <Input
+                    id="cidade"
+                    value={settings.cidade}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="estado">Estado</Label>
+                  <Input
+                    id="estado"
+                    value={settings.estado}
+                    onChange={handleChange}
+                    maxLength={2}
+                    placeholder="RJ"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="cep">CEP</Label>
+                <Input
+                  id="cep"
+                  value={settings.cep}
+                  onChange={handleChange}
+                  placeholder="00000-000"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>SEO e Descrição</CardTitle>
+              <CardDescription>
+                Otimização para mecanismos de busca
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="descricao_curta">Descrição Curta</Label>
+                <Textarea
+                  id="descricao_curta"
+                  value={settings.descricao_curta}
+                  onChange={handleChange as any}
+                  rows={3}
+                  maxLength={160}
+                  placeholder="Descrição breve para SEO (até 160 caracteres)"
+                />
                 <p className="text-sm text-muted-foreground">
-                  Este número será usado para gerar links wa.me
+                  {settings.descricao_curta.length}/160 caracteres
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="palavras_chave">Palavras-chave</Label>
+                <Input
+                  id="palavras_chave"
+                  value={settings.palavras_chave}
+                  onChange={handleChange}
+                  placeholder="água mineral, galão de água, entrega"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Separe as palavras-chave por vírgula
                 </p>
               </div>
             </CardContent>

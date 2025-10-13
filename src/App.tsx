@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginDistributor from "./pages/distributor/LoginDistributor";
@@ -15,37 +16,41 @@ import OrderPage from "./pages/customer/OrderPage";
 import OrderConfirmation from "./pages/customer/OrderConfirmation";
 import SignupCustomer from "./pages/customer/SignupCustomer";
 import OrderHistory from "./pages/customer/OrderHistory";
+import CityDistributors from "./pages/customer/CityDistributors";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          
-          {/* Distributor Routes */}
-          <Route path="/distributor/login" element={<LoginDistributor />} />
-          <Route path="/distributor/signup" element={<SignupDistributor />} />
-          <Route path="/distributor/dashboard" element={<Dashboard />} />
-          <Route path="/distributor/products" element={<Products />} />
-          <Route path="/distributor/settings" element={<Settings />} />
-          <Route path="/distributor/orders" element={<Orders />} />
-          
-          {/* Customer Routes */}
-          <Route path="/order/:distributorSlug" element={<OrderPage />} />
-          <Route path="/order/confirmation" element={<OrderConfirmation />} />
-          <Route path="/customer/signup" element={<SignupCustomer />} />
-          <Route path="/customer/history" element={<OrderHistory />} />
-          
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <HelmetProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            
+            {/* Distributor Routes */}
+            <Route path="/distributor/login" element={<LoginDistributor />} />
+            <Route path="/distributor/signup" element={<SignupDistributor />} />
+            <Route path="/distributor/dashboard" element={<Dashboard />} />
+            <Route path="/distributor/products" element={<Products />} />
+            <Route path="/distributor/settings" element={<Settings />} />
+            <Route path="/distributor/orders" element={<Orders />} />
+            
+            {/* Customer Routes */}
+            <Route path="/distribuidoras/:citySlug" element={<CityDistributors />} />
+            <Route path="/order/:distributorSlug" element={<OrderPage />} />
+            <Route path="/order/confirmation" element={<OrderConfirmation />} />
+            <Route path="/customer/signup" element={<SignupCustomer />} />
+            <Route path="/customer/history" element={<OrderHistory />} />
+            
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </HelmetProvider>
   </QueryClientProvider>
 );
 
