@@ -263,26 +263,28 @@ const OrderPage = () => {
 
               <div className="space-y-2">
                 <Label className="text-base">Quantidade</Label>
-                <div className="flex items-center gap-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleQuantityChange(-1)}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleQuantityChange(1)}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center gap-4 w-full">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleQuantityChange(-1)}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleQuantityChange(1)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                   {selectedProductData && (
-                    <div className="ml-4 flex-1">
+                    <div className="w-full">
                       {discountPercentage > 0 ? (
                         <div className="space-y-1">
                           <p className="text-sm text-muted-foreground">
