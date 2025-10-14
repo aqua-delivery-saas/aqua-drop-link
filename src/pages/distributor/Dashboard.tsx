@@ -21,18 +21,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Logo size="md" />
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">Distribuidora Água Pura</span>
-            <Button variant="ghost" onClick={() => navigate("/distributor/login")}>
-              Sair
-            </Button>
-          </div>
-        </div>
-      </header>
-
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Painel da Distribuidora</h1>

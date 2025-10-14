@@ -87,16 +87,6 @@ const Orders = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Logo size="md" />
-          <Button variant="ghost" onClick={() => navigate("/distributor/dashboard")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar ao Painel
-          </Button>
-        </div>
-      </header>
-
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Pedidos Recebidos</h1>

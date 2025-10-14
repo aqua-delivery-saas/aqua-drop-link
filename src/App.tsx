@@ -17,6 +17,7 @@ import OrderConfirmation from "./pages/customer/OrderConfirmation";
 import SignupCustomer from "./pages/customer/SignupCustomer";
 import OrderHistory from "./pages/customer/OrderHistory";
 import CityDistributors from "./pages/customer/CityDistributors";
+import { DistributorLayout } from "./layouts/DistributorLayout";
 
 const queryClient = new QueryClient();
 
@@ -33,10 +34,10 @@ const App = () => (
             {/* Distributor Routes */}
             <Route path="/distributor/login" element={<LoginDistributor />} />
             <Route path="/distributor/signup" element={<SignupDistributor />} />
-            <Route path="/distributor/dashboard" element={<Dashboard />} />
-            <Route path="/distributor/products" element={<Products />} />
-            <Route path="/distributor/settings" element={<Settings />} />
-            <Route path="/distributor/orders" element={<Orders />} />
+            <Route path="/distributor/dashboard" element={<DistributorLayout><Dashboard /></DistributorLayout>} />
+            <Route path="/distributor/products" element={<DistributorLayout><Products /></DistributorLayout>} />
+            <Route path="/distributor/settings" element={<DistributorLayout><Settings /></DistributorLayout>} />
+            <Route path="/distributor/orders" element={<DistributorLayout><Orders /></DistributorLayout>} />
             
             {/* Customer Routes */}
             <Route path="/distribuidoras/:citySlug" element={<CityDistributors />} />
