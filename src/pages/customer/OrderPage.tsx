@@ -15,7 +15,9 @@ import { Helmet } from "react-helmet-async";
 interface Product {
   id: string;
   name: string;
+  litros: number;
   price: number;
+  foto?: string;
 }
 
 const OrderPage = () => {
@@ -45,7 +47,9 @@ const OrderPage = () => {
   const products = distribuidora.products.map(p => ({
     id: p.id.toString(),
     name: p.name,
-    price: p.price
+    litros: p.litros,
+    price: p.price,
+    foto: p.foto
   }));
 
   // Mock de cliente logado (simulando 8 pedidos já feitos)
@@ -59,6 +63,9 @@ const OrderPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [anoVasilhameInicial, setAnoVasilhameInicial] = useState("");
+  const [anoVasilhameFinal, setAnoVasilhameFinal] = useState("");
+  const [detalhesPedido, setDetalhesPedido] = useState("");
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
 
@@ -233,9 +240,19 @@ const OrderPage = () => {
                       onClick={() => setSelectedProduct(product.id)}
                     >
                       <RadioGroupItem value={product.id} id={product.id} />
+                      {product.foto && (
+                        <img 
+                          src={product.foto} 
+                          alt={product.name}
+                          className="w-16 h-16 object-cover rounded-md"
+                        />
+                      )}
                       <Label htmlFor={product.id} className="flex-1 cursor-pointer">
                         <div className="flex justify-between items-center">
-                          <span className="font-medium">{product.name}</span>
+                          <div>
+                            <div className="font-medium">{product.name}</div>
+                            <div className="text-sm text-muted-foreground">{product.litros}L</div>
+                          </div>
                           <span className="text-primary font-bold">R$ {product.price.toFixed(2)}</span>
                         </div>
                       </Label>
@@ -298,6 +315,40 @@ const OrderPage = () => {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="anoVasilhameInicial" className="text-base">Ano Vasilhame Inicial</Label>
+                  <Input
+                    id="anoVasilhameInicial"
+                    type="number"
+                    placeholder="Ex: 2020"
+                    value={anoVasilhameInicial}
+                    onChange={(e) => setAnoVasilhameInicial(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="anoVasilhameFinal" className="text-base">Ano Vasilhame Final</Label>
+                  <Input
+                    id="anoVasilhameFinal"
+                    type="number"
+                    placeholder="Ex: 2024"
+                    value={anoVasilhameFinal}
+                    onChange={(e) => setAnoVasilhameFinal(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="detalhesPedido" className="text-base">Detalhes do Pedido</Label>
+                <textarea
+                  id="detalhesPedido"
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                  placeholder="Observações adicionais sobre o pedido..."
+                  value={detalhesPedido}
+                  onChange={(e) => setDetalhesPedido(e.target.value)}
                 />
               </div>
 

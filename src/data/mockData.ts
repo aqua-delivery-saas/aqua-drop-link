@@ -54,7 +54,9 @@ export interface Distribuidora {
   products: Array<{
     id: number;
     name: string;
+    litros: number;
     price: number;
+    foto?: string;
   }>;
 }
 
@@ -132,8 +134,8 @@ export const mockDistribuidoras: Distribuidora[] = [
       reward: "1 galão grátis"
     },
     products: [
-      { id: 1, name: "Galão 20L", price: 15.00 },
-      { id: 2, name: "Galão 10L", price: 10.00 }
+      { id: 1, name: "Água Pura", litros: 20, price: 15.00, foto: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=200" },
+      { id: 2, name: "Água Pura", litros: 10, price: 10.00, foto: "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=200" }
     ]
   },
   {
@@ -171,8 +173,8 @@ export const mockDistribuidoras: Distribuidora[] = [
       reward: "1 galão grátis"
     },
     products: [
-      { id: 1, name: "Galão 20L Premium", price: 18.00 },
-      { id: 2, name: "Galão 10L", price: 12.00 }
+      { id: 1, name: "Água Cristal", litros: 20, price: 18.00, foto: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=200" },
+      { id: 2, name: "Água Cristal", litros: 10, price: 12.00, foto: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=200" }
     ]
   },
   {
@@ -210,8 +212,8 @@ export const mockDistribuidoras: Distribuidora[] = [
       reward: "2 galões grátis"
     },
     products: [
-      { id: 1, name: "Galão 20L Premium", price: 20.00 },
-      { id: 2, name: "Galão 10L", price: 13.00 }
+      { id: 1, name: "Água Paulista", litros: 20, price: 20.00, foto: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=200" },
+      { id: 2, name: "Água Paulista", litros: 10, price: 13.00, foto: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=200" }
     ]
   }
 ];
