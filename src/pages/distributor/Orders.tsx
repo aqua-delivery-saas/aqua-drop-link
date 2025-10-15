@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Logo } from "@/components/Logo";
 import { ArrowLeft, MessageCircle, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -21,6 +22,7 @@ interface Order {
 
 const Orders = () => {
   const navigate = useNavigate();
+  const [sortBy, setSortBy] = useState<string>("date-desc");
   const [orders, setOrders] = useState<Order[]>([
     {
       id: "1",
@@ -85,16 +87,61 @@ const Orders = () => {
     toast.success("Pedido marcado como entregue!");
   };
 
+  const sortedOrders = useMemo(() => {
+    const sorted = [...orders];
+    
+    switch (sortBy) {
+      case "date-desc":
+        return sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      case "date-asc":
+        return sorted.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      case "customer-asc":
+        return sorted.sort((a, b) => a.customerName.localeCompare(b.customerName));
+      case "customer-desc":
+        return sorted.sort((a, b) => b.customerName.localeCompare(a.customerName));
+      case "status":
+        const statusOrder = { "novo": 0, "em-entrega": 1, "concluido": 2 };
+        return sorted.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+      case "quantity-desc":
+        return sorted.sort((a, b) => b.quantity - a.quantity);
+      case "quantity-asc":
+        return sorted.sort((a, b) => a.quantity - b.quantity);
+      default:
+        return sorted;
+    }
+  }, [orders, sortBy]);
+
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Pedidos Recebidos</h1>
-          <p className="text-muted-foreground">Gerencie todos os pedidos dos seus clientes</p>
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Pedidos Recebidos</h1>
+              <p className="text-muted-foreground">Gerencie todos os pedidos dos seus clientes</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Ordenar por:</span>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date-desc">Data (Mais recentes)</SelectItem>
+                  <SelectItem value="date-asc">Data (Mais antigos)</SelectItem>
+                  <SelectItem value="customer-asc">Cliente (A-Z)</SelectItem>
+                  <SelectItem value="customer-desc">Cliente (Z-A)</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                  <SelectItem value="quantity-desc">Quantidade (Maior)</SelectItem>
+                  <SelectItem value="quantity-asc">Quantidade (Menor)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-4">
-          {orders.map((order) => (
+          {sortedOrders.map((order) => (
             <Card key={order.id}>
               <CardHeader>
                 <div className="flex justify-between items-start">
@@ -143,7 +190,7 @@ const Orders = () => {
           ))}
         </div>
 
-        {orders.length === 0 && (
+        {sortedOrders.length === 0 && (
           <Card className="text-center py-12">
             <CardContent>
               <p className="text-muted-foreground">Nenhum pedido recebido ainda.</p>
