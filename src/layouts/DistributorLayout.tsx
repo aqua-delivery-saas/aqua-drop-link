@@ -35,7 +35,7 @@ export function DistributorLayout({ children }: DistributorLayoutProps) {
       <div className="min-h-screen flex w-full">
         <DistributorSidebar />
         <main className="flex-1 flex flex-col">
-          <header className="h-14 border-b flex items-center justify-between px-4 bg-background">
+          <header className="h-14 border-b flex items-center justify-between px-4 bg-background relative z-10">
             <SidebarTrigger />
             
             <DropdownMenu>
