@@ -1,5 +1,6 @@
-import { LayoutDashboard, Package, Settings, ShoppingCart } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { LayoutDashboard, Package, Settings, ShoppingCart, ChevronDown, Search, Clock, Percent, Gift } from "lucide-react";
+import { NavLink, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -11,17 +12,41 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Logo } from "./Logo";
 
 const menuItems = [
   { title: "Dashboard", url: "/distributor/dashboard", icon: LayoutDashboard },
   { title: "Pedidos", url: "/distributor/orders", icon: ShoppingCart },
   { title: "Produtos", url: "/distributor/products", icon: Package },
-  { title: "Configurações", url: "/distributor/settings", icon: Settings },
+];
+
+const configItems = [
+  { title: "Informações da Empresa", url: "/distributor/settings", icon: Settings },
+  { title: "SEO e Descrição", url: "/distributor/settings/seo", icon: Search },
+  { title: "Horário de Atendimento", url: "/distributor/settings/business-hours", icon: Clock },
+  { title: "Desconto por Quantidade", url: "/distributor/settings/discounts", icon: Percent },
+  { title: "Programa de Fidelização", url: "/distributor/settings/loyalty", icon: Gift },
 ];
 
 export function DistributorSidebar() {
   const { open } = useSidebar();
+  const location = useLocation();
+  const [configOpen, setConfigOpen] = useState(false);
+
+  // Keep config group open if any config route is active
+  useEffect(() => {
+    if (location.pathname.startsWith("/distributor/settings")) {
+      setConfigOpen(true);
+    }
+  }, [location.pathname]);
+
+  const getNavClass = ({ isActive }: { isActive: boolean }) =>
+    isActive ? "bg-primary/10 text-primary font-medium" : "";
 
   return (
     <Sidebar collapsible="icon">
@@ -37,12 +62,7 @@ export function DistributorSidebar() {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url}
-                      className={({ isActive }) =>
-                        isActive ? "bg-primary/10 text-primary font-medium" : ""
-                      }
-                    >
+                    <NavLink to={item.url} className={getNavClass}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </NavLink>
@@ -51,6 +71,36 @@ export function DistributorSidebar() {
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <Collapsible open={configOpen} onOpenChange={setConfigOpen}>
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton className="w-full">
+                  <Settings className="h-4 w-4" />
+                  <span>Configurações</span>
+                  <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${configOpen ? "rotate-180" : ""}`} />
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+            </SidebarMenuItem>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu className="pl-4">
+                  {configItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <NavLink to={item.url} end className={getNavClass}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </Collapsible>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>

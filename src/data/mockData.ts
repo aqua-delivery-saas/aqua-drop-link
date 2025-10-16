@@ -13,6 +13,7 @@ export interface Distribuidora {
   id: number;
   nome: string;
   slug: string;
+  cnpj: string;
   whatsapp: string;
   
   // Structured address
@@ -102,6 +103,7 @@ export const mockDistribuidoras: Distribuidora[] = [
     id: 1,
     nome: "Distribuidora Água Pura",
     slug: "distribuidora-agua-pura",
+    cnpj: "12.345.678/0001-90",
     whatsapp: "5521999999999",
     rua: "Rua das Palmeiras",
     numero: "123",
@@ -142,6 +144,7 @@ export const mockDistribuidoras: Distribuidora[] = [
     id: 2,
     nome: "Água Cristal Express",
     slug: "agua-cristal-express",
+    cnpj: "98.765.432/0001-21",
     whatsapp: "5521988888888",
     rua: "Avenida Atlântica",
     numero: "456",
@@ -181,6 +184,7 @@ export const mockDistribuidoras: Distribuidora[] = [
     id: 3,
     nome: "Água Paulista Prime",
     slug: "agua-paulista-prime",
+    cnpj: "11.222.333/0001-44",
     whatsapp: "5511977777777",
     rua: "Avenida Paulista",
     numero: "1000",

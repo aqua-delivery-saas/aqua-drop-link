@@ -12,6 +12,11 @@ import Dashboard from "./pages/distributor/Dashboard";
 import Products from "./pages/distributor/Products";
 import Settings from "./pages/distributor/Settings";
 import Orders from "./pages/distributor/Orders";
+import Profile from "./pages/distributor/Profile";
+import SeoSettings from "./pages/distributor/SeoSettings";
+import BusinessHours from "./pages/distributor/BusinessHours";
+import DiscountSettings from "./pages/distributor/DiscountSettings";
+import LoyaltyProgram from "./pages/distributor/LoyaltyProgram";
 import OrderPage from "./pages/customer/OrderPage";
 import OrderConfirmation from "./pages/customer/OrderConfirmation";
 import SignupCustomer from "./pages/customer/SignupCustomer";
@@ -37,7 +42,12 @@ const App = () => (
             <Route path="/distributor/dashboard" element={<DistributorLayout><Dashboard /></DistributorLayout>} />
             <Route path="/distributor/products" element={<DistributorLayout><Products /></DistributorLayout>} />
             <Route path="/distributor/settings" element={<DistributorLayout><Settings /></DistributorLayout>} />
+            <Route path="/distributor/settings/seo" element={<DistributorLayout><SeoSettings /></DistributorLayout>} />
+            <Route path="/distributor/settings/business-hours" element={<DistributorLayout><BusinessHours /></DistributorLayout>} />
+            <Route path="/distributor/settings/discounts" element={<DistributorLayout><DiscountSettings /></DistributorLayout>} />
+            <Route path="/distributor/settings/loyalty" element={<DistributorLayout><LoyaltyProgram /></DistributorLayout>} />
             <Route path="/distributor/orders" element={<DistributorLayout><Orders /></DistributorLayout>} />
+            <Route path="/distributor/profile" element={<DistributorLayout><Profile /></DistributorLayout>} />
             
             {/* Customer Routes */}
             <Route path="/distribuidoras/:citySlug" element={<CityDistributors />} />
