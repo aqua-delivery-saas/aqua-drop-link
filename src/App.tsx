@@ -17,6 +17,7 @@ import SeoSettings from "./pages/distributor/SeoSettings";
 import BusinessHours from "./pages/distributor/BusinessHours";
 import DiscountSettings from "./pages/distributor/DiscountSettings";
 import LoyaltyProgram from "./pages/distributor/LoyaltyProgram";
+import Subscription from "./pages/distributor/Subscription";
 import OrderPage from "./pages/customer/OrderPage";
 import OrderConfirmation from "./pages/customer/OrderConfirmation";
 import SignupCustomer from "./pages/customer/SignupCustomer";
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/distributor/settings/business-hours" element={<DistributorLayout><BusinessHours /></DistributorLayout>} />
             <Route path="/distributor/settings/discounts" element={<DistributorLayout><DiscountSettings /></DistributorLayout>} />
             <Route path="/distributor/settings/loyalty" element={<DistributorLayout><LoyaltyProgram /></DistributorLayout>} />
+            <Route path="/distributor/subscription" element={<DistributorLayout><Subscription /></DistributorLayout>} />
             <Route path="/distributor/orders" element={<DistributorLayout><Orders /></DistributorLayout>} />
             <Route path="/distributor/profile" element={<DistributorLayout><Profile /></DistributorLayout>} />
             

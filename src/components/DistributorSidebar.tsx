@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, Settings, ShoppingCart, ChevronDown, Search, Clock, Percent, Gift } from "lucide-react";
+import { LayoutDashboard, Package, Settings, ShoppingCart, ChevronDown, Search, Clock, Percent, Gift, CreditCard } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -19,11 +19,12 @@ import {
 } from "@/components/ui/collapsible";
 import { Logo } from "./Logo";
 
-const menuItems = [
-  { title: "Dashboard", url: "/distributor/dashboard", icon: LayoutDashboard },
-  { title: "Pedidos", url: "/distributor/orders", icon: ShoppingCart },
-  { title: "Produtos", url: "/distributor/products", icon: Package },
-];
+  const menuItems = [
+    { title: "Dashboard", url: "/distributor/dashboard", icon: LayoutDashboard },
+    { title: "Pedidos", url: "/distributor/orders", icon: ShoppingCart },
+    { title: "Produtos", url: "/distributor/products", icon: Package },
+    { title: "Assinatura", url: "/distributor/subscription", icon: CreditCard },
+  ];
 
 const configItems = [
   { title: "Informações da Empresa", url: "/distributor/settings", icon: Settings },
