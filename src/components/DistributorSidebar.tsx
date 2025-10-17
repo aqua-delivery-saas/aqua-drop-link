@@ -23,15 +23,15 @@ import { Logo } from "./Logo";
     { title: "Dashboard", url: "/distributor/dashboard", icon: LayoutDashboard },
     { title: "Pedidos", url: "/distributor/orders", icon: ShoppingCart },
     { title: "Produtos", url: "/distributor/products", icon: Package },
-    { title: "Assinatura", url: "/distributor/subscription", icon: CreditCard },
   ];
 
 const configItems = [
-  { title: "Informações da Empresa", url: "/distributor/settings", icon: Settings },
+  { title: "Informações", url: "/distributor/settings", icon: Settings },
   { title: "SEO e Descrição", url: "/distributor/settings/seo", icon: Search },
-  { title: "Horário de Atendimento", url: "/distributor/settings/business-hours", icon: Clock },
-  { title: "Desconto por Quantidade", url: "/distributor/settings/discounts", icon: Percent },
-  { title: "Programa de Fidelização", url: "/distributor/settings/loyalty", icon: Gift },
+  { title: "Horários", url: "/distributor/settings/business-hours", icon: Clock },
+  { title: "Descontos", url: "/distributor/settings/discounts", icon: Percent },
+  { title: "Fidelização", url: "/distributor/settings/loyalty", icon: Gift },
+  { title: "Assinatura", url: "/distributor/subscription", icon: CreditCard },
 ];
 
 export function DistributorSidebar() {
@@ -41,7 +41,7 @@ export function DistributorSidebar() {
 
   // Keep config group open if any config route is active
   useEffect(() => {
-    if (location.pathname.startsWith("/distributor/settings")) {
+    if (location.pathname.startsWith("/distributor/settings") || location.pathname === "/distributor/subscription") {
       setConfigOpen(true);
     }
   }, [location.pathname]);
