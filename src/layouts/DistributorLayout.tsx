@@ -1,5 +1,6 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { DistributorSidebar } from "@/components/DistributorSidebar";
+import { NotificationBell } from "@/components/NotificationBell";
 import { useNavigate } from "react-router-dom";
 import { UserCircle, User, LogOut } from "lucide-react";
 import {
@@ -38,7 +39,10 @@ export function DistributorLayout({ children }: DistributorLayoutProps) {
           <header className="h-14 border-b flex items-center justify-between px-4 bg-background relative z-10">
             <SidebarTrigger />
             
-            <DropdownMenu>
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              
+              <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2">
                   <UserCircle className="h-5 w-5" />
@@ -64,6 +68,7 @@ export function DistributorLayout({ children }: DistributorLayoutProps) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </div>
           </header>
           <div className="flex-1 overflow-auto">
             {children}
