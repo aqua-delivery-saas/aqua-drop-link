@@ -23,6 +23,12 @@ import OrderConfirmation from "./pages/customer/OrderConfirmation";
 import SignupCustomer from "./pages/customer/SignupCustomer";
 import OrderHistory from "./pages/customer/OrderHistory";
 import CityDistributors from "./pages/customer/CityDistributors";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Help from "./pages/Help";
+import Support from "./pages/Support";
+import ServerError from "./pages/ServerError";
+import SessionExpired from "./pages/SessionExpired";
 import { DistributorLayout } from "./layouts/DistributorLayout";
 
 const queryClient = new QueryClient();
@@ -57,6 +63,16 @@ const App = () => (
             <Route path="/order/confirmation" element={<OrderConfirmation />} />
             <Route path="/customer/signup" element={<SignupCustomer />} />
             <Route path="/customer/history" element={<OrderHistory />} />
+            
+            {/* Legal & Support Routes */}
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/support" element={<Support />} />
+            
+            {/* Error Routes */}
+            <Route path="/500" element={<ServerError />} />
+            <Route path="/session-expired" element={<SessionExpired />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
