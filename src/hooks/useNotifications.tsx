@@ -46,6 +46,16 @@ const mockNotifications: Notification[] = [
     message: 'Cliente Carlos deixou uma avaliação 5 estrelas',
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48), // 2 days ago
     read: true,
+    link: '/distributor/dashboard'
+  },
+  {
+    id: '6',
+    type: 'low_stock',
+    title: 'Estoque Baixo',
+    message: 'Galões de água disponíveis abaixo do limite mínimo',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 72), // 3 days ago
+    read: true,
+    link: '/distributor/products'
   }
 ];
 
