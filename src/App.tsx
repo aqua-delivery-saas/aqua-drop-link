@@ -18,6 +18,7 @@ import BusinessHours from "./pages/distributor/BusinessHours";
 import DiscountSettings from "./pages/distributor/DiscountSettings";
 import LoyaltyProgram from "./pages/distributor/LoyaltyProgram";
 import Subscription from "./pages/distributor/Subscription";
+import Onboarding from "./pages/distributor/Onboarding";
 import OrderPage from "./pages/customer/OrderPage";
 import OrderConfirmation from "./pages/customer/OrderConfirmation";
 import SignupCustomer from "./pages/customer/SignupCustomer";
@@ -46,6 +47,7 @@ const App = () => (
             {/* Distributor Routes */}
             <Route path="/distributor/login" element={<LoginDistributor />} />
             <Route path="/distributor/signup" element={<SignupDistributor />} />
+            <Route path="/distributor/onboarding" element={<Onboarding />} />
             <Route path="/distributor/dashboard" element={<DistributorLayout><Dashboard /></DistributorLayout>} />
             <Route path="/distributor/products" element={<DistributorLayout><Products /></DistributorLayout>} />
             <Route path="/distributor/settings" element={<DistributorLayout><Settings /></DistributorLayout>} />
