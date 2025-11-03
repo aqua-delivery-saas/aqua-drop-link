@@ -25,7 +25,7 @@ export const Logo = ({ size = "md", showText = true }: LogoProps) => {
         <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full" />
       </div>
       {showText && (
-        <span className={`${textSizes[size]} font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent`}>
+        <span className={`${textSizes[size]} font-semibold text-gray-900`}>
           Aqua Delivery
         </span>
       )}

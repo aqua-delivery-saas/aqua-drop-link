@@ -4,8 +4,18 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminLayout } from "@/layouts/AdminLayout";
+import { DistributorLayout } from "./layouts/DistributorLayout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Forbidden from "./pages/Forbidden";
+import ServerError from "./pages/ServerError";
+import SessionExpired from "./pages/SessionExpired";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Help from "./pages/Help";
+import Support from "./pages/Support";
 import LoginDistributor from "./pages/distributor/LoginDistributor";
 import SignupDistributor from "./pages/distributor/SignupDistributor";
 import Dashboard from "./pages/distributor/Dashboard";
@@ -24,13 +34,11 @@ import OrderConfirmation from "./pages/customer/OrderConfirmation";
 import SignupCustomer from "./pages/customer/SignupCustomer";
 import OrderHistory from "./pages/customer/OrderHistory";
 import CityDistributors from "./pages/customer/CityDistributors";
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
-import Help from "./pages/Help";
-import Support from "./pages/Support";
-import ServerError from "./pages/ServerError";
-import SessionExpired from "./pages/SessionExpired";
-import { DistributorLayout } from "./layouts/DistributorLayout";
+import LoginAdmin from "./pages/admin/LoginAdmin";
+import AdminDashboard from "./pages/admin/Dashboard";
+import UserList from "./pages/admin/UserList";
+import DistributorList from "./pages/admin/DistributorList";
+import UserDetails from "./pages/admin/UserDetails";
 
 const queryClient = new QueryClient();
 
@@ -72,7 +80,43 @@ const App = () => (
             <Route path="/help" element={<Help />} />
             <Route path="/support" element={<Support />} />
             
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<LoginAdmin />} />
+            <Route 
+              path="/admin/dashboard" 
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminLayout><AdminDashboard /></AdminLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/users" 
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminLayout><UserList /></AdminLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/distributors" 
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminLayout><DistributorList /></AdminLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/users/:id" 
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminLayout><UserDetails /></AdminLayout>
+                </ProtectedRoute>
+              } 
+            />
+            
             {/* Error Routes */}
+            <Route path="/403" element={<Forbidden />} />
             <Route path="/500" element={<ServerError />} />
             <Route path="/session-expired" element={<SessionExpired />} />
             
