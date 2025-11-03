@@ -4,23 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Logo } from "@/components/Logo";
 import { Package, Settings, ShoppingBag, Link2, Copy } from "lucide-react";
 import { toast } from "sonner";
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const distributorLink = `${window.location.origin}/order/distribuidora-agua-pura`;
-
   const handleCopyLink = () => {
     navigator.clipboard.writeText(distributorLink);
     toast.success("Link copiado para a área de transferência!");
   };
-
   const stats = {
     todayOrders: 8,
-    weekOrders: 42,
+    weekOrders: 42
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Painel da Distribuidora</h1>
@@ -68,17 +63,13 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Link2 className="h-6 w-6 text-primary" />
-              <CardTitle>Link Público do seu Pedido</CardTitle>
+              <CardTitle>Link público do seu pedido</CardTitle>
             </div>
             <CardDescription>Compartilhe este link com seus clientes para que eles façam pedidos</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex gap-2">
-              <Input 
-                value={distributorLink} 
-                readOnly 
-                className="flex-1 bg-card"
-              />
+              <Input value={distributorLink} readOnly className="flex-1 bg-card" />
               <Button onClick={handleCopyLink} size="lg">
                 <Copy className="mr-2 h-4 w-4" />
                 Copiar link
@@ -123,11 +114,9 @@ const Dashboard = () => {
           </Card>
         </div>
       </main>
-    </div>
-  );
+    </div>;
 };
 
 // Missing Input import
 import { Input } from "@/components/ui/input";
-
 export default Dashboard;
