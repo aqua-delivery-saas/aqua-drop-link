@@ -13,6 +13,19 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Poppins', 'sans-serif'],
+      },
+      fontSize: {
+        'heading-1': ['32px', { lineHeight: '120%', fontWeight: '600' }],
+        'heading-2': ['24px', { lineHeight: '130%', fontWeight: '600' }],
+        'heading-3': ['18px', { lineHeight: '140%', fontWeight: '500' }],
+        'body-lg': ['16px', { lineHeight: '150%', fontWeight: '400' }],
+        'body-md': ['14px', { lineHeight: '150%', fontWeight: '400' }],
+        'body-sm': ['12px', { lineHeight: '140%', fontWeight: '400' }],
+        'button': ['16px', { lineHeight: '100%', fontWeight: '600' }],
+        'link': ['14px', { lineHeight: '140%', fontWeight: '500' }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -22,6 +35,8 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          hover: "hsl(var(--primary-hover))",
+          light: "hsl(var(--primary-light))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
