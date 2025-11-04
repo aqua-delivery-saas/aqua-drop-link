@@ -39,6 +39,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import UserList from "./pages/admin/UserList";
 import DistributorList from "./pages/admin/DistributorList";
 import UserDetails from "./pages/admin/UserDetails";
+import FinancialReports from "./pages/admin/FinancialReports";
 
 const queryClient = new QueryClient();
 
@@ -106,14 +107,22 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
-            <Route 
-              path="/admin/users/:id" 
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminLayout><UserDetails /></AdminLayout>
-                </ProtectedRoute>
-              } 
-            />
+          <Route 
+            path="/admin/users/:id" 
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout><UserDetails /></AdminLayout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/financial-reports" 
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout><FinancialReports /></AdminLayout>
+              </ProtectedRoute>
+            } 
+          />
             
             {/* Error Routes */}
             <Route path="/403" element={<Forbidden />} />

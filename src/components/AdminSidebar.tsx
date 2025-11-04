@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Building2, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, DollarSign, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Logo } from '@/components/Logo';
 
@@ -10,6 +10,7 @@ export function AdminSidebar() {
     { title: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { title: 'Usuários', path: '/admin/users', icon: Users },
     { title: 'Distribuidoras', path: '/admin/distributors', icon: Building2 },
+    { title: 'Relatórios Financeiros', path: '/admin/financial-reports', icon: DollarSign },
   ];
 
   return (

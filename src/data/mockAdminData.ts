@@ -161,3 +161,47 @@ export const mockDailyOrders = [
   { day: 'Sáb', orders: 15 },
   { day: 'Dom', orders: 10 },
 ];
+
+// Financial Reports Data
+export const mockFinancialMetrics = {
+  totalDistributors: 47,
+  activeSubscriptions: 42,
+  inactiveSubscriptions: 5,
+  totalRevenue: 18750.00,
+  monthlyGrowth: 12,
+};
+
+export const mockSubscriptionGrowth = [
+  { mes: 'Jan', Mensal: 8, Anual: 2 },
+  { mes: 'Fev', Mensal: 12, Anual: 3 },
+  { mes: 'Mar', Mensal: 15, Anual: 4 },
+  { mes: 'Abr', Mensal: 10, Anual: 2 },
+  { mes: 'Mai', Mensal: 18, Anual: 5 },
+  { mes: 'Jun', Mensal: 14, Anual: 3 },
+  { mes: 'Jul', Mensal: 16, Anual: 4 },
+  { mes: 'Ago', Mensal: 20, Anual: 6 },
+  { mes: 'Set', Mensal: 22, Anual: 5 },
+  { mes: 'Out', Mensal: 19, Anual: 7 },
+  { mes: 'Nov', Mensal: 25, Anual: 8 },
+  { mes: 'Dez', Mensal: 23, Anual: 6 },
+];
+
+export const mockPlanDistribution = [
+  { name: 'Mensal', value: 30, color: '#007BFF' },
+  { name: 'Anual', value: 12, color: '#00C48C' },
+];
+
+export const mockMonthlyRevenue = [
+  { month: 'Janeiro', monthly: 20, annual: 3, total: 690.00 },
+  { month: 'Fevereiro', monthly: 15, annual: 1, total: 480.00 },
+  { month: 'Março', monthly: 18, annual: 2, total: 690.00 },
+  { month: 'Abril', monthly: 12, annual: 1, total: 450.00 },
+  { month: 'Maio', monthly: 22, annual: 4, total: 990.00 },
+  { month: 'Junho', monthly: 16, annual: 2, total: 630.00 },
+  { month: 'Julho', monthly: 19, annual: 3, total: 780.00 },
+  { month: 'Agosto', monthly: 25, annual: 5, total: 1230.00 },
+  { month: 'Setembro', monthly: 21, annual: 4, total: 930.00 },
+  { month: 'Outubro', monthly: 23, annual: 6, total: 1140.00 },
+  { month: 'Novembro', monthly: 28, annual: 7, total: 1470.00 },
+  { month: 'Dezembro', monthly: 20, annual: 5, total: 960.00 },
+];
