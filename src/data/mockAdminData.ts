@@ -143,6 +143,8 @@ export const mockMetrics = {
   expiredSubscriptions: 1,
   newUsersThisMonth: 2,
   totalOrders: 145,
+  monthlyRevenue: 15680.00,
+  monthlyGrowth: 12.5,
 };
 
 export const mockMonthlyUsers = [

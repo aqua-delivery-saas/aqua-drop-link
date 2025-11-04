@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Building2, AlertCircle, ShoppingCart } from 'lucide-react';
+import { Users, Building2, DollarSign, TrendingUp } from 'lucide-react';
 import { mockMetrics, mockMonthlyUsers, mockDailyOrders } from '@/data/mockAdminData';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -14,22 +14,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Métricas principais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-gray-300">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-body-md text-gray-600 font-normal flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Total de Usuários
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-heading-1 text-gray-900">{mockMetrics.totalUsers}</p>
-            <p className="text-body-sm text-accent-green mt-1">
-              +{mockMetrics.newUsersThisMonth} este mês
-            </p>
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="border-gray-300">
           <CardHeader className="pb-2">
             <CardTitle className="text-body-md text-gray-600 font-normal flex items-center gap-2">
@@ -48,14 +33,17 @@ export default function AdminDashboard() {
         <Card className="border-gray-300">
           <CardHeader className="pb-2">
             <CardTitle className="text-body-md text-gray-600 font-normal flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" />
-              Assinaturas Vencidas
+              <DollarSign className="w-4 h-4" />
+              Ganhos Mensais
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-heading-1 text-accent-red">{mockMetrics.expiredSubscriptions}</p>
-            <p className="text-body-sm text-gray-600 mt-1">
-              Requer atenção
+            <p className="text-heading-1 text-gray-900">
+              R$ {mockMetrics.monthlyRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-body-sm text-accent-green mt-1 flex items-center gap-1">
+              <TrendingUp className="w-3 h-3" />
+              +{mockMetrics.monthlyGrowth}% vs mês anterior
             </p>
           </CardContent>
         </Card>
@@ -63,14 +51,14 @@ export default function AdminDashboard() {
         <Card className="border-gray-300">
           <CardHeader className="pb-2">
             <CardTitle className="text-body-md text-gray-600 font-normal flex items-center gap-2">
-              <ShoppingCart className="w-4 h-4" />
-              Total de Pedidos
+              <Users className="w-4 h-4" />
+              Novos Usuários
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-heading-1 text-gray-900">{mockMetrics.totalOrders}</p>
+            <p className="text-heading-1 text-gray-900">{mockMetrics.newUsersThisMonth}</p>
             <p className="text-body-sm text-gray-600 mt-1">
-              Desde o início
+              neste mês
             </p>
           </CardContent>
         </Card>
