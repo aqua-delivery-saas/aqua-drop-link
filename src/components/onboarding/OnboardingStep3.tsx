@@ -6,14 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 
 const productSchema = z.object({
   name: z.string().min(2, "Nome muito curto").max(100, "Nome muito longo"),
   price: z.coerce.number().min(0.01, "Preço deve ser maior que zero"),
-  stock: z.coerce.number().int().min(0, "Estoque não pode ser negativo"),
-  description: z.string().max(500, "Descrição muito longa").optional(),
 });
 
 interface OnboardingStep3Props {
@@ -24,7 +21,7 @@ interface OnboardingStep3Props {
 
 export const OnboardingStep3 = ({ onNext, onBack, initialData }: OnboardingStep3Props) => {
   const [products, setProducts] = useState<z.infer<typeof productSchema>[]>(
-    initialData || [{ name: "Galão 20L", price: 15.0, stock: 100, description: "" }]
+    initialData || [{ name: "Galão 20L", price: 15.0 }]
   );
 
   const form = useForm<z.infer<typeof productSchema>>({
@@ -32,8 +29,6 @@ export const OnboardingStep3 = ({ onNext, onBack, initialData }: OnboardingStep3
     defaultValues: {
       name: "",
       price: 0,
-      stock: 0,
-      description: "",
     },
   });
 
@@ -70,7 +65,7 @@ export const OnboardingStep3 = ({ onNext, onBack, initialData }: OnboardingStep3
                 <div>
                   <p className="font-medium">{product.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    R$ {product.price.toFixed(2)} • Estoque: {product.stock} unidades
+                    R$ {product.price.toFixed(2)}
                   </p>
                 </div>
                 <Button
@@ -104,44 +99,14 @@ export const OnboardingStep3 = ({ onNext, onBack, initialData }: OnboardingStep3
             )}
           />
 
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Preço (R$)</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" placeholder="15.00" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="stock"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Estoque Inicial</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="100" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
           <FormField
             control={form.control}
-            name="description"
+            name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Descrição (Opcional)</FormLabel>
+                <FormLabel>Preço (R$)</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Descreva o produto..." rows={2} {...field} />
+                  <Input type="number" step="0.01" placeholder="15.00" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

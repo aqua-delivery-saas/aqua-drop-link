@@ -59,11 +59,11 @@ export const OnboardingStep2 = ({ onNext, onBack, initialData }: OnboardingStep2
         <p className="text-muted-foreground">Defina quando sua distribuidora estará disponível</p>
       </div>
 
-      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+      <div className="space-y-3">
         {daysOfWeek.map((day) => (
           <Card key={day.key} className="p-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex items-center justify-between sm:justify-start sm:w-40">
+              <div className="flex items-center justify-between sm:justify-start sm:min-w-[180px] gap-4">
                 <Label className="font-medium">{day.label}</Label>
                 <Switch
                   checked={hours[day.key]?.active}
