@@ -34,6 +34,7 @@ import OrderConfirmation from "./pages/customer/OrderConfirmation";
 import SignupCustomer from "./pages/customer/SignupCustomer";
 import OrderHistory from "./pages/customer/OrderHistory";
 import CityDistributors from "./pages/customer/CityDistributors";
+// Admin Pages
 import LoginAdmin from "./pages/admin/LoginAdmin";
 import AdminDashboard from "./pages/admin/Dashboard";
 import UserList from "./pages/admin/UserList";
