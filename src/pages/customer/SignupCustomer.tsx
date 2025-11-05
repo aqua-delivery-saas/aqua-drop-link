@@ -1,44 +1,45 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
+import { nameSchema, phoneSchema, simplePasswordSchema, formatPhone } from "@/lib/validators";
+
+const formSchema = z.object({
+  name: nameSchema,
+  phone: phoneSchema,
+  address: z.string().min(5, "Endereço deve ter ao menos 5 caracteres").max(200, "Endereço muito longo"),
+  password: simplePasswordSchema,
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 const SignupCustomer = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    password: "",
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      phone: "",
+      address: "",
+      password: "",
+    },
   });
-  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.id]: e.target.value,
-    });
-  };
-
-  const handleSignup = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.name || !formData.phone || !formData.address || !formData.password) {
-      toast.error("Preencha todos os campos obrigatórios");
-      return;
-    }
-
-    setLoading(true);
-
-    setTimeout(() => {
+  const onSubmit = async (data: FormData) => {
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
       toast.success("Conta criada com sucesso!");
       navigate("/customer/history");
-      setLoading(false);
-    }, 1000);
+    } catch (error) {
+      toast.error("Erro ao criar conta. Tente novamente.");
+    }
   };
 
   return (
@@ -52,53 +53,82 @@ const SignupCustomer = () => {
           <CardDescription>Salve seus endereços e acompanhe seus pedidos</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSignup} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome Completo</Label>
-              <Input
-                id="name"
-                placeholder="João Silva"
-                value={formData.name}
-                onChange={handleChange}
-                required
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome Completo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="João Silva" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Telefone</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="(11) 99999-9999"
-                value={formData.phone}
-                onChange={handleChange}
-                required
+
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Telefone</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="tel" 
+                        placeholder="(11) 99999-9999" 
+                        {...field}
+                        onChange={(e) => {
+                          const formatted = formatPhone(e.target.value);
+                          field.onChange(formatted);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Endereço Padrão</Label>
-              <Input
-                id="address"
-                placeholder="Rua, número, complemento"
-                value={formData.address}
-                onChange={handleChange}
-                required
+
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Endereço Padrão</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Rua, número, complemento" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Mínimo 6 caracteres"
-                value={formData.password}
-                onChange={handleChange}
-                required
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Senha</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Mínimo 6 caracteres" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <Button type="submit" size="lg" className="w-full" disabled={loading}>
-              {loading ? "Criando conta..." : "Cadastrar"}
-            </Button>
-          </form>
+
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="w-full" 
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? "Criando conta..." : "Cadastrar"}
+              </Button>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>

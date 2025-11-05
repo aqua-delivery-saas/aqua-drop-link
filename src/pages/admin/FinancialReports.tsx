@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Building2, CreditCard, AlertCircle, DollarSign, TrendingUp } from 'lucide-react';
+import { Building2, CreditCard, AlertCircle, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import {
   mockSubscriptionGrowth,
   mockPlanDistribution,
   mockMonthlyRevenue,
+  mockMetrics,
 } from '@/data/mockAdminData';
 
 export default function FinancialReports() {
@@ -79,6 +80,66 @@ export default function FinancialReports() {
           </Select>
           <Button>Atualizar</Button>
         </div>
+      </div>
+
+      {/* Comparativo Mês a Mês */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Receita Mensal */}
+        <Card className="border-gray-300">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-body-sm text-gray-600 mb-2">Receita Mensal</p>
+                <p className="text-heading-1 text-gray-900 mb-1">
+                  R$ {mockFinancialMetrics.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+                <div className="flex items-center gap-1 text-accent-green text-body-sm">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>+{mockMetrics.monthlyGrowth}% vs mês anterior</span>
+                </div>
+              </div>
+              <div className="bg-accent-green/10 p-3 rounded-lg">
+                <DollarSign className="w-6 h-6 text-accent-green" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Novos Usuários */}
+        <Card className="border-gray-300">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-body-sm text-gray-600 mb-2">Novos Usuários</p>
+                <p className="text-heading-1 text-gray-900 mb-1">{mockMetrics.newUsersThisMonth}</p>
+                <div className="flex items-center gap-1 text-muted-foreground text-body-sm">
+                  <span>{mockMetrics.previousMonthUsers} no mês anterior</span>
+                </div>
+              </div>
+              <div className="bg-primary/10 p-3 rounded-lg">
+                <Building2 className="w-6 h-6 text-primary" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Novas Distribuidoras */}
+        <Card className="border-gray-300">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-body-sm text-gray-600 mb-2">Novas Distribuidoras</p>
+                <p className="text-heading-1 text-gray-900 mb-1">{mockMetrics.activeDistributors}</p>
+                <div className="flex items-center gap-1 text-muted-foreground text-body-sm">
+                  <span>{mockMetrics.previousMonthDistributors} no mês anterior</span>
+                </div>
+              </div>
+              <div className="bg-primary/10 p-3 rounded-lg">
+                <Building2 className="w-6 h-6 text-primary" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Metrics Cards */}

@@ -1,15 +1,19 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Building2, DollarSign, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, DollarSign, LogOut, Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Logo } from '@/components/Logo';
+import { Badge } from '@/components/ui/badge';
+import { useAdminNotifications } from '@/hooks/useAdminNotifications';
 
 export function AdminSidebar() {
   const { logout } = useAuth();
+  const { getCriticalAlerts } = useAdminNotifications();
+  const criticalAlerts = getCriticalAlerts();
 
   const navItems = [
     { title: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { title: 'Usuários', path: '/admin/users', icon: Users },
-    { title: 'Distribuidoras', path: '/admin/distributors', icon: Building2 },
+    { title: 'Distribuidoras', path: '/admin/distributors', icon: Building2, badge: criticalAlerts.length },
     { title: 'Relatórios Financeiros', path: '/admin/financial-reports', icon: DollarSign },
   ];
 
@@ -33,7 +37,12 @@ export function AdminSidebar() {
             }
           >
             <item.icon className="w-5 h-5" />
-            <span>{item.title}</span>
+            <span className="flex-1">{item.title}</span>
+            {item.badge && item.badge > 0 && (
+              <Badge variant="destructive" className="h-5 min-w-5 px-1.5 text-xs animate-pulse">
+                {item.badge}
+              </Badge>
+            )}
           </NavLink>
         ))}
       </nav>

@@ -2,17 +2,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Upload } from "lucide-react";
+import { cnpjSchema, phoneSchema, nameSchema, formatCNPJ, formatPhone } from "@/lib/validators";
 
 const formSchema = z.object({
-  name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres").max(100, "Nome muito longo"),
-  cnpj: z.string().regex(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, "CNPJ inválido (formato: 00.000.000/0000-00)"),
-  phone: z.string().regex(/^\(\d{2}\) \d{4,5}-\d{4}$/, "Telefone inválido (formato: (00) 00000-0000)"),
+  name: nameSchema,
+  cnpj: cnpjSchema,
+  phone: phoneSchema,
   address: z.string().min(5, "Endereço deve ter pelo menos 5 caracteres").max(200, "Endereço muito longo"),
   city: z.string().min(2, "Cidade deve ter pelo menos 2 caracteres").max(100, "Cidade muito longa"),
-  state: z.string().length(2, "Estado deve ter 2 caracteres (sigla)"),
+  state: z.string().length(2, "Estado deve ter 2 caracteres (sigla)").toUpperCase(),
 });
 
 interface OnboardingStep1Props {
@@ -67,8 +68,16 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
               <FormItem>
                 <FormLabel>CNPJ *</FormLabel>
                 <FormControl>
-                  <Input placeholder="00.000.000/0000-00" {...field} />
+                  <Input 
+                    placeholder="00.000.000/0000-00" 
+                    {...field}
+                    onChange={(e) => {
+                      const formatted = formatCNPJ(e.target.value);
+                      field.onChange(formatted);
+                    }}
+                  />
                 </FormControl>
+                <FormDescription>Formato: XX.XXX.XXX/XXXX-XX</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -81,8 +90,17 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
               <FormItem>
                 <FormLabel>Telefone *</FormLabel>
                 <FormControl>
-                  <Input placeholder="(00) 00000-0000" {...field} />
+                  <Input 
+                    type="tel"
+                    placeholder="(00) 00000-0000" 
+                    {...field}
+                    onChange={(e) => {
+                      const formatted = formatPhone(e.target.value);
+                      field.onChange(formatted);
+                    }}
+                  />
                 </FormControl>
+                <FormDescription>Formato: (XX) XXXXX-XXXX</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

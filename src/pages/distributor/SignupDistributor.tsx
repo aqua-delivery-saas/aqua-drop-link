@@ -1,44 +1,45 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
+import { emailSchema, simplePasswordSchema, nameSchema, whatsappSchema, formatPhone } from "@/lib/validators";
+
+const formSchema = z.object({
+  name: nameSchema,
+  email: emailSchema,
+  password: simplePasswordSchema,
+  whatsapp: whatsappSchema,
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 const SignupDistributor = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    whatsapp: "",
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      whatsapp: "",
+    },
   });
-  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.id]: e.target.value,
-    });
-  };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.name || !formData.email || !formData.password || !formData.whatsapp) {
-      toast.error("Preencha todos os campos obrigatórios");
-      return;
-    }
-
-    setLoading(true);
-    
-    setTimeout(() => {
+  const onSubmit = async (data: FormData) => {
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
       toast.success("Conta criada com sucesso!");
-      navigate("/distributor/dashboard");
-      setLoading(false);
-    }, 1000);
+      navigate("/distributor/onboarding");
+    } catch (error) {
+      toast.error("Erro ao criar conta. Tente novamente.");
+    }
   };
 
   return (
@@ -52,70 +53,100 @@ const SignupDistributor = () => {
           <CardDescription>Comece a gerenciar seus pedidos hoje</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSignup} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome da Distribuidora</Label>
-              <Input
-                id="name"
-                placeholder="Distribuidora Água Pura"
-                value={formData.name}
-                onChange={handleChange}
-                required
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome da Distribuidora</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Água Cristalina Ltda" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="contato@distribuidora.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="contato@distribuidora.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Mínimo 6 caracteres"
-                value={formData.password}
-                onChange={handleChange}
-                required
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Senha</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Mínimo 6 caracteres" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Deve conter ao menos uma letra maiúscula e um número
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="whatsapp">Número de WhatsApp</Label>
-              <Input
-                id="whatsapp"
-                type="tel"
-                placeholder="(11) 99999-9999"
-                value={formData.whatsapp}
-                onChange={handleChange}
-                required
+
+              <FormField
+                control={form.control}
+                name="whatsapp"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>WhatsApp</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="tel" 
+                        placeholder="(11) 99999-9999" 
+                        {...field}
+                        onChange={(e) => {
+                          const formatted = formatPhone(e.target.value);
+                          field.onChange(formatted);
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Formato: (DDD) 9XXXX-XXXX
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full" 
-              size="lg"
-              disabled={loading}
-            >
-              {loading ? "Criando conta..." : "Cadastrar"}
-            </Button>
-            <div className="text-center text-sm">
-              <span className="text-muted-foreground">Já tem conta? </span>
-              <Button
-                type="button"
-                variant="link"
-                className="p-0 h-auto"
-                onClick={() => navigate("/distributor/login")}
+
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="w-full" 
+                disabled={form.formState.isSubmitting}
               >
-                Entrar
+                {form.formState.isSubmitting ? "Criando conta..." : "Cadastrar"}
               </Button>
-            </div>
-          </form>
+
+              <div className="text-center text-sm">
+                <span className="text-muted-foreground">Já tem conta? </span>
+                <Button
+                  type="button"
+                  variant="link"
+                  className="p-0 h-auto"
+                  onClick={() => navigate("/distributor/login")}
+                >
+                  Entrar
+                </Button>
+              </div>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
