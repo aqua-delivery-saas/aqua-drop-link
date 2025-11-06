@@ -4,20 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ResponsiveTable } from '@/components/ui/ResponsiveTable';
 import { mockUsers } from '@/data/mockAdminData';
 import { Search, Eye } from 'lucide-react';
 
@@ -36,12 +29,63 @@ export default function UserList() {
   const getRoleBadge = (role: string) => {
     const variants: Record<string, { label: string; className: string }> = {
       admin: { label: 'Admin', className: 'bg-primary-light text-primary' },
-      distributor: { label: 'Distribuidora', className: 'bg-accent-green/10 text-accent-green' },
-      customer: { label: 'Cliente', className: 'bg-gray-100 text-gray-600' },
+      distributor: { label: 'Distribuidora', className: 'bg-secondary/10 text-secondary' },
+      customer: { label: 'Cliente', className: 'bg-muted text-muted-foreground' },
     };
     const config = variants[role] || variants.customer;
     return <Badge className={config.className}>{config.label}</Badge>;
   };
+
+  const getStatusBadge = (isActive: boolean) => (
+    <Badge className={isActive ? 'bg-secondary/10 text-secondary' : 'bg-destructive/10 text-destructive'}>
+      {isActive ? 'Ativo' : 'Inativo'}
+    </Badge>
+  );
+
+  const columns = [
+    {
+      header: 'Nome',
+      accessor: (user: typeof mockUsers[0]) => user.full_name,
+      mobileLabel: 'Nome',
+    },
+    {
+      header: 'Email',
+      accessor: (user: typeof mockUsers[0]) => user.email,
+      mobileLabel: 'Email',
+    },
+    {
+      header: 'Tipo',
+      accessor: (user: typeof mockUsers[0]) => getRoleBadge(user.role),
+      mobileLabel: 'Tipo',
+    },
+    {
+      header: 'Status',
+      accessor: (user: typeof mockUsers[0]) => getStatusBadge(user.is_active),
+      mobileLabel: 'Status',
+    },
+    {
+      header: 'Data de Cadastro',
+      accessor: (user: typeof mockUsers[0]) => new Date(user.created_at).toLocaleDateString('pt-BR'),
+      mobileLabel: 'Cadastro',
+      hiddenOnMobile: true,
+    },
+    {
+      header: 'Ações',
+      accessor: (user: typeof mockUsers[0]) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/admin/users/${user.id}`);
+          }}
+        >
+          <Eye className="w-4 h-4" />
+        </Button>
+      ),
+      mobileLabel: 'Ver',
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -57,16 +101,16 @@ export default function UserList() {
       {/* Filtros */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por nome ou email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 touch-input"
           />
         </div>
         <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-full sm:w-48">
+          <SelectTrigger className="w-full sm:w-48 touch-input">
             <SelectValue placeholder="Filtrar por tipo" />
           </SelectTrigger>
           <SelectContent>
@@ -78,53 +122,14 @@ export default function UserList() {
         </Select>
       </div>
 
-      {/* Tabela */}
-      <div className="bg-white rounded-2xl border border-gray-300 shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Data de Cadastro</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.full_name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{getRoleBadge(user.role)}</TableCell>
-                <TableCell>
-                  <Badge className={user.is_active ? 'bg-accent-green/10 text-accent-green' : 'bg-accent-red/10 text-accent-red'}>
-                    {user.is_active ? 'Ativo' : 'Inativo'}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {new Date(user.created_at).toLocaleDateString('pt-BR')}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate(`/admin/users/${user.id}`)}
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {filteredUsers.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-body-lg text-gray-600">Nenhum usuário encontrado</p>
-        </div>
-      )}
+      {/* Tabela Responsiva */}
+      <ResponsiveTable
+        data={filteredUsers}
+        columns={columns}
+        getRowKey={(user) => user.id}
+        onRowClick={(user) => navigate(`/admin/users/${user.id}`)}
+        emptyMessage="Nenhum usuário encontrado"
+      />
     </div>
   );
 }

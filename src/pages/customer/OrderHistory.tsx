@@ -46,7 +46,14 @@ const OrderHistory = () => {
   ];
 
   const handleRepeatOrder = (order: HistoryOrder) => {
-    toast.success("Redirecionando para novo pedido...");
+    toast.success("Pedido copiado!", {
+      description: "Revise os dados e confirme seu pedido.",
+      action: {
+        label: "Ver Pedido",
+        onClick: () => navigate("/order/distribuidora-agua-pura"),
+      },
+      duration: 4000,
+    });
     navigate("/order/distribuidora-agua-pura");
   };
 
@@ -68,9 +75,9 @@ const OrderHistory = () => {
           <p className="text-muted-foreground">Histórico completo de seus pedidos</p>
         </div>
 
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <Card key={order.id}>
+        <div className="space-y-4 pb-mobile-nav">
+          {orders.map((order, index) => (
+            <Card key={order.id} className="hover-lift animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
@@ -83,14 +90,14 @@ const OrderHistory = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
                     <span className="text-muted-foreground">Total: </span>
                     <span className="text-xl font-bold text-primary">
                       R$ {order.total.toFixed(2)}
                     </span>
                   </div>
-                  <Button onClick={() => handleRepeatOrder(order)}>
+                  <Button onClick={() => handleRepeatOrder(order)} className="w-full sm:w-auto touch-input">
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Repetir Pedido
                   </Button>

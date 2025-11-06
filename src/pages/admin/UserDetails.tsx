@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { mockUsers } from '@/data/mockAdminData';
 import { ArrowLeft, Mail, Phone, MapPin, Shield } from 'lucide-react';
 import { toast } from 'sonner';
@@ -32,15 +33,34 @@ export default function UserDetails() {
   }
 
   const handleSave = () => {
-    toast.success('Alterações salvas com sucesso!');
+    toast.success('Alterações salvas com sucesso!', {
+      description: 'Os dados do usuário foram atualizados.',
+      duration: 3000,
+    });
   };
 
   const handleResetPassword = () => {
-    toast.success('Email de recuperação de senha enviado!');
+    toast.success('Email enviado!', {
+      description: `Um link de recuperação foi enviado para ${user.email}`,
+      duration: 4000,
+    });
   };
 
   const handleToggleStatus = () => {
-    toast.success(`Usuário ${user.is_active ? 'desativado' : 'ativado'} com sucesso!`);
+    const newStatus = !user.is_active;
+    toast.success(
+      `Usuário ${newStatus ? 'ativado' : 'desativado'}!`,
+      {
+        description: newStatus 
+          ? 'O usuário agora pode acessar o sistema.' 
+          : 'O usuário não poderá mais acessar o sistema.',
+        duration: 3000,
+        action: {
+          label: 'Desfazer',
+          onClick: () => toast.info('Ação desfeita'),
+        },
+      }
+    );
   };
 
   return (
@@ -139,24 +159,36 @@ export default function UserDetails() {
             </div>
 
             <div className="space-y-2 pt-4">
-              <Button variant="outline" className="w-full" onClick={handleResetPassword}>
+              <Button variant="outline" className="w-full touch-input" onClick={handleResetPassword}>
                 Enviar Email de Recuperação
               </Button>
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={handleToggleStatus}
-              >
-                {user.is_active ? 'Desativar Conta' : 'Reativar Conta'}
-              </Button>
+              <ConfirmDialog
+                trigger={
+                  <Button 
+                    variant="outline" 
+                    className="w-full touch-input"
+                  >
+                    {user.is_active ? 'Desativar Conta' : 'Reativar Conta'}
+                  </Button>
+                }
+                title={user.is_active ? 'Desativar conta?' : 'Reativar conta?'}
+                description={
+                  user.is_active 
+                    ? 'O usuário não poderá mais acessar o sistema até que a conta seja reativada.' 
+                    : 'O usuário voltará a ter acesso ao sistema.'
+                }
+                confirmLabel={user.is_active ? 'Desativar' : 'Reativar'}
+                variant={user.is_active ? 'destructive' : 'default'}
+                onConfirm={handleToggleStatus}
+              />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="flex gap-4">
-        <Button onClick={handleSave}>Salvar Alterações</Button>
-        <Button variant="outline" onClick={() => navigate('/admin/users')}>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <Button onClick={handleSave} className="touch-input">Salvar Alterações</Button>
+        <Button variant="outline" onClick={() => navigate('/admin/users')} className="touch-input">
           Cancelar
         </Button>
       </div>

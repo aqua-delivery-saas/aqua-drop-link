@@ -1,8 +1,9 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { DistributorSidebar } from "@/components/DistributorSidebar";
 import { NotificationBell } from "@/components/NotificationBell";
+import { BottomNav } from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
-import { UserCircle, User, LogOut } from "lucide-react";
+import { UserCircle, User, LogOut, LayoutDashboard, ShoppingCart, Package, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,13 @@ const mockUser = {
   email: "joao@aguapura.com.br",
 };
 
+const bottomNavItems = [
+  { title: "Dashboard", path: "/distributor/dashboard", icon: LayoutDashboard },
+  { title: "Pedidos", path: "/distributor/orders", icon: ShoppingCart },
+  { title: "Produtos", path: "/distributor/products", icon: Package },
+  { title: "Config", path: "/distributor/settings", icon: Settings },
+];
+
 interface DistributorLayoutProps {
   children: React.ReactNode;
 }
@@ -27,7 +35,9 @@ export function DistributorLayout({ children }: DistributorLayoutProps) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    toast.success("Logout realizado com sucesso!");
+    toast.success("Logout realizado com sucesso!", {
+      description: "Até logo!",
+    });
     navigate("/distributor/login");
   };
 
@@ -36,7 +46,7 @@ export function DistributorLayout({ children }: DistributorLayoutProps) {
       <div className="min-h-screen flex w-full">
         <DistributorSidebar />
         <main className="flex-1 flex flex-col">
-          <header className="h-14 border-b flex items-center justify-between px-4 bg-background relative z-10">
+          <header className="h-14 border-b flex items-center justify-between px-4 bg-background sticky top-0 z-10">
             <SidebarTrigger />
             
             <div className="flex items-center gap-2">
@@ -49,7 +59,7 @@ export function DistributorLayout({ children }: DistributorLayoutProps) {
                   <span className="hidden md:inline-block">{mockUser.name}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 animate-fade-in">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium">{mockUser.name}</p>
@@ -70,10 +80,11 @@ export function DistributorLayout({ children }: DistributorLayoutProps) {
             </DropdownMenu>
             </div>
           </header>
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto pb-mobile-nav">
             {children}
           </div>
         </main>
+        <BottomNav items={bottomNavItems} />
       </div>
     </SidebarProvider>
   );

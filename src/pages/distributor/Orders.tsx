@@ -84,7 +84,10 @@ const Orders = () => {
     setOrders(orders.map(order => 
       order.id === id ? { ...order, status: "concluido" as const } : order
     ));
-    toast.success("Pedido marcado como entregue!");
+    toast.success("Pedido marcado como entregue!", {
+      description: "O cliente foi notificado sobre a entrega.",
+      duration: 3000,
+    });
   };
 
   const sortedOrders = useMemo(() => {
@@ -140,9 +143,9 @@ const Orders = () => {
           </div>
         </div>
 
-        <div className="space-y-4">
-          {sortedOrders.map((order) => (
-            <Card key={order.id}>
+        <div className="space-y-4 pb-mobile-nav">
+          {sortedOrders.map((order, index) => (
+            <Card key={order.id} className="hover-lift animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
@@ -167,18 +170,19 @@ const Orders = () => {
                     <p className="font-semibold">{order.address}</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     variant="secondary"
                     onClick={() => handleWhatsApp(order.phone, order.customerName)}
+                    className="w-full sm:w-auto touch-input"
                   >
                     <MessageCircle className="mr-2 h-4 w-4" />
                     Abrir no WhatsApp
                   </Button>
                   {order.status !== "concluido" && (
                     <Button
-                      variant="accent"
                       onClick={() => markAsDelivered(order.id)}
+                      className="w-full sm:w-auto touch-input bg-secondary hover:bg-secondary/90"
                     >
                       <Check className="mr-2 h-4 w-4" />
                       Marcar como Entregue

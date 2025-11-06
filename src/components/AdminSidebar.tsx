@@ -18,8 +18,8 @@ export function AdminSidebar() {
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-300 min-h-screen flex flex-col">
-      <div className="p-6 border-b border-gray-300">
+    <aside className="hidden md:flex w-64 bg-card border-r min-h-screen flex-col">
+      <div className="p-6 border-b">
         <Logo />
       </div>
 
@@ -29,10 +29,10 @@ export function AdminSidebar() {
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-lg text-body-md transition-colors ${
+              `flex items-center gap-3 px-4 py-3 rounded-lg text-body-md transition-all ${
                 isActive
-                  ? 'bg-primary-light text-primary font-medium'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`
             }
           >
@@ -47,10 +47,10 @@ export function AdminSidebar() {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-gray-300">
+      <div className="p-4 border-t">
         <button
           onClick={logout}
-          className="flex items-center gap-3 px-4 py-3 rounded-lg text-body-md text-gray-600 hover:bg-gray-100 w-full transition-colors"
+          className="flex items-center gap-3 px-4 py-3 rounded-lg text-body-md text-muted-foreground hover:bg-muted hover:text-foreground w-full transition-all"
         >
           <LogOut className="w-5 h-5" />
           <span>Sair</span>
