@@ -210,3 +210,50 @@ export const mockMonthlyRevenue = [
   { month: 'Novembro', monthly: 28, annual: 7, total: 1470.00 },
   { month: 'Dezembro', monthly: 20, annual: 5, total: 960.00 },
 ];
+
+// Advanced Metrics
+export const advancedMetrics = {
+  conversion_rate: {
+    visitors: 1500,
+    signups: 45,
+    rate: 3.0,
+    trend: 'up' as const,
+    variation: '+0.5%',
+    previous_rate: 2.5,
+  },
+  average_ticket: {
+    current: 156.80,
+    previous: 142.30,
+    variation: '+10.2%',
+    trend: 'up' as const,
+    per_distributor: [
+      { name: 'Água Cristalina Ltda', ticket: 210.50 },
+      { name: 'Distribuidora Fonte Viva', ticket: 189.20 },
+      { name: 'Águas Puras do Sul', ticket: 165.80 },
+      { name: 'Fonte Natural', ticket: 142.50 },
+    ],
+  },
+  churn_rate: {
+    monthly: 2.5,
+    trend: 'down' as const,
+    cancellations_this_month: 3,
+    cancellations_last_month: 5,
+    variation: '-40%',
+  },
+  lifetime_value: {
+    average_ltv: 1847.50,
+    by_plan: {
+      monthly: 890.00,
+      annual: 2805.00,
+    },
+    trend: 'up' as const,
+    variation: '+12.5%',
+  },
+  renewal_rate: {
+    rate: 87.5,
+    renewed: 35,
+    total_expiring: 40,
+    trend: 'up' as const,
+    variation: '+5.5%',
+  },
+};
