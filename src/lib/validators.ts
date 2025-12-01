@@ -131,3 +131,19 @@ export const formatCEP = (value: string): string => {
   const cep = value.replace(/[^\d]/g, '');
   return cep.replace(/^(\d{5})(\d)/, '$1-$2').slice(0, 9);
 };
+
+// Schema de Agendamento de Entrega
+export const scheduledDeliverySchema = z.object({
+  scheduledDate: z.date({
+    required_error: "Selecione uma data",
+  }).refine((date) => date > new Date(), {
+    message: "A data deve ser no futuro",
+  }),
+  scheduledTime: z.string({
+    required_error: "Selecione um horário",
+  }).regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, "Horário inválido"),
+  productId: z.string().min(1, "Selecione um produto"),
+  quantity: z.number().min(1, "Quantidade mínima é 1"),
+  address: z.string().min(5, "Endereço obrigatório"),
+  paymentMethod: z.string().min(1, "Selecione forma de pagamento"),
+});

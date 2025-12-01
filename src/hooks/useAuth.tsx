@@ -17,6 +17,7 @@ interface AuthState {
   hasRole: (role: AppRole) => boolean;
   isAdmin: () => boolean;
   isDistributor: () => boolean;
+  isCustomer: () => boolean;
 }
 
 // Mock user for development
@@ -32,6 +33,12 @@ const mockUsers: Record<string, User> = {
     email: 'distributor@aquadelivery.com',
     full_name: 'Distribuidora Teste',
     role: 'distributor',
+  },
+  'customer@aquadelivery.com': {
+    id: '3',
+    email: 'customer@aquadelivery.com',
+    full_name: 'João Cliente',
+    role: 'customer',
   },
 };
 
@@ -64,5 +71,9 @@ export const useAuth = create<AuthState>((set, get) => ({
   
   isDistributor: () => {
     return get().hasRole('distributor');
+  },
+  
+  isCustomer: () => {
+    return get().hasRole('customer');
   },
 }));
