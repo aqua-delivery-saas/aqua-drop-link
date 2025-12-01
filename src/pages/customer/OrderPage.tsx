@@ -7,10 +7,11 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/Logo";
-import { Minus, Plus, Clock, Gift } from "lucide-react";
+import { Minus, Plus, Clock, Gift, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { getDistribuidoraBySlug } from "@/data/mockData";
 import { Helmet } from "react-helmet-async";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Product {
   id: string;
@@ -23,6 +24,7 @@ interface Product {
 const OrderPage = () => {
   const navigate = useNavigate();
   const { distributorSlug } = useParams();
+  const { user, isAuthenticated } = useAuth();
   
   const distribuidora = getDistribuidoraBySlug(distributorSlug || "");
   
@@ -376,15 +378,41 @@ const OrderPage = () => {
                 {loading ? "Processando..." : "Fazer Pedido"}
               </Button>
 
-              <div className="text-center">
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={() => navigate("/customer/signup")}
-                >
-                  Criar conta para salvar seus endereços
-                </Button>
-              </div>
+              {isAuthenticated && user?.role === 'customer' && (
+                <>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">ou</span>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    size="lg" 
+                    className="w-full"
+                    onClick={() => navigate(`/schedule/${distributorSlug}`)}
+                  >
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    Agendar Entrega
+                  </Button>
+                </>
+              )}
+
+              {!isAuthenticated && (
+                <div className="text-center">
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={() => navigate("/customer/signup")}
+                  >
+                    Crie uma conta para agendar entregas
+                  </Button>
+                </div>
+              )}
             </form>
           </CardContent>
         </Card>

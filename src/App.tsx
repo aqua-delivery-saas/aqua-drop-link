@@ -34,6 +34,9 @@ import OrderConfirmation from "./pages/customer/OrderConfirmation";
 import SignupCustomer from "./pages/customer/SignupCustomer";
 import OrderHistory from "./pages/customer/OrderHistory";
 import CityDistributors from "./pages/customer/CityDistributors";
+import LoginCustomer from "./pages/customer/LoginCustomer";
+import ScheduleDelivery from "./pages/customer/ScheduleDelivery";
+import ScheduleConfirmation from "./pages/customer/ScheduleConfirmation";
 // Admin Pages
 import LoginAdmin from "./pages/admin/LoginAdmin";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -74,7 +77,17 @@ const App = () => (
             <Route path="/order/:distributorSlug" element={<OrderPage />} />
             <Route path="/order/confirmation" element={<OrderConfirmation />} />
             <Route path="/customer/signup" element={<SignupCustomer />} />
+            <Route path="/customer/login" element={<LoginCustomer />} />
             <Route path="/customer/history" element={<OrderHistory />} />
+            <Route 
+              path="/schedule/:distributorSlug" 
+              element={
+                <ProtectedRoute requiredRole="customer">
+                  <ScheduleDelivery />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/schedule/confirmation" element={<ScheduleConfirmation />} />
             
             {/* Legal & Support Routes */}
             <Route path="/terms" element={<Terms />} />

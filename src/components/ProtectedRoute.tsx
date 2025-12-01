@@ -10,7 +10,10 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
   const { isAuthenticated, hasRole } = useAuth();
 
   if (!isAuthenticated) {
-    return <Navigate to={requiredRole === 'admin' ? '/admin/login' : '/distributor/login'} replace />;
+    if (requiredRole === 'admin') return <Navigate to="/admin/login" replace />;
+    if (requiredRole === 'distributor') return <Navigate to="/distributor/login" replace />;
+    if (requiredRole === 'customer') return <Navigate to="/customer/login" replace />;
+    return <Navigate to="/customer/login" replace />;
   }
 
   if (requiredRole && !hasRole(requiredRole)) {
