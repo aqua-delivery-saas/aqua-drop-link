@@ -29,6 +29,7 @@ import DiscountSettings from "./pages/distributor/DiscountSettings";
 import LoyaltyProgram from "./pages/distributor/LoyaltyProgram";
 import Subscription from "./pages/distributor/Subscription";
 import Onboarding from "./pages/distributor/Onboarding";
+import Reports from "./pages/distributor/Reports";
 import OrderPage from "./pages/customer/OrderPage";
 import OrderConfirmation from "./pages/customer/OrderConfirmation";
 import SignupCustomer from "./pages/customer/SignupCustomer";
@@ -70,6 +71,7 @@ const App = () => (
             <Route path="/distributor/settings/loyalty" element={<DistributorLayout><LoyaltyProgram /></DistributorLayout>} />
             <Route path="/distributor/subscription" element={<DistributorLayout><Subscription /></DistributorLayout>} />
             <Route path="/distributor/orders" element={<DistributorLayout><Orders /></DistributorLayout>} />
+            <Route path="/distributor/reports" element={<DistributorLayout><Reports /></DistributorLayout>} />
             <Route path="/distributor/profile" element={<DistributorLayout><Profile /></DistributorLayout>} />
             
             {/* Customer Routes */}
