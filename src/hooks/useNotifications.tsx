@@ -5,6 +5,15 @@ import { Notification } from '@/types/notification';
 const mockNotifications: Notification[] = [
   {
     id: '1',
+    type: 'new_scheduled_order',
+    title: 'Novo Agendamento',
+    message: 'Ana Beatriz agendou entrega para 20/01 às 10:00',
+    timestamp: new Date(Date.now() - 1000 * 60 * 2), // 2 min ago
+    read: false,
+    link: '/distributor/orders'
+  },
+  {
+    id: '2',
     type: 'new_order',
     title: 'Novo Pedido',
     message: 'Maria Silva fez um pedido de 5 galões',
@@ -13,7 +22,16 @@ const mockNotifications: Notification[] = [
     link: '/distributor/orders'
   },
   {
-    id: '2',
+    id: '3',
+    type: 'scheduled_reminder',
+    title: 'Lembrete de Entrega',
+    message: 'Entrega agendada para Carlos Eduardo em 1 hora',
+    timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 min ago
+    read: false,
+    link: '/distributor/orders'
+  },
+  {
+    id: '4',
     type: 'subscription_expiring',
     title: 'Assinatura Expirando',
     message: 'Sua assinatura expira em 5 dias',
@@ -22,7 +40,7 @@ const mockNotifications: Notification[] = [
     link: '/distributor/subscription'
   },
   {
-    id: '3',
+    id: '5',
     type: 'new_order',
     title: 'Novo Pedido',
     message: 'João Santos fez um pedido de 10 galões',
@@ -31,7 +49,7 @@ const mockNotifications: Notification[] = [
     link: '/distributor/orders'
   },
   {
-    id: '4',
+    id: '6',
     type: 'payment_failed',
     title: 'Falha no Pagamento',
     message: 'Não foi possível processar o pagamento da assinatura',
@@ -40,7 +58,7 @@ const mockNotifications: Notification[] = [
     link: '/distributor/subscription'
   },
   {
-    id: '5',
+    id: '7',
     type: 'customer_review',
     title: 'Nova Avaliação',
     message: 'Cliente Carlos deixou uma avaliação 5 estrelas',
@@ -49,7 +67,7 @@ const mockNotifications: Notification[] = [
     link: '/distributor/dashboard'
   },
   {
-    id: '6',
+    id: '8',
     type: 'low_stock',
     title: 'Estoque Baixo',
     message: 'Galões de água disponíveis abaixo do limite mínimo',

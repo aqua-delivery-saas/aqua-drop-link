@@ -2,13 +2,17 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Phone, Mail, Clock, ExternalLink } from "lucide-react";
-import { mockCidades, mockDistribuidoras, getCidadeBySlug, getDistribuidorasByCidade, getCidadeById } from "@/data/mockData";
+import { MapPin, Phone, Mail, Clock, ExternalLink, Heart } from "lucide-react";
+import { mockCidades, getCidadeBySlug, getDistribuidorasByCidade, getCidadeById } from "@/data/mockData";
 import { Helmet } from "react-helmet-async";
+import { useFavorites } from "@/hooks/useFavorites";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const CityDistributors = () => {
   const { citySlug } = useParams<{ citySlug: string }>();
   const navigate = useNavigate();
+  const { toggleFavorite, isFavorite } = useFavorites();
   
   const cidade = getCidadeBySlug(citySlug || "");
   
@@ -34,6 +38,21 @@ const CityDistributors = () => {
   
   const pageTitle = `Distribuidoras de Água em ${cidade.nome} - ${cidade.estado}`;
   const pageDescription = `Encontre as melhores distribuidoras de água mineral em ${cidade.nome}. Entrega rápida, preços competitivos e água de qualidade.`;
+
+  const handleToggleFavorite = (distId: string, distName: string) => {
+    const wasFavorite = isFavorite(distId);
+    toggleFavorite(distId);
+    
+    if (wasFavorite) {
+      toast.success("Removido dos favoritos", {
+        description: `${distName} foi removido da sua lista.`,
+      });
+    } else {
+      toast.success("Adicionado aos favoritos", {
+        description: `${distName} foi adicionado à sua lista.`,
+      });
+    }
+  };
   
   return (
     <>
@@ -92,6 +111,7 @@ const CityDistributors = () => {
                   const isOpen = todayHours?.ativo && 
                     currentTime >= todayHours.hora_abertura && 
                     currentTime <= todayHours.hora_fechamento;
+                  const favorited = isFavorite(String(dist.id));
                   
                   return (
                     <Card key={dist.id} className="hover:shadow-lg transition-shadow">
@@ -103,9 +123,27 @@ const CityDistributors = () => {
                               {dist.descricao_curta}
                             </CardDescription>
                           </div>
-                          <Badge variant={isOpen ? "default" : "secondary"} className="ml-4">
-                            {isOpen ? "Aberta" : "Fechada"}
-                          </Badge>
+                          <div className="flex items-center gap-2 ml-4">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleToggleFavorite(String(dist.id), dist.nome)}
+                              className={cn(
+                                "transition-colors",
+                                favorited && "text-destructive hover:text-destructive"
+                              )}
+                            >
+                              <Heart 
+                                className={cn(
+                                  "h-5 w-5 transition-all",
+                                  favorited && "fill-current scale-110"
+                                )} 
+                              />
+                            </Button>
+                            <Badge variant={isOpen ? "default" : "secondary"}>
+                              {isOpen ? "Aberta" : "Fechada"}
+                            </Badge>
+                          </div>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-4">
