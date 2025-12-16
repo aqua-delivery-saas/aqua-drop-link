@@ -17,10 +17,10 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
         <h1 className="text-heading-1 text-foreground">Dashboard</h1>
-        <p className="text-body-lg text-muted-foreground mt-2">
+        <p className="text-body-md text-muted-foreground mt-1">
           Bem-vindo ao painel da sua distribuidora
         </p>
       </div>
