@@ -126,8 +126,8 @@ export default function Dashboard() {
                     <p className="text-body-sm text-muted-foreground">{order.items}</p>
                   </div>
                 </div>
-                <div className="text-right flex items-center gap-3">
-                  <div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right min-w-[90px]">
                     <p className="text-body-md font-semibold text-foreground">
                       R$ {order.total.toFixed(2)}
                     </p>
@@ -136,7 +136,7 @@ export default function Dashboard() {
                       {order.time}
                     </p>
                   </div>
-                  <Badge variant={statusLabels[order.status].variant}>
+                  <Badge variant={statusLabels[order.status].variant} className="min-w-[120px] justify-center">
                     {statusLabels[order.status].label}
                   </Badge>
                 </div>
