@@ -1,7 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, Award, TrendingUp, DollarSign, ShoppingBag } from "lucide-react";
-import { distributorStats, peakHours, topProducts } from '@/data/mockDistributorData';
+import { Clock, Award, TrendingUp, DollarSign, ShoppingBag, BarChart3 } from "lucide-react";
+import { distributorStats, peakHours, topProducts, ordersPerDay } from '@/data/mockDistributorData';
 import { Badge } from "@/components/ui/badge";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 export default function Reports() {
   return (
@@ -69,6 +70,48 @@ export default function Reports() {
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Gráfico de Pedidos por Dia da Semana */}
+      <div>
+        <h2 className="text-heading-3 text-foreground mb-4 flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-primary" />
+          Pedidos por Dia da Semana
+        </h2>
+        <Card className="border-border">
+          <CardHeader className="pb-2">
+            <CardDescription>Volume de pedidos nos últimos 7 dias</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={ordersPerDay}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <XAxis 
+                  dataKey="day" 
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                />
+                <YAxis 
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    color: 'hsl(var(--foreground))'
+                  }}
+                />
+                <Legend />
+                <Bar 
+                  dataKey="orders" 
+                  fill="hsl(var(--primary))"
+                  radius={[8, 8, 0, 0]}
+                  name="Pedidos"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Horários de Pico */}
