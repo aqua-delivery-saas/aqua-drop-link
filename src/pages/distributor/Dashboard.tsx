@@ -1,11 +1,19 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Settings, Share2, ShoppingBag, TrendingUp, DollarSign } from "lucide-react";
+import { Package, Settings, Share2, ShoppingBag, TrendingUp, DollarSign, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { distributorStats, ordersPerDay } from '@/data/mockDistributorData';
+import { Badge } from "@/components/ui/badge";
+import { distributorStats, recentOrders } from '@/data/mockDistributorData';
+
+const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
+  pending: { label: 'Pendente', variant: 'destructive' },
+  confirmed: { label: 'Confirmado', variant: 'secondary' },
+  preparing: { label: 'Preparando', variant: 'outline' },
+  out_for_delivery: { label: 'Saiu para entrega', variant: 'default' },
+  delivered: { label: 'Entregue', variant: 'secondary' },
+};
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -93,43 +101,50 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Gráfico de Pedidos */}
+      {/* Últimos Pedidos */}
       <Card className="border-border animate-fade-in" style={{ animationDelay: '100ms' }}>
-        <CardHeader>
-          <CardTitle className="text-heading-3 text-foreground">Pedidos por Dia da Semana</CardTitle>
-          <CardDescription>Volume de pedidos nos últimos 7 dias</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-heading-3 text-foreground">Últimos Pedidos</CardTitle>
+          <Button variant="link" className="p-0 h-auto text-primary" onClick={() => navigate('/distributor/orders')}>
+            Ver todos →
+          </Button>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={ordersPerDay}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis 
-                dataKey="day" 
-                tick={{ fill: 'hsl(var(--muted-foreground))' }}
-              />
-              <YAxis 
-                tick={{ fill: 'hsl(var(--muted-foreground))' }}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                  color: 'hsl(var(--foreground))'
-                }}
-              />
-              <Legend />
-              <Bar 
-                dataKey="orders" 
-                fill="hsl(var(--primary))"
-                radius={[8, 8, 0, 0]}
-                name="Pedidos"
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="space-y-3">
+            {recentOrders.map((order) => (
+              <div 
+                key={order.id}
+                className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                onClick={() => navigate('/distributor/orders')}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <ShoppingBag className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-body-md font-medium text-foreground">{order.customer}</p>
+                    <p className="text-body-sm text-muted-foreground">{order.items}</p>
+                  </div>
+                </div>
+                <div className="text-right flex items-center gap-3">
+                  <div>
+                    <p className="text-body-md font-semibold text-foreground">
+                      R$ {order.total.toFixed(2)}
+                    </p>
+                    <p className="text-body-xs text-muted-foreground flex items-center gap-1 justify-end">
+                      <Clock className="w-3 h-3" />
+                      {order.time}
+                    </p>
+                  </div>
+                  <Badge variant={statusLabels[order.status].variant}>
+                    {statusLabels[order.status].label}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
-
       {/* Cards de Ações */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
         <Card className="border-border hover-lift cursor-pointer" onClick={() => navigate('/distributor/products')}>
