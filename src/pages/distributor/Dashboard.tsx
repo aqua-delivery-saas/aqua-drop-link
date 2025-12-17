@@ -7,12 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { distributorStats, recentOrders } from '@/data/mockDistributorData';
 
-const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
-  pending: { label: 'Pendente', variant: 'destructive' },
-  confirmed: { label: 'Confirmado', variant: 'secondary' },
-  preparing: { label: 'Preparando', variant: 'outline' },
-  out_for_delivery: { label: 'Saiu para entrega', variant: 'default' },
-  delivered: { label: 'Entregue', variant: 'secondary' },
+type OrderStatus = 'waiting' | 'pending_delivery' | 'delivered' | 'cancelled';
+
+const statusLabels: Record<OrderStatus, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' | 'success' }> = {
+  waiting: { label: 'Aguardando entrega', variant: 'default' },
+  pending_delivery: { label: 'Entrega Pendente', variant: 'destructive' },
+  delivered: { label: 'Entregue', variant: 'success' },
+  cancelled: { label: 'Cancelado', variant: 'outline' },
+};
+
+const getOrderStatus = (order: { status: string; minutesAgo: number }): OrderStatus => {
+  if (order.status === 'delivered') return 'delivered';
+  if (order.status === 'cancelled') return 'cancelled';
+  if (order.minutesAgo > 40) return 'pending_delivery';
+  return 'waiting';
 };
 
 export default function Dashboard() {
@@ -136,8 +144,8 @@ export default function Dashboard() {
                       {order.time}
                     </p>
                   </div>
-                  <Badge variant={statusLabels[order.status].variant} className="min-w-[120px] justify-center">
-                    {statusLabels[order.status].label}
+                  <Badge variant={statusLabels[getOrderStatus(order)].variant} className="min-w-[120px] justify-center">
+                    {statusLabels[getOrderStatus(order)].label}
                   </Badge>
                 </div>
               </div>
