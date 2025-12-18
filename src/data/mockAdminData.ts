@@ -257,3 +257,22 @@ export const advancedMetrics = {
     variation: '+5.5%',
   },
 };
+
+// Brands Data
+export interface MockBrand {
+  id: string;
+  name: string;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  products_count: number;
+}
+
+export const mockBrands: MockBrand[] = [
+  { id: 'b1', name: 'Crystal', description: 'Água mineral natural premium', is_active: true, created_at: '2024-01-15T10:00:00Z', products_count: 12 },
+  { id: 'b2', name: 'Indaiá', description: 'Pureza desde a fonte', is_active: true, created_at: '2024-02-20T14:30:00Z', products_count: 8 },
+  { id: 'b3', name: 'Bonafont', description: 'Hidratação de qualidade', is_active: true, created_at: '2024-03-05T09:15:00Z', products_count: 6 },
+  { id: 'b4', name: 'Minalba', description: 'Água mineral natural', is_active: true, created_at: '2024-03-18T11:45:00Z', products_count: 10 },
+  { id: 'b5', name: 'Petrópolis', description: 'Tradição em água mineral', is_active: false, created_at: '2024-01-08T08:00:00Z', products_count: 3 },
+  { id: 'b6', name: 'São Lourenço', description: 'Água mineral gasosa e natural', is_active: true, created_at: '2024-04-01T16:20:00Z', products_count: 5 },
+];
