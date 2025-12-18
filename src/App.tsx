@@ -45,6 +45,7 @@ import UserList from "./pages/admin/UserList";
 import DistributorList from "./pages/admin/DistributorList";
 import UserDetails from "./pages/admin/UserDetails";
 import FinancialReports from "./pages/admin/FinancialReports";
+import BrandList from "./pages/admin/BrandList";
 
 const queryClient = new QueryClient();
 
@@ -136,6 +137,14 @@ const App = () => (
             element={
               <ProtectedRoute requiredRole="admin">
                 <AdminLayout><FinancialReports /></AdminLayout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/brands" 
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminLayout><BrandList /></AdminLayout>
               </ProtectedRoute>
             } 
           />
