@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Plus, Search, Pencil, Trash2, Tags } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, Tags, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ResponsiveTable } from '@/components/ui/ResponsiveTable';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -39,6 +40,7 @@ export default function BrandList() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    logo_url: '',
     is_active: true,
   });
 
@@ -60,11 +62,12 @@ export default function BrandList() {
       setFormData({
         name: brand.name,
         description: brand.description || '',
+        logo_url: brand.logo_url || '',
         is_active: brand.is_active,
       });
     } else {
       setEditingBrand(null);
-      setFormData({ name: '', description: '', is_active: true });
+      setFormData({ name: '', description: '', logo_url: '', is_active: true });
     }
     setIsDialogOpen(true);
   };
@@ -83,7 +86,7 @@ export default function BrandList() {
       setBrands((prev) =>
         prev.map((b) =>
           b.id === editingBrand.id
-            ? { ...b, name: formData.name, description: formData.description, is_active: formData.is_active }
+            ? { ...b, name: formData.name, description: formData.description, logo_url: formData.logo_url, is_active: formData.is_active }
             : b
         )
       );
@@ -93,6 +96,7 @@ export default function BrandList() {
         id: `b${Date.now()}`,
         name: formData.name,
         description: formData.description,
+        logo_url: formData.logo_url,
         is_active: formData.is_active,
         created_at: new Date().toISOString(),
         products_count: 0,
@@ -114,6 +118,18 @@ export default function BrandList() {
 
   const columns = [
     {
+      header: 'Logo',
+      accessor: (brand: MockBrand) => (
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={brand.logo_url} alt={brand.name} />
+          <AvatarFallback className="bg-primary/10 text-primary text-xs">
+            {brand.name.substring(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+      ),
+      mobileLabel: 'Logo',
+    },
+    {
       header: 'Nome',
       accessor: 'name' as const,
       mobileLabel: 'Nome',
@@ -121,7 +137,7 @@ export default function BrandList() {
     {
       header: 'Descrição',
       accessor: (brand: MockBrand) => (
-        <span className="text-muted-foreground">{brand.description || '-'}</span>
+        <span className="text-muted-foreground line-clamp-1">{brand.description || '-'}</span>
       ),
       mobileLabel: 'Descrição',
     },
@@ -292,6 +308,25 @@ export default function BrandList() {
                 placeholder="Descrição da marca (opcional)"
                 rows={3}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="logo_url">URL do Logo</Label>
+              <div className="flex gap-3 items-center">
+                <Avatar className="h-12 w-12 flex-shrink-0">
+                  <AvatarImage src={formData.logo_url} alt="Preview" />
+                  <AvatarFallback className="bg-muted">
+                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                  </AvatarFallback>
+                </Avatar>
+                <Input
+                  id="logo_url"
+                  value={formData.logo_url}
+                  onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
+                  placeholder="https://exemplo.com/logo.png"
+                  className="flex-1"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">Cole a URL de uma imagem hospedada externamente.</p>
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="is_active">Marca ativa</Label>
