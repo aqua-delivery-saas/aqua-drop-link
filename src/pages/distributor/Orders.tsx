@@ -9,6 +9,14 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+type DeliveryPeriod = "manha" | "tarde" | "noite";
+
+const periodLabels: Record<DeliveryPeriod, string> = {
+  manha: "Manhã (08:00 - 12:00)",
+  tarde: "Tarde (12:00 - 18:00)",
+  noite: "Noite (18:00 - 21:00)",
+};
+
 interface Order {
   id: string;
   customerName: string;
@@ -21,7 +29,7 @@ interface Order {
   date: string;
   type: "immediate" | "scheduled";
   scheduledDate?: string;
-  scheduledTime?: string;
+  scheduledPeriod?: DeliveryPeriod;
 }
 
 const Orders = () => {
@@ -75,7 +83,7 @@ const Orders = () => {
       date: "2025-01-14 16:00",
       type: "scheduled",
       scheduledDate: "2025-01-20",
-      scheduledTime: "10:00",
+      scheduledPeriod: "manha",
     },
     {
       id: "5",
@@ -89,7 +97,7 @@ const Orders = () => {
       date: "2025-01-13 10:00",
       type: "scheduled",
       scheduledDate: "2025-01-18",
-      scheduledTime: "14:00",
+      scheduledPeriod: "tarde",
     },
     {
       id: "6",
@@ -103,7 +111,7 @@ const Orders = () => {
       date: "2025-01-12 09:30",
       type: "scheduled",
       scheduledDate: "2025-01-22",
-      scheduledTime: "09:00",
+      scheduledPeriod: "manha",
     },
   ]);
 
@@ -201,9 +209,9 @@ const Orders = () => {
             <p className="text-sm text-muted-foreground">Pagamento</p>
             <p className="font-semibold">{order.paymentMethod}</p>
           </div>
-          {order.type === "scheduled" && order.scheduledDate && order.scheduledTime && (
+          {order.type === "scheduled" && order.scheduledDate && order.scheduledPeriod && (
             <div className="md:col-span-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-primary" />
                   <span className="font-medium">
@@ -212,7 +220,7 @@ const Orders = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-primary" />
-                  <span className="font-medium">{order.scheduledTime}</span>
+                  <span className="font-medium">{periodLabels[order.scheduledPeriod]}</span>
                 </div>
               </div>
             </div>

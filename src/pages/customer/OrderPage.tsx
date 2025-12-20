@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,11 +7,18 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/Logo";
-import { Minus, Plus, Clock, Gift, CalendarDays } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Minus, Plus, Clock, Gift, CalendarDays, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { getDistribuidoraBySlug } from "@/data/mockData";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/hooks/useAuth";
+import { LoginRequiredModal } from "@/components/customer/LoginRequiredModal";
+import { format, addDays, setHours, setMinutes } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface Product {
   id: string;
@@ -20,6 +27,14 @@ interface Product {
   price: number;
   foto?: string;
 }
+
+type DeliveryPeriod = "manha" | "tarde" | "noite";
+
+const periodLabels: Record<DeliveryPeriod, string> = {
+  manha: "Manhã (08:00 - 12:00)",
+  tarde: "Tarde (12:00 - 18:00)",
+  noite: "Noite (18:00 - 21:00)",
+};
 
 const OrderPage = () => {
   const navigate = useNavigate();
@@ -56,8 +71,8 @@ const OrderPage = () => {
 
   // Mock de cliente logado (simulando 8 pedidos já feitos)
   const mockCustomer = {
-    isLoggedIn: false,
-    name: "João Silva",
+    isLoggedIn: isAuthenticated && user?.role === 'customer',
+    name: user?.full_name || "Cliente",
     orderCount: 8,
   };
 
@@ -70,6 +85,48 @@ const OrderPage = () => {
   const [detalhesPedido, setDetalhesPedido] = useState("");
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
+  
+  // Scheduling states
+  const [wantsToSchedule, setWantsToSchedule] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
+  const [scheduledPeriod, setScheduledPeriod] = useState<DeliveryPeriod | "">("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [nextOpenTime, setNextOpenTime] = useState<string>("");
+
+  // Calculate next open time
+  const getNextOpenTime = useMemo(() => {
+    const now = new Date();
+    const weekDays = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+    
+    for (let i = 0; i <= 7; i++) {
+      const checkDate = addDays(now, i);
+      const dayName = weekDays[checkDate.getDay()];
+      const schedule = distribuidora.businessHours.find(
+        s => s.dia_semana.toLowerCase() === dayName.toLowerCase() && s.ativo
+      );
+      
+      if (schedule) {
+        const [openHour, openMinute] = schedule.hora_abertura.split(':').map(Number);
+        const openTime = setMinutes(setHours(checkDate, openHour), openMinute);
+        
+        if (i === 0) {
+          // Today - check if still has time to open
+          const currentTime = now.toTimeString().slice(0, 5);
+          if (currentTime < schedule.hora_abertura) {
+            return `hoje às ${schedule.hora_abertura}`;
+          }
+          if (currentTime >= schedule.hora_abertura && currentTime <= schedule.hora_fechamento) {
+            return null; // Already open
+          }
+        } else if (i === 1) {
+          return `amanhã às ${schedule.hora_abertura}`;
+        } else {
+          return `${format(checkDate, "EEEE", { locale: ptBR })} às ${schedule.hora_abertura}`;
+        }
+      }
+    }
+    return "em breve";
+  }, [distribuidora.businessHours]);
 
   // Verificar se está aberta
   useEffect(() => {
@@ -87,7 +144,13 @@ const OrderPage = () => {
         return;
       }
       
-      setIsOpen(currentTime >= todaySchedule.hora_abertura && currentTime <= todaySchedule.hora_fechamento);
+      const open = currentTime >= todaySchedule.hora_abertura && currentTime <= todaySchedule.hora_fechamento;
+      setIsOpen(open);
+      
+      // If closed, scheduling becomes mandatory
+      if (!open) {
+        setWantsToSchedule(true);
+      }
     };
 
     checkIfOpen();
@@ -118,16 +181,67 @@ const OrderPage = () => {
     setQuantity(Math.max(1, quantity + delta));
   };
 
+  // Check if scheduling is required (when closed)
+  const isSchedulingRequired = !isOpen;
+  
+  // Check if can submit
+  const canSubmit = useMemo(() => {
+    const baseFieldsValid = selectedProduct && address && paymentMethod;
+    
+    if (isSchedulingRequired || wantsToSchedule) {
+      return baseFieldsValid && scheduledDate && scheduledPeriod && mockCustomer.isLoggedIn;
+    }
+    
+    return baseFieldsValid;
+  }, [selectedProduct, address, paymentMethod, isSchedulingRequired, wantsToSchedule, scheduledDate, scheduledPeriod, mockCustomer.isLoggedIn]);
+
+  // Handle scheduling toggle
+  const handleScheduleToggle = (checked: boolean) => {
+    if (checked && !mockCustomer.isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+    setWantsToSchedule(checked);
+  };
+
+  // Handle scheduling field click when not logged in
+  const handleScheduleFieldClick = () => {
+    if (!mockCustomer.isLoggedIn) {
+      setShowLoginModal(true);
+    }
+  };
+
+  // Disable past dates and closed days
+  const isDateDisabled = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (date < today) return true;
+    
+    const weekDays = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+    const dayName = weekDays[date.getDay()];
+    const schedule = distribuidora.businessHours.find(
+      s => s.dia_semana.toLowerCase() === dayName.toLowerCase()
+    );
+    
+    return !schedule || !schedule.ativo;
+  };
+
   const handleOrder = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isOpen) {
-      toast.error("Distribuidora fechada no momento");
+    if (!selectedProduct || !address || !paymentMethod) {
+      toast.error("Preencha todos os campos obrigatórios");
       return;
     }
 
-    if (!selectedProduct || !address || !paymentMethod) {
-      toast.error("Preencha todos os campos obrigatórios");
+    if ((isSchedulingRequired || wantsToSchedule) && (!scheduledDate || !scheduledPeriod)) {
+      toast.error("Para agendar, selecione a data e o período de entrega");
+      return;
+    }
+
+    if ((isSchedulingRequired || wantsToSchedule) && !mockCustomer.isLoggedIn) {
+      setShowLoginModal(true);
       return;
     }
 
@@ -150,8 +264,15 @@ const OrderPage = () => {
           discount: discountAmount,
           total,
           distributor: distribuidora.nome,
+          isScheduled: wantsToSchedule || isSchedulingRequired,
+          scheduledDate: scheduledDate ? format(scheduledDate, "dd/MM/yyyy") : null,
+          scheduledPeriod: scheduledPeriod ? periodLabels[scheduledPeriod] : null,
           whatsappUrl: `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(
-            `Olá! Pedido:\n\nProduto: ${product?.name}\nQtd: ${quantity}\nTotal: R$ ${total.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}`
+            `Olá! Pedido:\n\nProduto: ${product?.name}\nQtd: ${quantity}\nTotal: R$ ${total.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}${
+              (wantsToSchedule || isSchedulingRequired) && scheduledDate 
+                ? `\n📅 Agendado para: ${format(scheduledDate, "dd/MM/yyyy")} - ${periodLabels[scheduledPeriod as DeliveryPeriod]}`
+                : ""
+            }`
           )}`,
         },
       });
@@ -176,6 +297,12 @@ const OrderPage = () => {
         <meta name="keywords" content={distribuidora.palavras_chave} />
       </Helmet>
       
+      <LoginRequiredModal 
+        open={showLoginModal} 
+        onOpenChange={setShowLoginModal}
+        distributorClosed={!isOpen}
+      />
+      
       <div className="min-h-screen bg-background">
         <header className="border-b bg-card shadow-sm">
           <div className="container mx-auto px-4 py-4">
@@ -193,12 +320,27 @@ const OrderPage = () => {
         </header>
 
       <main className="container mx-auto px-4 py-8 max-w-2xl space-y-4">
+        {/* Closed warning with next open time */}
         {!isOpen && (
           <Card className="border-destructive bg-destructive/10">
             <CardContent className="pt-6">
-              <p className="text-center text-destructive font-medium">
-                ⚠️ Distribuidora fechada no momento. Volte durante o horário de atendimento.
-              </p>
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-6 w-6 text-destructive flex-shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-semibold text-destructive">
+                    A distribuidora está fechada no momento
+                  </p>
+                  <p className="text-sm text-destructive/80">
+                    Para continuar, é necessário agendar seu pedido.
+                  </p>
+                  {getNextOpenTime && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      <Clock className="h-4 w-4 inline mr-1" />
+                      Próximo horário de atendimento: <span className="font-medium">{getNextOpenTime}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -374,42 +516,142 @@ const OrderPage = () => {
                 </RadioGroup>
               </div>
 
-              <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                {loading ? "Processando..." : "Fazer Pedido"}
+              {/* Scheduling Section */}
+              <Card className={cn(
+                "border-2 transition-colors",
+                isSchedulingRequired 
+                  ? "border-primary bg-primary/5" 
+                  : wantsToSchedule 
+                    ? "border-primary/50 bg-primary/5"
+                    : "border-border"
+              )}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="h-5 w-5 text-primary" />
+                      <CardTitle className="text-lg">
+                        Agendar Entrega
+                        {isSchedulingRequired && (
+                          <Badge variant="destructive" className="ml-2">Obrigatório</Badge>
+                        )}
+                      </CardTitle>
+                    </div>
+                    {!isSchedulingRequired && (
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={wantsToSchedule}
+                          onChange={(e) => handleScheduleToggle(e.target.checked)}
+                        />
+                        <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                      </label>
+                    )}
+                  </div>
+                  {!isSchedulingRequired && !wantsToSchedule && (
+                    <CardDescription className="text-sm">
+                      Opcional - Agende para receber em uma data específica
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                
+                {(isSchedulingRequired || wantsToSchedule) && (
+                  <CardContent className="space-y-4">
+                    {!mockCustomer.isLoggedIn ? (
+                      <div 
+                        onClick={handleScheduleFieldClick}
+                        className="p-4 border-2 border-dashed border-muted-foreground/30 rounded-lg cursor-pointer hover:border-primary/50 transition-colors text-center"
+                      >
+                        <p className="text-muted-foreground mb-2">
+                          🔒 Faça login para agendar sua entrega
+                        </p>
+                        <Button type="button" variant="outline" size="sm">
+                          Entrar ou criar conta
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">
+                            Data da Entrega <span className="text-destructive">*</span>
+                          </Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !scheduledDate && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarDays className="mr-2 h-4 w-4" />
+                                {scheduledDate 
+                                  ? format(scheduledDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+                                  : "Selecione a data"
+                                }
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={scheduledDate}
+                                onSelect={setScheduledDate}
+                                disabled={isDateDisabled}
+                                initialFocus
+                                className={cn("p-3 pointer-events-auto")}
+                                locale={ptBR}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">
+                            Período da Entrega <span className="text-destructive">*</span>
+                          </Label>
+                          <Select value={scheduledPeriod} onValueChange={(value) => setScheduledPeriod(value as DeliveryPeriod)}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecione o período" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="manha">{periodLabels.manha}</SelectItem>
+                              <SelectItem value="tarde">{periodLabels.tarde}</SelectItem>
+                              <SelectItem value="noite">{periodLabels.noite}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {scheduledDate && scheduledPeriod && (
+                          <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                            <p className="text-sm font-medium text-primary flex items-center gap-2">
+                              <CalendarDays className="h-4 w-4" />
+                              📅 Pedido agendado para {format(scheduledDate, "dd/MM", { locale: ptBR })} – {periodLabels[scheduledPeriod].split(' ')[0]}
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </CardContent>
+                )}
+              </Card>
+
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="w-full" 
+                disabled={loading || !canSubmit}
+              >
+                {loading ? "Processando..." : (wantsToSchedule || isSchedulingRequired) ? "Agendar Pedido" : "Fazer Pedido"}
               </Button>
 
-              {isAuthenticated && user?.role === 'customer' && (
-                <>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">ou</span>
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    type="button"
-                    variant="outline" 
-                    size="lg" 
-                    className="w-full"
-                    onClick={() => navigate(`/schedule/${distributorSlug}`)}
-                  >
-                    <CalendarDays className="mr-2 h-4 w-4" />
-                    Agendar Entrega
-                  </Button>
-                </>
-              )}
-
-              {!isAuthenticated && (
+              {!isAuthenticated && !isSchedulingRequired && (
                 <div className="text-center">
                   <Button
                     type="button"
                     variant="link"
                     onClick={() => navigate("/customer/signup")}
                   >
-                    Crie uma conta para agendar entregas
+                    Crie uma conta para agendar entregas e ganhar benefícios
                   </Button>
                 </div>
               )}
