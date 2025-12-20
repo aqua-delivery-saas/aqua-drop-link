@@ -299,7 +299,8 @@ const OrderPage = () => {
             </CardContent>
           </Card>}
 
-        {distribuidora.loyalty.enabled && mockCustomer.isLoggedIn && <Card className="border-primary bg-primary/5">
+        {/* Loyalty card - only when open or when logged in */}
+        {distribuidora.loyalty.enabled && mockCustomer.isLoggedIn && isOpen && <Card className="border-primary bg-primary/5">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <Gift className="h-8 w-8 text-primary" />
@@ -318,136 +319,304 @@ const OrderPage = () => {
             </CardContent>
           </Card>}
 
-        <Card className="shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-3xl">Fazer Pedido</CardTitle>
-            <CardDescription>Escolha sua água e finalize em menos de 1 minuto</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleOrder} className="space-y-6">
-              <div className="space-y-3">
-                <Label className="text-base">Escolha a Marca</Label>
-                <RadioGroup value={selectedProduct} onValueChange={setSelectedProduct}>
-                  {products.map(product => <div key={product.id} className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => setSelectedProduct(product.id)}>
-                      <RadioGroupItem value={product.id} id={product.id} />
-                      {product.foto && <img src={product.foto} alt={product.name} className="w-16 h-16 object-cover rounded-md" />}
-                      <Label htmlFor={product.id} className="flex-1 cursor-pointer">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <div className="font-medium">{product.name}</div>
-                            <div className="text-sm text-muted-foreground">{product.litros}L</div>
+        {/* ========== DISTRIBUTOR OPEN: Show full order form ========== */}
+        {isOpen && (
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-3xl">Fazer Pedido</CardTitle>
+              <CardDescription>Escolha sua água e finalize em menos de 1 minuto</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleOrder} className="space-y-6">
+                <div className="space-y-3">
+                  <Label className="text-base">Escolha a Marca</Label>
+                  <RadioGroup value={selectedProduct} onValueChange={setSelectedProduct}>
+                    {products.map(product => <div key={product.id} className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => setSelectedProduct(product.id)}>
+                        <RadioGroupItem value={product.id} id={product.id} />
+                        {product.foto && <img src={product.foto} alt={product.name} className="w-16 h-16 object-cover rounded-md" />}
+                        <Label htmlFor={product.id} className="flex-1 cursor-pointer">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <div className="font-medium">{product.name}</div>
+                              <div className="text-sm text-muted-foreground">{product.litros}L</div>
+                            </div>
+                            <span className="text-primary font-bold">R$ {product.price.toFixed(2)}</span>
                           </div>
-                          <span className="text-primary font-bold">R$ {product.price.toFixed(2)}</span>
-                        </div>
-                      </Label>
-                    </div>)}
-                </RadioGroup>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-base">Quantidade</Label>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-center gap-4 w-full">
-                    <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(-1)}>
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
-                    <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(1)}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  {selectedProductData && <div className="w-full">
-                      {discountPercentage > 0 ? <div className="space-y-1">
-                          <p className="text-sm text-muted-foreground">
-                            Subtotal: <span className="line-through">R$ {subtotal.toFixed(2)}</span>
-                          </p>
-                          <p className="text-sm text-green-600 font-medium">
-                            Desconto ({discountPercentage}%): -R$ {discountAmount.toFixed(2)}
-                          </p>
-                          <p className="text-primary font-bold text-xl">
-                            Total: R$ {total.toFixed(2)}
-                          </p>
-                        </div> : <span className="text-muted-foreground">
-                          Total: <span className="text-primary font-bold text-xl">
-                            R$ {total.toFixed(2)}
-                          </span>
-                        </span>}
-                    </div>}
+                        </Label>
+                      </div>)}
+                  </RadioGroup>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="address" className="text-base">Endereço de Entrega</Label>
-                <Input id="address" placeholder="Rua, número, complemento" value={address} onChange={e => setAddress(e.target.value)} required />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="anoVasilhameInicial" className="text-base">Ano Vasilhame Inicial</Label>
-                  <Input id="anoVasilhameInicial" type="number" placeholder="Ex: 2020" value={anoVasilhameInicial} onChange={e => setAnoVasilhameInicial(e.target.value)} />
+                  <Label className="text-base">Quantidade</Label>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center gap-4 w-full">
+                      <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(-1)}>
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
+                      <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(1)}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {selectedProductData && <div className="w-full">
+                        {discountPercentage > 0 ? <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">
+                              Subtotal: <span className="line-through">R$ {subtotal.toFixed(2)}</span>
+                            </p>
+                            <p className="text-sm text-green-600 font-medium">
+                              Desconto ({discountPercentage}%): -R$ {discountAmount.toFixed(2)}
+                            </p>
+                            <p className="text-primary font-bold text-xl">
+                              Total: R$ {total.toFixed(2)}
+                            </p>
+                          </div> : <span className="text-muted-foreground">
+                            Total: <span className="text-primary font-bold text-xl">
+                              R$ {total.toFixed(2)}
+                            </span>
+                          </span>}
+                      </div>}
+                  </div>
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="anoVasilhameFinal" className="text-base">Ano Vasilhame Final</Label>
-                  <Input id="anoVasilhameFinal" type="number" placeholder="Ex: 2024" value={anoVasilhameFinal} onChange={e => setAnoVasilhameFinal(e.target.value)} />
+                  <Label htmlFor="address" className="text-base">Endereço de Entrega</Label>
+                  <Input id="address" placeholder="Rua, número, complemento" value={address} onChange={e => setAddress(e.target.value)} required />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="detalhesPedido" className="text-base">Detalhes do Pedido</Label>
-                <textarea id="detalhesPedido" className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm" placeholder="Observações adicionais sobre o pedido..." value={detalhesPedido} onChange={e => setDetalhesPedido(e.target.value)} />
-              </div>
-
-              <div className="space-y-3">
-                <Label className="text-base">Forma de Pagamento</Label>
-                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                    <RadioGroupItem value="dinheiro" id="dinheiro" />
-                    <Label htmlFor="dinheiro" className="cursor-pointer flex-1">Dinheiro</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="anoVasilhameInicial" className="text-base">Ano Vasilhame Inicial</Label>
+                    <Input id="anoVasilhameInicial" type="number" placeholder="Ex: 2020" value={anoVasilhameInicial} onChange={e => setAnoVasilhameInicial(e.target.value)} />
                   </div>
-                  <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                    <RadioGroupItem value="cartao" id="cartao" />
-                    <Label htmlFor="cartao" className="cursor-pointer flex-1">Cartão na Entrega</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="anoVasilhameFinal" className="text-base">Ano Vasilhame Final</Label>
+                    <Input id="anoVasilhameFinal" type="number" placeholder="Ex: 2024" value={anoVasilhameFinal} onChange={e => setAnoVasilhameFinal(e.target.value)} />
                   </div>
-                  <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                    <RadioGroupItem value="pix" id="pix" />
-                    <Label htmlFor="pix" className="cursor-pointer flex-1">Pix (Manual)</Label>
-                  </div>
-                </RadioGroup>
-              </div>
+                </div>
 
-              {/* Scheduling Section */}
-              
+                <div className="space-y-2">
+                  <Label htmlFor="detalhesPedido" className="text-base">Detalhes do Pedido</Label>
+                  <textarea id="detalhesPedido" className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm" placeholder="Observações adicionais sobre o pedido..." value={detalhesPedido} onChange={e => setDetalhesPedido(e.target.value)} />
+                </div>
 
-              {/* When closed, only show schedule button */}
-              {isSchedulingRequired ? <Button type="submit" size="lg" className="w-full" disabled={loading || !canSubmit}>
-                  {loading ? "Processando..." : mockCustomer.isLoggedIn ? "Agendar Pedido" : "Entrar para Agendar"}
-                </Button> : <Button type="submit" size="lg" className="w-full" disabled={loading || !canSubmit}>
+                <div className="space-y-3">
+                  <Label className="text-base">Forma de Pagamento</Label>
+                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                      <RadioGroupItem value="dinheiro" id="dinheiro" />
+                      <Label htmlFor="dinheiro" className="cursor-pointer flex-1">Dinheiro</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                      <RadioGroupItem value="cartao" id="cartao" />
+                      <Label htmlFor="cartao" className="cursor-pointer flex-1">Cartão na Entrega</Label>
+                    </div>
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                      <RadioGroupItem value="pix" id="pix" />
+                      <Label htmlFor="pix" className="cursor-pointer flex-1">Pix (Manual)</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <Button type="submit" size="lg" className="w-full" disabled={loading || !canSubmit}>
                   {loading ? "Processando..." : wantsToSchedule ? "Agendar Pedido" : "Fazer Pedido"}
-                </Button>}
+                </Button>
 
-              {!isAuthenticated && !isSchedulingRequired && <div className="text-center">
-                  <Button type="button" variant="link" onClick={() => navigate("/customer/signup")}>
-                    Crie uma conta para agendar entregas e ganhar benefícios
-                  </Button>
-                </div>}
+                {!isAuthenticated && <div className="text-center">
+                    <Button type="button" variant="link" onClick={() => navigate("/customer/signup")}>
+                      Crie uma conta para agendar entregas e ganhar benefícios
+                    </Button>
+                  </div>}
+              </form>
+            </CardContent>
+          </Card>
+        )}
 
-              {/* When closed and not logged in, show prominent CTA */}
-              {isSchedulingRequired && !mockCustomer.isLoggedIn && <div className="text-center p-4 bg-muted rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    A distribuidora está fechada. Para agendar seu pedido:
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                    <Button type="button" onClick={() => navigate("/customer/login")}>
-                      Entrar
-                    </Button>
-                    <Button type="button" variant="outline" onClick={() => navigate("/customer/signup")}>
-                      Criar conta
-                    </Button>
+        {/* ========== DISTRIBUTOR CLOSED: Show only scheduling card ========== */}
+        {!isOpen && (
+          <Card className="shadow-xl border-primary">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <CalendarDays className="h-6 w-6 text-primary" />
+                    Agendar Entrega
+                  </CardTitle>
+                  <CardDescription>
+                    A distribuidora está fechada. Agende seu pedido para o próximo dia disponível.
+                  </CardDescription>
+                </div>
+                <Badge variant="secondary" className="bg-primary/10 text-primary">
+                  Obrigatório
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* Not logged in - show login CTA */}
+              {!mockCustomer.isLoggedIn ? (
+                <div className="space-y-6">
+                  <div className="text-center p-6 bg-muted/50 rounded-lg border-2 border-dashed">
+                    <CalendarDays className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-semibold text-lg mb-2">Faça login para agendar</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Para agendar um pedido fora do horário de funcionamento, é necessário fazer login ou criar uma conta.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Button onClick={() => navigate("/customer/login")} size="lg">
+                        Entrar
+                      </Button>
+                      <Button variant="outline" onClick={() => navigate("/customer/signup")} size="lg">
+                        Criar conta
+                      </Button>
+                    </div>
                   </div>
-                </div>}
-            </form>
-          </CardContent>
-        </Card>
+                </div>
+              ) : (
+                /* Logged in - show scheduling form */
+                <form onSubmit={handleOrder} className="space-y-6">
+                  <div className="space-y-3">
+                    <Label className="text-base">Escolha a Marca</Label>
+                    <RadioGroup value={selectedProduct} onValueChange={setSelectedProduct}>
+                      {products.map(product => <div key={product.id} className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => setSelectedProduct(product.id)}>
+                          <RadioGroupItem value={product.id} id={`schedule-${product.id}`} />
+                          {product.foto && <img src={product.foto} alt={product.name} className="w-16 h-16 object-cover rounded-md" />}
+                          <Label htmlFor={`schedule-${product.id}`} className="flex-1 cursor-pointer">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <div className="font-medium">{product.name}</div>
+                                <div className="text-sm text-muted-foreground">{product.litros}L</div>
+                              </div>
+                              <span className="text-primary font-bold">R$ {product.price.toFixed(2)}</span>
+                            </div>
+                          </Label>
+                        </div>)}
+                    </RadioGroup>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-base">Quantidade</Label>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-center gap-4 w-full">
+                        <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(-1)}>
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
+                        <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(1)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      {selectedProductData && <div className="w-full text-center">
+                          {discountPercentage > 0 ? <div className="space-y-1">
+                              <p className="text-sm text-muted-foreground">
+                                Subtotal: <span className="line-through">R$ {subtotal.toFixed(2)}</span>
+                              </p>
+                              <p className="text-sm text-green-600 font-medium">
+                                Desconto ({discountPercentage}%): -R$ {discountAmount.toFixed(2)}
+                              </p>
+                              <p className="text-primary font-bold text-xl">
+                                Total: R$ {total.toFixed(2)}
+                              </p>
+                            </div> : <span className="text-muted-foreground">
+                              Total: <span className="text-primary font-bold text-xl">
+                                R$ {total.toFixed(2)}
+                              </span>
+                            </span>}
+                        </div>}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="schedule-address" className="text-base">Endereço de Entrega</Label>
+                    <Input id="schedule-address" placeholder="Rua, número, complemento" value={address} onChange={e => setAddress(e.target.value)} required />
+                  </div>
+
+                  {/* Scheduling fields */}
+                  <div className="space-y-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <div className="flex items-center gap-2 text-primary font-medium">
+                      <CalendarDays className="h-5 w-5" />
+                      Data e Período da Entrega
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label className="text-base">Data da Entrega</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !scheduledDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarDays className="mr-2 h-4 w-4" />
+                            {scheduledDate ? format(scheduledDate, "PPP", { locale: ptBR }) : "Selecione a data"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 bg-popover" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={scheduledDate}
+                            onSelect={setScheduledDate}
+                            disabled={isDateDisabled}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-base">Período da Entrega</Label>
+                      <Select value={scheduledPeriod} onValueChange={(value) => setScheduledPeriod(value as DeliveryPeriod)}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione o período" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-popover">
+                          <SelectItem value="manha">{periodLabels.manha}</SelectItem>
+                          <SelectItem value="tarde">{periodLabels.tarde}</SelectItem>
+                          <SelectItem value="noite">{periodLabels.noite}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-base">Forma de Pagamento</Label>
+                    <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                        <RadioGroupItem value="dinheiro" id="schedule-dinheiro" />
+                        <Label htmlFor="schedule-dinheiro" className="cursor-pointer flex-1">Dinheiro</Label>
+                      </div>
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                        <RadioGroupItem value="cartao" id="schedule-cartao" />
+                        <Label htmlFor="schedule-cartao" className="cursor-pointer flex-1">Cartão na Entrega</Label>
+                      </div>
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                        <RadioGroupItem value="pix" id="schedule-pix" />
+                        <Label htmlFor="schedule-pix" className="cursor-pointer flex-1">Pix (Manual)</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <Button type="submit" size="lg" className="w-full" disabled={loading || !canSubmit}>
+                    {loading ? "Processando..." : "Agendar Pedido"}
+                  </Button>
+
+                  {/* Order summary when scheduling */}
+                  {scheduledDate && scheduledPeriod && (
+                    <div className="p-4 bg-muted rounded-lg text-center">
+                      <p className="text-sm text-muted-foreground">Resumo do agendamento:</p>
+                      <p className="font-medium flex items-center justify-center gap-2 mt-1">
+                        <CalendarDays className="h-4 w-4 text-primary" />
+                        {format(scheduledDate, "dd/MM/yyyy")} - {periodLabels[scheduledPeriod]}
+                      </p>
+                    </div>
+                  )}
+                </form>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {products.length === 0 && <Card className="text-center py-12">
             <CardContent>
