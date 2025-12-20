@@ -369,15 +369,8 @@ const OrderPage = () => {
 
         <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle className="text-3xl">
-              {isSchedulingRequired ? "Agendar Entrega" : "Fazer Pedido"}
-            </CardTitle>
-            <CardDescription>
-              {isSchedulingRequired 
-                ? "A distribuidora está fechada. Preencha os dados e agende sua entrega."
-                : "Escolha sua água e finalize em menos de 1 minuto"
-              }
-            </CardDescription>
+            <CardTitle className="text-3xl">Fazer Pedido</CardTitle>
+            <CardDescription>Escolha sua água e finalize em menos de 1 minuto</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleOrder} className="space-y-6">
