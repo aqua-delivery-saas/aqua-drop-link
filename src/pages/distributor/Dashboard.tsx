@@ -6,34 +6,45 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { distributorStats, recentOrders } from '@/data/mockDistributorData';
-
 type OrderStatus = 'waiting' | 'pending_delivery' | 'delivered' | 'cancelled';
-
-const statusLabels: Record<OrderStatus, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' | 'success' }> = {
-  waiting: { label: 'Aguardando entrega', variant: 'default' },
-  pending_delivery: { label: 'Entrega Pendente', variant: 'destructive' },
-  delivered: { label: 'Entregue', variant: 'success' },
-  cancelled: { label: 'Cancelado', variant: 'outline' },
+const statusLabels: Record<OrderStatus, {
+  label: string;
+  variant: 'default' | 'secondary' | 'outline' | 'destructive' | 'success';
+}> = {
+  waiting: {
+    label: 'Aguardando entrega',
+    variant: 'default'
+  },
+  pending_delivery: {
+    label: 'Entrega Pendente',
+    variant: 'destructive'
+  },
+  delivered: {
+    label: 'Entregue',
+    variant: 'success'
+  },
+  cancelled: {
+    label: 'Cancelado',
+    variant: 'outline'
+  }
 };
-
-const getOrderStatus = (order: { status: string; minutesAgo: number }): OrderStatus => {
+const getOrderStatus = (order: {
+  status: string;
+  minutesAgo: number;
+}): OrderStatus => {
   if (order.status === 'delivered') return 'delivered';
   if (order.status === 'cancelled') return 'cancelled';
   if (order.minutesAgo > 40) return 'pending_delivery';
   return 'waiting';
 };
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const distributorLink = "https://aquadelivery.com/distribuidor/agua-cristalina";
-  
   const handleCopyLink = () => {
     navigator.clipboard.writeText(distributorLink);
     toast.success("Link copiado para a área de transferência!");
   };
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <div>
         <h1 className="text-heading-1 text-foreground">Dashboard</h1>
         <p className="text-body-md text-muted-foreground mt-1">
@@ -67,7 +78,9 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-heading-1 text-foreground">
-              R$ {distributorStats.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R$ {distributorStats.totalRevenue.toLocaleString('pt-BR', {
+              minimumFractionDigits: 2
+            })}
             </div>
             <p className="text-body-sm text-accent-green mt-1 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" />
@@ -76,41 +89,15 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-border hover-lift">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-body-md text-muted-foreground font-normal flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
-              Ticket Médio
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-heading-1 text-foreground">
-              R$ {distributorStats.averageTicket.toFixed(2)}
-            </div>
-            <p className="text-body-sm text-muted-foreground mt-1">
-              {distributorStats.monthOrders} pedidos
-            </p>
-          </CardContent>
-        </Card>
+        
 
-        <Card className="border-border hover-lift cursor-pointer" onClick={() => navigate('/distributor/products')}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-body-md text-muted-foreground font-normal flex items-center gap-2">
-              <Package className="w-4 h-4" />
-              Produtos Ativos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-heading-1 text-foreground">8</div>
-            <p className="text-body-sm text-muted-foreground mt-1">
-              2 marcas cadastradas
-            </p>
-          </CardContent>
-        </Card>
+        
       </div>
 
       {/* Últimos Pedidos */}
-      <Card className="border-border animate-fade-in" style={{ animationDelay: '100ms' }}>
+      <Card className="border-border animate-fade-in" style={{
+      animationDelay: '100ms'
+    }}>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-heading-3 text-foreground">Últimos Pedidos</CardTitle>
           <Button variant="link" className="p-0 h-auto text-primary" onClick={() => navigate('/distributor/orders')}>
@@ -119,12 +106,7 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {recentOrders.map((order) => (
-              <div 
-                key={order.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                onClick={() => navigate('/distributor/orders')}
-              >
+            {recentOrders.map(order => <div key={order.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/distributor/orders')}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <ShoppingBag className="w-5 h-5 text-primary" />
@@ -148,13 +130,14 @@ export default function Dashboard() {
                     {statusLabels[getOrderStatus(order)].label}
                   </Badge>
                 </div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </CardContent>
       </Card>
       {/* Cards de Ações */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in" style={{
+      animationDelay: '200ms'
+    }}>
         <Card className="border-border hover-lift cursor-pointer" onClick={() => navigate('/distributor/products')}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
@@ -209,6 +192,5 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 }
