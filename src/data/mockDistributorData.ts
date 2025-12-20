@@ -4,6 +4,7 @@ export const distributorStats = {
   todayOrders: 12,
   weekOrders: 45,
   monthOrders: 187,
+  todayRevenue: 1879.50,
   totalRevenue: 29340.50,
   averageTicket: 156.80,
   minOrder: 45.00,

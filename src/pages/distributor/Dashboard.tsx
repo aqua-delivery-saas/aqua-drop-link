@@ -53,7 +53,7 @@ export default function Dashboard() {
       </div>
 
       {/* Métricas principais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 animate-fade-in">
         <Card className="border-border hover-lift cursor-pointer" onClick={() => navigate('/distributor/orders')}>
           <CardHeader className="pb-2">
             <CardTitle className="text-body-md text-muted-foreground font-normal flex items-center gap-2">
@@ -73,6 +73,25 @@ export default function Dashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="text-body-md text-muted-foreground font-normal flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
+              Receita Hoje
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-heading-1 text-foreground">
+              R$ {distributorStats.todayRevenue.toLocaleString('pt-BR', {
+              minimumFractionDigits: 2
+            })}
+            </div>
+            <p className="text-body-sm text-muted-foreground mt-1">
+              Média: R$ {distributorStats.averageTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border hover-lift sm:col-span-2 lg:col-span-1">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-body-md text-muted-foreground font-normal flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
               Receita do Mês
             </CardTitle>
           </CardHeader>
@@ -88,10 +107,6 @@ export default function Dashboard() {
             </p>
           </CardContent>
         </Card>
-
-        
-
-        
       </div>
 
       {/* Últimos Pedidos */}
