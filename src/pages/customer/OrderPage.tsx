@@ -635,14 +635,26 @@ const OrderPage = () => {
                 )}
               </Card>
 
-              <Button 
-                type="submit" 
-                size="lg" 
-                className="w-full" 
-                disabled={loading || !canSubmit}
-              >
-                {loading ? "Processando..." : (wantsToSchedule || isSchedulingRequired) ? "Agendar Pedido" : "Fazer Pedido"}
-              </Button>
+              {/* When closed, only show schedule button */}
+              {isSchedulingRequired ? (
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="w-full" 
+                  disabled={loading || !canSubmit}
+                >
+                  {loading ? "Processando..." : mockCustomer.isLoggedIn ? "Agendar Pedido" : "Entrar para Agendar"}
+                </Button>
+              ) : (
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="w-full" 
+                  disabled={loading || !canSubmit}
+                >
+                  {loading ? "Processando..." : wantsToSchedule ? "Agendar Pedido" : "Fazer Pedido"}
+                </Button>
+              )}
 
               {!isAuthenticated && !isSchedulingRequired && (
                 <div className="text-center">
@@ -653,6 +665,30 @@ const OrderPage = () => {
                   >
                     Crie uma conta para agendar entregas e ganhar benefícios
                   </Button>
+                </div>
+              )}
+
+              {/* When closed and not logged in, show prominent CTA */}
+              {isSchedulingRequired && !mockCustomer.isLoggedIn && (
+                <div className="text-center p-4 bg-muted rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    A distribuidora está fechada. Para agendar seu pedido:
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                    <Button
+                      type="button"
+                      onClick={() => navigate("/customer/login")}
+                    >
+                      Entrar
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => navigate("/customer/signup")}
+                    >
+                      Criar conta
+                    </Button>
+                  </div>
                 </div>
               )}
             </form>
