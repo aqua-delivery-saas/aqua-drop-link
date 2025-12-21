@@ -121,27 +121,27 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {recentOrders.map(order => <div key={order.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/distributor/orders')}>
+            {recentOrders.map(order => <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer gap-3" onClick={() => navigate('/distributor/orders')}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <ShoppingBag className="w-5 h-5 text-primary" />
                   </div>
-                  <div>
-                    <p className="text-body-md font-medium text-foreground">{order.customer}</p>
-                    <p className="text-body-sm text-muted-foreground">{order.items}</p>
+                  <div className="min-w-0">
+                    <p className="text-body-md font-medium text-foreground truncate">{order.customer}</p>
+                    <p className="text-body-sm text-muted-foreground truncate">{order.items}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 flex-shrink-0">
-                  <div className="text-right min-w-[100px]">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 flex-shrink-0 pl-13 sm:pl-0">
+                  <div className="text-left sm:text-right">
                     <p className="text-body-md font-semibold text-foreground">
                       R$ {order.total.toFixed(2)}
                     </p>
-                    <p className="text-body-xs text-muted-foreground flex items-center gap-1 justify-end">
+                    <p className="text-body-xs text-muted-foreground flex items-center gap-1 sm:justify-end">
                       <Clock className="w-3 h-3" />
                       {order.time}
                     </p>
                   </div>
-                  <Badge variant={statusLabels[getOrderStatus(order)].variant} className="min-w-[140px] justify-center flex-shrink-0">
+                  <Badge variant={statusLabels[getOrderStatus(order)].variant} className="min-w-[120px] justify-center">
                     {statusLabels[getOrderStatus(order)].label}
                   </Badge>
                 </div>

@@ -64,14 +64,14 @@ const Products = () => {
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex justify-between items-center">
+        <div className="mb-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Marcas e Preços</h1>
-            <p className="text-muted-foreground">Gerencie as marcas de água disponíveis</p>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Marcas e Preços</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">Gerencie as marcas de água disponíveis</p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="lg">
+              <Button size="lg" className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" />
                 Adicionar Nova Marca
               </Button>
