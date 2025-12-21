@@ -435,8 +435,7 @@ const OrderPage = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-2xl flex items-center gap-2">
-                    <CalendarDays className="h-6 w-6 text-primary" />
+                  <CardTitle className="text-2xl flex items-center gap-2">Agendar entrega<CalendarDays className="h-6 w-6 text-primary" />
                     Agendar Entrega
                   </CardTitle>
                   <CardDescription className="py-[5px]">
