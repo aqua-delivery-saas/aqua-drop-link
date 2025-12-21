@@ -320,7 +320,8 @@ const OrderPage = () => {
           </Card>}
 
         {/* ========== DISTRIBUTOR OPEN: Show full order form ========== */}
-        {isOpen && <Card className="shadow-xl">
+        {isOpen && (
+          <Card className="shadow-xl">
             <CardHeader>
               <CardTitle className="text-3xl">Fazer Pedido</CardTitle>
               <CardDescription>Escolha sua água e finalize em menos de 1 minuto</CardDescription>
@@ -428,25 +429,32 @@ const OrderPage = () => {
                   </div>}
               </form>
             </CardContent>
-          </Card>}
+          </Card>
+        )}
 
         {/* ========== DISTRIBUTOR CLOSED: Show only scheduling card ========== */}
-        {!isOpen && <Card className="shadow-xl border-primary">
+        {!isOpen && (
+          <Card className="shadow-xl border-primary">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-2xl flex items-center gap-2">​
-Agendar entrega<CalendarDays className="h-6 w-6 text-primary" />
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <CalendarDays className="h-6 w-6 text-primary" />
                     Agendar Entrega
                   </CardTitle>
-                  <CardDescription className="py-[5px]">​</CardDescription>
+                  <CardDescription>
+                    A distribuidora está fechada. Agende seu pedido para o próximo dia disponível.
+                  </CardDescription>
                 </div>
-                
+                <Badge variant="secondary" className="bg-primary/10 text-primary">
+                  Obrigatório
+                </Badge>
               </div>
             </CardHeader>
             <CardContent>
               {/* Not logged in - show login CTA */}
-              {!mockCustomer.isLoggedIn ? <div className="space-y-6">
+              {!mockCustomer.isLoggedIn ? (
+                <div className="space-y-6">
                   <div className="text-center p-6 bg-muted/50 rounded-lg border-2 border-dashed">
                     <CalendarDays className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="font-semibold text-lg mb-2">Faça login para agendar</h3>
@@ -462,8 +470,10 @@ Agendar entrega<CalendarDays className="h-6 w-6 text-primary" />
                       </Button>
                     </div>
                   </div>
-                </div> : (/* Logged in - show scheduling form */
-            <form onSubmit={handleOrder} className="space-y-6">
+                </div>
+              ) : (
+                /* Logged in - show scheduling form */
+                <form onSubmit={handleOrder} className="space-y-6">
                   <div className="space-y-3">
                     <Label className="text-base">Escolha a Marca</Label>
                     <RadioGroup value={selectedProduct} onValueChange={setSelectedProduct}>
@@ -531,22 +541,33 @@ Agendar entrega<CalendarDays className="h-6 w-6 text-primary" />
                       <Label className="text-base">Data da Entrega</Label>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !scheduledDate && "text-muted-foreground")}>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !scheduledDate && "text-muted-foreground"
+                            )}
+                          >
                             <CalendarDays className="mr-2 h-4 w-4" />
-                            {scheduledDate ? format(scheduledDate, "PPP", {
-                          locale: ptBR
-                        }) : "Selecione a data"}
+                            {scheduledDate ? format(scheduledDate, "PPP", { locale: ptBR }) : "Selecione a data"}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0 bg-popover" align="start">
-                          <Calendar mode="single" selected={scheduledDate} onSelect={setScheduledDate} disabled={isDateDisabled} initialFocus className="pointer-events-auto" />
+                          <Calendar
+                            mode="single"
+                            selected={scheduledDate}
+                            onSelect={setScheduledDate}
+                            disabled={isDateDisabled}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
                         </PopoverContent>
                       </Popover>
                     </div>
 
                     <div className="space-y-2">
                       <Label className="text-base">Período da Entrega</Label>
-                      <Select value={scheduledPeriod} onValueChange={value => setScheduledPeriod(value as DeliveryPeriod)}>
+                      <Select value={scheduledPeriod} onValueChange={(value) => setScheduledPeriod(value as DeliveryPeriod)}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Selecione o período" />
                         </SelectTrigger>
@@ -582,16 +603,20 @@ Agendar entrega<CalendarDays className="h-6 w-6 text-primary" />
                   </Button>
 
                   {/* Order summary when scheduling */}
-                  {scheduledDate && scheduledPeriod && <div className="p-4 bg-muted rounded-lg text-center">
+                  {scheduledDate && scheduledPeriod && (
+                    <div className="p-4 bg-muted rounded-lg text-center">
                       <p className="text-sm text-muted-foreground">Resumo do agendamento:</p>
                       <p className="font-medium flex items-center justify-center gap-2 mt-1">
                         <CalendarDays className="h-4 w-4 text-primary" />
                         {format(scheduledDate, "dd/MM/yyyy")} - {periodLabels[scheduledPeriod]}
                       </p>
-                    </div>}
-                </form>)}
+                    </div>
+                  )}
+                </form>
+              )}
             </CardContent>
-          </Card>}
+          </Card>
+        )}
 
         {products.length === 0 && <Card className="text-center py-12">
             <CardContent>
