@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { formatPhone } from "@/lib/validators";
 
 const Settings = () => {
   const [settings, setSettings] = useState({
@@ -107,7 +108,12 @@ const Settings = () => {
                   <Input
                     id="whatsapp"
                     value={settings.whatsapp}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      const formatted = formatPhone(e.target.value);
+                      setSettings({ ...settings, whatsapp: formatted });
+                    }}
+                    placeholder="(00) 00000-0000"
+                    maxLength={15}
                   />
                 </div>
                 <div className="space-y-2">
@@ -115,7 +121,12 @@ const Settings = () => {
                   <Input
                     id="telefone"
                     value={settings.telefone}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      const formatted = formatPhone(e.target.value);
+                      setSettings({ ...settings, telefone: formatted });
+                    }}
+                    placeholder="(00) 0000-0000"
+                    maxLength={15}
                   />
                 </div>
               </div>
