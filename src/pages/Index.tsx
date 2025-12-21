@@ -11,13 +11,13 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="container mx-auto px-4 py-3 sm:py-4 flex justify-between items-center">
           <Logo size="md" />
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => navigate("/distributor/login")}>
+          <div className="flex gap-1 sm:gap-2">
+            <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4" onClick={() => navigate("/distributor/login")}>
               Entrar
             </Button>
-            <Button onClick={() => navigate("/distributor/signup")}>
+            <Button size="sm" className="text-xs sm:text-sm px-2 sm:px-4" onClick={() => navigate("/distributor/signup")}>
               Criar Conta
             </Button>
           </div>

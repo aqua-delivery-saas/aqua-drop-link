@@ -52,7 +52,7 @@ const BusinessHours = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {hours.map((schedule, index) => (
-                <div key={schedule.day} className="flex items-center gap-4 p-3 border rounded-lg">
+                <div key={schedule.day} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 border rounded-lg">
                   <div className="flex items-center space-x-2 min-w-[140px]">
                     <Checkbox
                       id={`day-${index}`}
@@ -71,14 +71,14 @@ const BusinessHours = () => {
                         type="time"
                         value={schedule.open}
                         onChange={(e) => handleChange(index, "open", e.target.value)}
-                        className="w-32"
+                        className="flex-1 sm:w-32 sm:flex-none"
                       />
-                      <span className="text-muted-foreground">até</span>
+                      <span className="text-muted-foreground text-sm">até</span>
                       <Input
                         type="time"
                         value={schedule.close}
                         onChange={(e) => handleChange(index, "close", e.target.value)}
-                        className="w-32"
+                        className="flex-1 sm:w-32 sm:flex-none"
                       />
                     </div>
                   ) : (
