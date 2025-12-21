@@ -439,7 +439,7 @@ const OrderPage = () => {
                     <CalendarDays className="h-6 w-6 text-primary" />
                     Agendar Entrega
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="py-[5px]">
                     A distribuidora está fechada. Agende seu pedido para o próximo dia disponível.
                   </CardDescription>
                 </div>
