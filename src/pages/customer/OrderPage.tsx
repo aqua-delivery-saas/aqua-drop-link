@@ -35,7 +35,7 @@ const periodLabels: Record<DeliveryPeriod, string> = {
 const OrderPage = () => {
   const navigate = useNavigate();
   const { distributorSlug } = useParams();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isCustomer } = useAuth();
   const distribuidora = getDistribuidoraBySlug(distributorSlug || "");
   if (!distribuidora) {
     return (
@@ -64,8 +64,8 @@ const OrderPage = () => {
 
   // Mock de cliente logado (simulando 8 pedidos já feitos)
   const mockCustomer = {
-    isLoggedIn: isAuthenticated && user?.role === "customer",
-    name: user?.full_name || "Cliente",
+    isLoggedIn: isAuthenticated && isCustomer(),
+    name: user?.user_metadata?.full_name || "Cliente",
     orderCount: 8,
   };
   const [selectedProduct, setSelectedProduct] = useState<string>("");
