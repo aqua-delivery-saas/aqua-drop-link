@@ -14,16 +14,238 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      business_hours: {
+        Row: {
+          close_time: string | null
+          created_at: string
+          day_of_week: number
+          distributor_id: string
+          id: string
+          is_open: boolean
+          open_time: string | null
+          updated_at: string
+        }
+        Insert: {
+          close_time?: string | null
+          created_at?: string
+          day_of_week: number
+          distributor_id: string
+          id?: string
+          is_open?: boolean
+          open_time?: string | null
+          updated_at?: string
+        }
+        Update: {
+          close_time?: string | null
+          created_at?: string
+          day_of_week?: number
+          distributor_id?: string
+          id?: string
+          is_open?: boolean
+          open_time?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_hours_distributor_id_fkey"
+            columns: ["distributor_id"]
+            isOneToOne: false
+            referencedRelation: "distributors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cities: {
+        Row: {
+          country: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          country?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          state: string
+          updated_at?: string
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          state?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      distributors: {
+        Row: {
+          accepts_card: boolean | null
+          accepts_cash: boolean | null
+          accepts_pix: boolean | null
+          city_id: string | null
+          cnpj: string | null
+          complement: string | null
+          created_at: string
+          delivery_fee: number | null
+          email: string | null
+          id: string
+          is_active: boolean
+          is_verified: boolean
+          logo_url: string | null
+          meta_description: string | null
+          meta_title: string | null
+          min_order_value: number | null
+          name: string
+          neighborhood: string | null
+          number: string | null
+          phone: string | null
+          slug: string
+          street: string | null
+          updated_at: string
+          user_id: string
+          whatsapp: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          accepts_card?: boolean | null
+          accepts_cash?: boolean | null
+          accepts_pix?: boolean | null
+          city_id?: string | null
+          cnpj?: string | null
+          complement?: string | null
+          created_at?: string
+          delivery_fee?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          is_verified?: boolean
+          logo_url?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          min_order_value?: number | null
+          name: string
+          neighborhood?: string | null
+          number?: string | null
+          phone?: string | null
+          slug: string
+          street?: string | null
+          updated_at?: string
+          user_id: string
+          whatsapp?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          accepts_card?: boolean | null
+          accepts_cash?: boolean | null
+          accepts_pix?: boolean | null
+          city_id?: string | null
+          cnpj?: string | null
+          complement?: string | null
+          created_at?: string
+          delivery_fee?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          is_verified?: boolean
+          logo_url?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          min_order_value?: number | null
+          name?: string
+          neighborhood?: string | null
+          number?: string | null
+          phone?: string | null
+          slug?: string
+          street?: string | null
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string | null
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "distributors_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "distributor" | "customer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +372,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "distributor", "customer"],
+    },
   },
 } as const
