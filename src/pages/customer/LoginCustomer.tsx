@@ -24,11 +24,11 @@ const LoginCustomer = () => {
     setLoading(true);
 
     try {
-      await login(email, password, 'customer');
+      await login(email, password);
       toast.success("Login realizado com sucesso!");
       navigate(from, { replace: true });
     } catch (error) {
-      toast.error("Credenciais inválidas. Tente: customer@aquadelivery.com");
+      toast.error("Credenciais inválidas. Verifique seu email e senha.");
     } finally {
       setLoading(false);
     }

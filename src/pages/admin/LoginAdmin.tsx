@@ -34,7 +34,7 @@ export default function LoginAdmin() {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      await login(data.email, data.password, 'admin');
+      await login(data.email, data.password);
       toast.success('Login realizado com sucesso!');
       navigate('/admin/dashboard');
     } catch (error) {
