@@ -29,8 +29,9 @@ export default function DistributorList() {
   const { data: distributors, isLoading } = useAdminDistributors();
 
   const filteredDistributors = (distributors || []).filter((dist) => {
+    const cityName = (dist.cities as any)?.name || '';
     const matchesSearch = dist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (dist.city?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+                         cityName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || 
                          (statusFilter === 'active' && dist.is_active) ||
                          (statusFilter === 'inactive' && !dist.is_active);
@@ -107,12 +108,14 @@ export default function DistributorList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredDistributors.map((dist) => (
+            {filteredDistributors.map((dist) => {
+              const city = dist.cities as any;
+              return (
               <TableRow key={dist.id}>
                 <TableCell className="font-medium">{dist.name}</TableCell>
                 <TableCell>{dist.cnpj || '-'}</TableCell>
                 <TableCell>
-                  {dist.city ? `${dist.city.name}/${dist.city.state}` : '-'}
+                  {city ? `${city.name}/${city.state}` : '-'}
                 </TableCell>
                 <TableCell>{getStatusBadge(dist.is_active)}</TableCell>
                 <TableCell className="text-right">
@@ -125,7 +128,8 @@ export default function DistributorList() {
                   </Button>
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       </div>

@@ -104,7 +104,22 @@ export function useAdminMetrics() {
         .select('*')
         .eq('status', 'active');
 
+      const { count: totalOrders } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true });
+
+      const { data: allOrders } = await supabase
+        .from('orders')
+        .select('total');
+
+      const totalRevenue = (allOrders || []).reduce((sum, order) => sum + Number(order.total), 0);
       const monthlyRevenue = (subscriptions || []).reduce((sum, sub) => sum + Number(sub.price), 0);
+      const activeSubscriptions = subscriptions?.length || 0;
+
+      const { count: activeCities } = await supabase
+        .from('cities')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true);
 
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
@@ -122,6 +137,10 @@ export function useAdminMetrics() {
         monthlyRevenue,
         newUsersThisMonth: newUsersThisMonth || 0,
         monthlyGrowth: 12.5,
+        totalOrders: totalOrders || 0,
+        totalRevenue,
+        activeSubscriptions,
+        activeCities: activeCities || 0,
       };
     },
   });
@@ -145,6 +164,7 @@ export function useAdminFinancialData() {
       const annualPlans = activeSubscriptions.filter(s => s.plan === 'annual');
 
       return {
+        subscriptions: subscriptions || [],
         totalSubscriptions: subscriptions?.length || 0,
         activeSubscriptions: activeSubscriptions.length,
         inactiveSubscriptions: inactiveSubscriptions.length,

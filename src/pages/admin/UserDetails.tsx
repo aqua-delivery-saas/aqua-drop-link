@@ -60,7 +60,7 @@ export default function UserDetails() {
 
   const handleResetPassword = () => {
     toast.success('Email enviado!', {
-      description: `Um link de recuperação foi enviado para ${user.email}`,
+      description: `Um link de recuperação foi enviado para o usuário`,
       duration: 4000,
     });
   };
@@ -84,7 +84,7 @@ export default function UserDetails() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-heading-1 text-foreground">{user.full_name || 'Usuário'}</h1>
-          <p className="text-body-lg text-muted-foreground mt-2">{user.email}</p>
+          <p className="text-body-lg text-muted-foreground mt-2">{user.phone || 'Sem telefone'}</p>
         </div>
         <Badge className="bg-accent-green/10 text-accent-green">
           Ativo
@@ -107,21 +107,12 @@ export default function UserDetails() {
 
             <div>
               <Label className="text-body-sm text-muted-foreground flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                Email
+                <Phone className="w-4 h-4" />
+                Telefone
               </Label>
-              <Input defaultValue={user.email || ''} className="mt-1" disabled />
+              <Input defaultValue={user.phone || ''} className="mt-1" />
             </div>
 
-            {user.phone && (
-              <div>
-                <Label className="text-body-sm text-muted-foreground flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  Telefone
-                </Label>
-                <Input defaultValue={user.phone} className="mt-1" />
-              </div>
-            )}
           </CardContent>
         </Card>
 
