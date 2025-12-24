@@ -4,10 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageCircle, Check, Calendar, Clock } from "lucide-react";
+import { MessageCircle, Check, Calendar, Clock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useDistributorOrders, useUpdateOrderStatus } from "@/hooks/useDistributor";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type DeliveryPeriod = "manha" | "tarde" | "noite";
 
@@ -17,234 +19,115 @@ const periodLabels: Record<DeliveryPeriod, string> = {
   noite: "Noite (18:00 - 21:00)",
 };
 
-interface Order {
-  id: string;
-  customerName: string;
-  brand: string;
-  quantity: number;
-  address: string;
-  paymentMethod: string;
-  status: "novo" | "em-entrega" | "concluido";
-  phone: string;
-  date: string;
-  type: "immediate" | "scheduled";
-  scheduledDate?: string;
-  scheduledPeriod?: DeliveryPeriod;
-}
+const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
+  novo: { label: 'Novo', variant: 'default' },
+  em_entrega: { label: 'Em Entrega', variant: 'secondary' },
+  concluido: { label: 'Concluído', variant: 'outline' },
+  cancelado: { label: 'Cancelado', variant: 'destructive' },
+};
 
 const Orders = () => {
+  const { data: orders = [], isLoading } = useDistributorOrders();
+  const updateOrderStatus = useUpdateOrderStatus();
   const [sortBy, setSortBy] = useState<string>("date-desc");
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: "1",
-      customerName: "João Silva",
-      brand: "Água Mineral Crystal",
-      quantity: 3,
-      address: "Rua das Flores, 456 - Centro",
-      paymentMethod: "Dinheiro",
-      status: "novo",
-      phone: "11999998888",
-      date: "2025-01-15 10:30",
-      type: "immediate",
-    },
-    {
-      id: "2",
-      customerName: "Maria Santos",
-      brand: "Água Mineral Indaiá",
-      quantity: 2,
-      address: "Av. Principal, 789 - Jardim",
-      paymentMethod: "Pix",
-      status: "em-entrega",
-      phone: "11988887777",
-      date: "2025-01-15 09:15",
-      type: "immediate",
-    },
-    {
-      id: "3",
-      customerName: "Pedro Oliveira",
-      brand: "Água Mineral São Lourenço",
-      quantity: 5,
-      address: "Rua do Comércio, 321 - Vila Nova",
-      paymentMethod: "Cartão na Entrega",
-      status: "novo",
-      phone: "11977776666",
-      date: "2025-01-15 11:45",
-      type: "immediate",
-    },
-    {
-      id: "4",
-      customerName: "Ana Beatriz",
-      brand: "Água Mineral Crystal",
-      quantity: 4,
-      address: "Rua das Palmeiras, 100 - Centro",
-      paymentMethod: "Pix",
-      status: "novo",
-      phone: "11966665555",
-      date: "2025-01-14 16:00",
-      type: "scheduled",
-      scheduledDate: "2025-01-20",
-      scheduledPeriod: "manha",
-    },
-    {
-      id: "5",
-      customerName: "Carlos Eduardo",
-      brand: "Água Mineral Indaiá",
-      quantity: 6,
-      address: "Av. Brasil, 500 - Jardim América",
-      paymentMethod: "Dinheiro",
-      status: "novo",
-      phone: "11955554444",
-      date: "2025-01-13 10:00",
-      type: "scheduled",
-      scheduledDate: "2025-01-18",
-      scheduledPeriod: "tarde",
-    },
-    {
-      id: "6",
-      customerName: "Fernanda Lima",
-      brand: "Água Mineral São Lourenço",
-      quantity: 3,
-      address: "Rua dos Pinheiros, 222 - Vila Nova",
-      paymentMethod: "Cartão na Entrega",
-      status: "novo",
-      phone: "11944443333",
-      date: "2025-01-12 09:30",
-      type: "scheduled",
-      scheduledDate: "2025-01-22",
-      scheduledPeriod: "manha",
-    },
-  ]);
 
-  const immediateOrders = useMemo(() => orders.filter(o => o.type === "immediate"), [orders]);
-  const scheduledOrders = useMemo(() => orders.filter(o => o.type === "scheduled"), [orders]);
+  const immediateOrders = useMemo(() => orders.filter(o => o.order_type === "immediate"), [orders]);
+  const scheduledOrders = useMemo(() => orders.filter(o => o.order_type === "scheduled"), [orders]);
   const scheduledCount = scheduledOrders.filter(o => o.status === "novo").length;
-
-  const getStatusBadge = (status: Order["status"]) => {
-    const variants = {
-      "novo": "default",
-      "em-entrega": "secondary",
-      "concluido": "outline",
-    } as const;
-
-    const labels = {
-      "novo": "Novo",
-      "em-entrega": "Em Entrega",
-      "concluido": "Concluído",
-    };
-
-    return <Badge variant={variants[status]}>{labels[status]}</Badge>;
-  };
 
   const handleWhatsApp = (phone: string, customerName: string) => {
     const message = encodeURIComponent(`Olá ${customerName}, sua entrega está a caminho!`);
     window.open(`https://wa.me/55${phone.replace(/\D/g, "")}?text=${message}`, "_blank");
   };
 
-  const markAsDelivered = (id: string) => {
-    setOrders(orders.map(order => 
-      order.id === id ? { ...order, status: "concluido" as const } : order
-    ));
-    toast.success("Pedido marcado como entregue!", {
-      description: "O cliente foi notificado sobre a entrega.",
-      duration: 3000,
-    });
+  const markAsDelivered = async (id: string) => {
+    await updateOrderStatus.mutateAsync({ id, status: "concluido" });
+    toast.success("Pedido marcado como entregue!");
   };
 
-  const sortOrders = (orderList: Order[]) => {
+  const sortOrders = (orderList: typeof orders) => {
     const sorted = [...orderList];
-    
     switch (sortBy) {
       case "date-desc":
-        return sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        return sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       case "date-asc":
-        return sorted.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        return sorted.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
       case "customer-asc":
-        return sorted.sort((a, b) => a.customerName.localeCompare(b.customerName));
-      case "customer-desc":
-        return sorted.sort((a, b) => b.customerName.localeCompare(a.customerName));
+        return sorted.sort((a, b) => a.customer_name.localeCompare(b.customer_name));
       case "status":
-        const statusOrder = { "novo": 0, "em-entrega": 1, "concluido": 2 };
-        return sorted.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
-      case "quantity-desc":
-        return sorted.sort((a, b) => b.quantity - a.quantity);
-      case "quantity-asc":
-        return sorted.sort((a, b) => a.quantity - b.quantity);
-      case "scheduled-date":
-        return sorted.sort((a, b) => {
-          const dateA = a.scheduledDate ? new Date(a.scheduledDate).getTime() : 0;
-          const dateB = b.scheduledDate ? new Date(b.scheduledDate).getTime() : 0;
-          return dateA - dateB;
-        });
+        const statusOrder = { novo: 0, em_entrega: 1, concluido: 2, cancelado: 3 };
+        return sorted.sort((a, b) => (statusOrder[a.status as keyof typeof statusOrder] || 0) - (statusOrder[b.status as keyof typeof statusOrder] || 0));
       default:
         return sorted;
     }
   };
 
-  const renderOrderCard = (order: Order, index: number) => (
+  const renderOrderCard = (order: typeof orders[0], index: number) => (
     <Card key={order.id} className="hover-lift animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-xl">{order.customerName}</CardTitle>
-            <CardDescription className="text-sm">{order.date}</CardDescription>
+            <CardTitle className="text-xl">{order.customer_name}</CardTitle>
+            <CardDescription className="text-sm">
+              {formatDistanceToNow(new Date(order.created_at), { addSuffix: true, locale: ptBR })}
+            </CardDescription>
           </div>
           <div className="flex gap-2">
-            {order.type === "scheduled" && (
+            {order.order_type === "scheduled" && (
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                 <Calendar className="h-3 w-3 mr-1" />
                 Agendado
               </Badge>
             )}
-            {getStatusBadge(order.status)}
+            <Badge variant={statusLabels[order.status]?.variant || 'default'}>
+              {statusLabels[order.status]?.label || order.status}
+            </Badge>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         <div className="grid md:grid-cols-2 gap-4 mb-4">
           <div>
-            <p className="text-sm text-muted-foreground">Produto</p>
-            <p className="font-semibold">{order.brand} × {order.quantity}</p>
+            <p className="text-sm text-muted-foreground">Pedido</p>
+            <p className="font-semibold">#{order.order_number}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Pagamento</p>
-            <p className="font-semibold">{order.paymentMethod}</p>
+            <p className="font-semibold">{order.payment_method}</p>
           </div>
-          {order.type === "scheduled" && order.scheduledDate && order.scheduledPeriod && (
+          <div>
+            <p className="text-sm text-muted-foreground">Total</p>
+            <p className="font-semibold text-primary">R$ {Number(order.total).toFixed(2)}</p>
+          </div>
+          {order.order_type === "scheduled" && order.scheduled_date && order.delivery_period && (
             <div className="md:col-span-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
               <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-primary" />
                   <span className="font-medium">
-                    {format(new Date(order.scheduledDate), "dd 'de' MMMM", { locale: ptBR })}
+                    {format(new Date(order.scheduled_date), "dd 'de' MMMM", { locale: ptBR })}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-primary" />
-                  <span className="font-medium">{periodLabels[order.scheduledPeriod]}</span>
+                  <span className="font-medium">{periodLabels[order.delivery_period as DeliveryPeriod] || order.delivery_period}</span>
                 </div>
               </div>
             </div>
           )}
           <div className="md:col-span-2">
             <p className="text-sm text-muted-foreground">Endereço de Entrega</p>
-            <p className="font-semibold">{order.address}</p>
+            <p className="font-semibold">{order.delivery_street}, {order.delivery_number}</p>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
-          <Button
-            variant="secondary"
-            onClick={() => handleWhatsApp(order.phone, order.customerName)}
-            className="w-full sm:w-auto touch-input"
-          >
+          <Button variant="secondary" onClick={() => handleWhatsApp(order.customer_phone, order.customer_name)} className="w-full sm:w-auto touch-input">
             <MessageCircle className="mr-2 h-4 w-4" />
             Abrir no WhatsApp
           </Button>
-          {order.status !== "concluido" && (
-            <Button
-              onClick={() => markAsDelivered(order.id)}
-              className="w-full sm:w-auto touch-input bg-secondary hover:bg-secondary/90"
-            >
-              <Check className="mr-2 h-4 w-4" />
+          {order.status !== "concluido" && order.status !== "cancelado" && (
+            <Button onClick={() => markAsDelivered(order.id)} className="w-full sm:w-auto touch-input bg-secondary hover:bg-secondary/90" disabled={updateOrderStatus.isPending}>
+              {updateOrderStatus.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
               Marcar como Entregue
             </Button>
           )}
@@ -252,6 +135,19 @@ const Orders = () => {
       </CardContent>
     </Card>
   );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <main className="container mx-auto px-4 py-8">
+          <Skeleton className="h-8 w-48 mb-4" />
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full" />)}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -265,73 +161,35 @@ const Orders = () => {
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Ordenar por:</span>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="date-desc">Data (Mais recentes)</SelectItem>
                   <SelectItem value="date-asc">Data (Mais antigos)</SelectItem>
                   <SelectItem value="customer-asc">Cliente (A-Z)</SelectItem>
-                  <SelectItem value="customer-desc">Cliente (Z-A)</SelectItem>
                   <SelectItem value="status">Status</SelectItem>
-                  <SelectItem value="quantity-desc">Quantidade (Maior)</SelectItem>
-                  <SelectItem value="quantity-asc">Quantidade (Menor)</SelectItem>
-                  <SelectItem value="scheduled-date">Data Agendada</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
         </div>
 
-        <Tabs defaultValue="immediate" className="w-full">
+        <Tabs defaultValue="all" className="w-full">
           <TabsList className="w-full max-w-md mb-6">
-            <TabsTrigger value="immediate" className="flex-1">
-              Imediatos
-              <Badge variant="secondary" className="ml-2">{immediateOrders.length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="scheduled" className="flex-1">
-              Agendados
-              {scheduledCount > 0 && (
-                <Badge className="ml-2 bg-primary animate-pulse">{scheduledCount}</Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="all" className="flex-1">
-              Todos
-              <Badge variant="secondary" className="ml-2">{orders.length}</Badge>
-            </TabsTrigger>
+            <TabsTrigger value="immediate" className="flex-1">Imediatos<Badge variant="secondary" className="ml-2">{immediateOrders.length}</Badge></TabsTrigger>
+            <TabsTrigger value="scheduled" className="flex-1">Agendados{scheduledCount > 0 && <Badge className="ml-2 bg-primary animate-pulse">{scheduledCount}</Badge>}</TabsTrigger>
+            <TabsTrigger value="all" className="flex-1">Todos<Badge variant="secondary" className="ml-2">{orders.length}</Badge></TabsTrigger>
           </TabsList>
-
           <TabsContent value="immediate" className="space-y-4 pb-mobile-nav">
             {sortOrders(immediateOrders).map((order, index) => renderOrderCard(order, index))}
-            {immediateOrders.length === 0 && (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <p className="text-muted-foreground">Nenhum pedido imediato.</p>
-                </CardContent>
-              </Card>
-            )}
+            {immediateOrders.length === 0 && <Card className="text-center py-12"><CardContent><p className="text-muted-foreground">Nenhum pedido imediato.</p></CardContent></Card>}
           </TabsContent>
-
           <TabsContent value="scheduled" className="space-y-4 pb-mobile-nav">
             {sortOrders(scheduledOrders).map((order, index) => renderOrderCard(order, index))}
-            {scheduledOrders.length === 0 && (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <p className="text-muted-foreground">Nenhum pedido agendado.</p>
-                </CardContent>
-              </Card>
-            )}
+            {scheduledOrders.length === 0 && <Card className="text-center py-12"><CardContent><p className="text-muted-foreground">Nenhum pedido agendado.</p></CardContent></Card>}
           </TabsContent>
-
           <TabsContent value="all" className="space-y-4 pb-mobile-nav">
             {sortOrders(orders).map((order, index) => renderOrderCard(order, index))}
-            {orders.length === 0 && (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <p className="text-muted-foreground">Nenhum pedido recebido ainda.</p>
-                </CardContent>
-              </Card>
-            )}
+            {orders.length === 0 && <Card className="text-center py-12"><CardContent><p className="text-muted-foreground">Nenhum pedido recebido ainda.</p></CardContent></Card>}
           </TabsContent>
         </Tabs>
       </main>
