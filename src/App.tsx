@@ -59,21 +59,107 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             
-            {/* Distributor Routes */}
+            {/* Distributor Public Routes */}
             <Route path="/distributor/login" element={<LoginDistributor />} />
             <Route path="/distributor/signup" element={<SignupDistributor />} />
-            <Route path="/distributor/onboarding" element={<Onboarding />} />
-            <Route path="/distributor/dashboard" element={<DistributorLayout><Dashboard /></DistributorLayout>} />
-            <Route path="/distributor/products" element={<DistributorLayout><Products /></DistributorLayout>} />
-            <Route path="/distributor/settings" element={<DistributorLayout><Settings /></DistributorLayout>} />
-            <Route path="/distributor/settings/seo" element={<DistributorLayout><SeoSettings /></DistributorLayout>} />
-            <Route path="/distributor/settings/business-hours" element={<DistributorLayout><BusinessHours /></DistributorLayout>} />
-            <Route path="/distributor/settings/discounts" element={<DistributorLayout><DiscountSettings /></DistributorLayout>} />
-            <Route path="/distributor/settings/loyalty" element={<DistributorLayout><LoyaltyProgram /></DistributorLayout>} />
-            <Route path="/distributor/subscription" element={<DistributorLayout><Subscription /></DistributorLayout>} />
-            <Route path="/distributor/orders" element={<DistributorLayout><Orders /></DistributorLayout>} />
-            <Route path="/distributor/reports" element={<DistributorLayout><Reports /></DistributorLayout>} />
-            <Route path="/distributor/profile" element={<DistributorLayout><Profile /></DistributorLayout>} />
+            
+            {/* Distributor Protected Routes */}
+            <Route 
+              path="/distributor/onboarding" 
+              element={
+                <ProtectedRoute requiredRole="distributor">
+                  <Onboarding />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/distributor/dashboard" 
+              element={
+                <ProtectedRoute requiredRole="distributor">
+                  <DistributorLayout><Dashboard /></DistributorLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/distributor/products" 
+              element={
+                <ProtectedRoute requiredRole="distributor">
+                  <DistributorLayout><Products /></DistributorLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/distributor/settings" 
+              element={
+                <ProtectedRoute requiredRole="distributor">
+                  <DistributorLayout><Settings /></DistributorLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/distributor/settings/seo" 
+              element={
+                <ProtectedRoute requiredRole="distributor">
+                  <DistributorLayout><SeoSettings /></DistributorLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/distributor/settings/business-hours" 
+              element={
+                <ProtectedRoute requiredRole="distributor">
+                  <DistributorLayout><BusinessHours /></DistributorLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/distributor/settings/discounts" 
+              element={
+                <ProtectedRoute requiredRole="distributor">
+                  <DistributorLayout><DiscountSettings /></DistributorLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/distributor/settings/loyalty" 
+              element={
+                <ProtectedRoute requiredRole="distributor">
+                  <DistributorLayout><LoyaltyProgram /></DistributorLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/distributor/subscription" 
+              element={
+                <ProtectedRoute requiredRole="distributor">
+                  <DistributorLayout><Subscription /></DistributorLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/distributor/orders" 
+              element={
+                <ProtectedRoute requiredRole="distributor">
+                  <DistributorLayout><Orders /></DistributorLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/distributor/reports" 
+              element={
+                <ProtectedRoute requiredRole="distributor">
+                  <DistributorLayout><Reports /></DistributorLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/distributor/profile" 
+              element={
+                <ProtectedRoute requiredRole="distributor">
+                  <DistributorLayout><Profile /></DistributorLayout>
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Customer Routes */}
             <Route path="/distribuidoras/:citySlug" element={<CityDistributors />} />

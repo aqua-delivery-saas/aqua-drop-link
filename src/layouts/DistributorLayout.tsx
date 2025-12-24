@@ -14,11 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-
-const mockUser = {
-  name: "João Silva",
-  email: "joao@aguapura.com.br",
-};
+import { useAuth } from "@/hooks/useAuth";
+import { useDistributor } from "@/hooks/useDistributor";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const bottomNavItems = [
   { title: "Dashboard", path: "/distributor/dashboard", icon: LayoutDashboard },
@@ -33,13 +31,19 @@ interface DistributorLayoutProps {
 
 export function DistributorLayout({ children }: DistributorLayoutProps) {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { data: distributor, isLoading } = useDistributor();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logout();
     toast.success("Logout realizado com sucesso!", {
       description: "Até logo!",
     });
     navigate("/distributor/login");
   };
+
+  const displayName = distributor?.name || user?.user_metadata?.full_name || user?.email || "Distribuidora";
+  const email = user?.email || "";
 
   return (
     <SidebarProvider>
@@ -56,14 +60,18 @@ export function DistributorLayout({ children }: DistributorLayoutProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2">
                   <UserCircle className="h-5 w-5" />
-                  <span className="hidden md:inline-block">{mockUser.name}</span>
+                  {isLoading ? (
+                    <Skeleton className="h-4 w-24 hidden md:block" />
+                  ) : (
+                    <span className="hidden md:inline-block">{displayName}</span>
+                  )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 animate-fade-in">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium">{mockUser.name}</p>
-                    <p className="text-xs text-muted-foreground">{mockUser.email}</p>
+                    <p className="text-sm font-medium">{displayName}</p>
+                    <p className="text-xs text-muted-foreground">{email}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
