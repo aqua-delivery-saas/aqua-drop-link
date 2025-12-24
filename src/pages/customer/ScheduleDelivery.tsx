@@ -9,23 +9,162 @@ import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/Logo";
 import { Minus, Plus, MapPin, CreditCard, Calendar } from "lucide-react";
 import { toast } from "sonner";
-import { getDistribuidoraBySlug } from "@/data/mockData";
 import { Helmet } from "react-helmet-async";
 import { DeliveryScheduler } from "@/components/customer/DeliveryScheduler";
-
-interface Product {
-  id: string;
-  name: string;
-  litros: number;
-  price: number;
-  foto?: string;
-}
+import { useDistributorBySlug } from "@/hooks/useCities";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ScheduleDelivery = () => {
   const navigate = useNavigate();
   const { distributorSlug } = useParams();
   
-  const distribuidora = getDistribuidoraBySlug(distributorSlug || "");
+  const { data: distribuidora, isLoading: distributorLoading } = useDistributorBySlug(distributorSlug || "");
+
+  // Fetch products for this distributor
+  const { data: products, isLoading: productsLoading } = useQuery({
+    queryKey: ['distributor-products', distribuidora?.id],
+    queryFn: async () => {
+      if (!distribuidora?.id) return [];
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('distributor_id', distribuidora.id)
+        .eq('is_available', true)
+        .order('sort_order');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!distribuidora?.id,
+  });
+
+  // Fetch business hours
+  const { data: businessHours } = useQuery({
+    queryKey: ['business-hours', distribuidora?.id],
+    queryFn: async () => {
+      if (!distribuidora?.id) return [];
+      const { data, error } = await supabase
+        .from('business_hours')
+        .select('*')
+        .eq('distributor_id', distribuidora.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!distribuidora?.id,
+  });
+
+  // Fetch discount rules
+  const { data: discountRules } = useQuery({
+    queryKey: ['discount-rules', distribuidora?.id],
+    queryFn: async () => {
+      if (!distribuidora?.id) return [];
+      const { data, error } = await supabase
+        .from('discount_rules')
+        .select('*')
+        .eq('distributor_id', distribuidora.id)
+        .eq('is_active', true)
+        .order('min_quantity');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!distribuidora?.id,
+  });
+
+  const isLoading = distributorLoading || productsLoading;
+
+  const [selectedProduct, setSelectedProduct] = useState<string>("");
+  const [quantity, setQuantity] = useState(1);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedTime, setSelectedTime] = useState("");
+  const [address, setAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Calculate discount based on quantity
+  const calculateDiscount = (qty: number): number => {
+    if (!discountRules || discountRules.length === 0) return 0;
+    
+    const applicableRule = discountRules
+      .filter(rule => qty >= rule.min_quantity && (!rule.max_quantity || qty <= rule.max_quantity))
+      .sort((a, b) => b.discount_percent - a.discount_percent)[0];
+    
+    return applicableRule ? Number(applicableRule.discount_percent) : 0;
+  };
+
+  const handleQuantityChange = (delta: number) => {
+    setQuantity(Math.max(1, quantity + delta));
+  };
+
+  const handleSchedule = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!selectedProduct || !selectedDate || !selectedTime || !address || !paymentMethod) {
+      toast.error("Preencha todos os campos obrigatórios");
+      return;
+    }
+
+    setLoading(true);
+
+    setTimeout(() => {
+      const product = (products || []).find(p => p.id === selectedProduct);
+      const subtotal = (Number(product?.price) || 0) * quantity;
+      const discountPercentage = calculateDiscount(quantity);
+      const discountAmount = subtotal * (discountPercentage / 100);
+      const total = subtotal - discountAmount;
+
+      navigate("/schedule/confirmation", {
+        state: {
+          product: product?.name,
+          quantity,
+          address,
+          paymentMethod,
+          subtotal,
+          discount: discountAmount,
+          total,
+          distributor: distribuidora?.name,
+          scheduledDate: selectedDate.toLocaleDateString('pt-BR'),
+          scheduledTime: selectedTime,
+          whatsappUrl: distribuidora?.whatsapp ? `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(
+            `Olá! Agendamento de Entrega:\n\nProduto: ${product?.name}\nQtd: ${quantity}\nData: ${selectedDate.toLocaleDateString('pt-BR')}\nHorário: ${selectedTime}\nTotal: R$ ${total.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}`
+          )}` : null,
+        },
+      });
+      setLoading(false);
+    }, 1000);
+  };
+
+  const selectedProductData = (products || []).find(p => p.id === selectedProduct);
+  const subtotal = selectedProductData ? Number(selectedProductData.price) * quantity : 0;
+  const discountPercentage = calculateDiscount(quantity);
+  const discountAmount = subtotal * (discountPercentage / 100);
+  const total = subtotal - discountAmount;
+
+  // Convert business hours to the format expected by DeliveryScheduler
+  const formattedBusinessHours = (businessHours || []).map(bh => {
+    const dayNames = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+    return {
+      dia_semana: dayNames[bh.day_of_week] || '',
+      hora_abertura: bh.open_time || '08:00',
+      hora_fechamento: bh.close_time || '18:00',
+      ativo: bh.is_open,
+    };
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b bg-card shadow-sm">
+          <div className="container mx-auto px-4 py-4">
+            <Skeleton className="h-8 w-32" />
+          </div>
+        </header>
+        <main className="container mx-auto px-4 py-8 max-w-2xl">
+          <Skeleton className="h-96 w-full" />
+        </main>
+      </div>
+    );
+  }
   
   if (!distribuidora) {
     return (
@@ -45,91 +184,14 @@ const ScheduleDelivery = () => {
     );
   }
 
-  const products = distribuidora.products.map(p => ({
-    id: p.id.toString(),
-    name: p.name,
-    litros: p.litros,
-    price: p.price,
-    foto: p.foto
-  }));
-
-  const [selectedProduct, setSelectedProduct] = useState<string>("");
-  const [quantity, setQuantity] = useState(1);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [selectedTime, setSelectedTime] = useState("");
-  const [address, setAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  // Calcular desconto baseado na quantidade
-  const calculateDiscount = (qty: number): number => {
-    const { tier1, tier2 } = distribuidora.discounts;
-    
-    if (qty >= tier2.min) {
-      return tier2.percentage;
-    } else if (qty >= tier1.min && qty <= tier1.max) {
-      return tier1.percentage;
-    }
-    return 0;
-  };
-
-  const handleQuantityChange = (delta: number) => {
-    setQuantity(Math.max(1, quantity + delta));
-  };
-
-  const handleSchedule = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!selectedProduct || !selectedDate || !selectedTime || !address || !paymentMethod) {
-      toast.error("Preencha todos os campos obrigatórios");
-      return;
-    }
-
-    setLoading(true);
-
-    setTimeout(() => {
-      const product = products.find(p => p.id === selectedProduct);
-      const subtotal = (product?.price || 0) * quantity;
-      const discountPercentage = calculateDiscount(quantity);
-      const discountAmount = subtotal * (discountPercentage / 100);
-      const total = subtotal - discountAmount;
-
-      navigate("/schedule/confirmation", {
-        state: {
-          product: product?.name,
-          quantity,
-          address,
-          paymentMethod,
-          subtotal,
-          discount: discountAmount,
-          total,
-          distributor: distribuidora.nome,
-          scheduledDate: selectedDate.toLocaleDateString('pt-BR'),
-          scheduledTime: selectedTime,
-          whatsappUrl: `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(
-            `Olá! Agendamento de Entrega:\n\nProduto: ${product?.name}\nQtd: ${quantity}\nData: ${selectedDate.toLocaleDateString('pt-BR')}\nHorário: ${selectedTime}\nTotal: R$ ${total.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}`
-          )}`,
-        },
-      });
-      setLoading(false);
-    }, 1000);
-  };
-
-  const selectedProductData = products.find(p => p.id === selectedProduct);
-  const subtotal = selectedProductData ? selectedProductData.price * quantity : 0;
-  const discountPercentage = calculateDiscount(quantity);
-  const discountAmount = subtotal * (discountPercentage / 100);
-  const total = subtotal - discountAmount;
-
-  const pageTitle = `${distribuidora.nome} - Agendar Entrega`;
-  const pageDescription = `Agende sua entrega de água mineral com ${distribuidora.nome}`;
+  const pageTitle = `${distribuidora.name} - Agendar Entrega`;
+  const pageDescription = `Agende sua entrega de água mineral com ${distribuidora.name}`;
 
   return (
     <>
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
-        <meta name="keywords" content={distribuidora.palavras_chave} />
       </Helmet>
       
       <div className="min-h-screen bg-background">
@@ -138,7 +200,7 @@ const ScheduleDelivery = () => {
             <div className="flex justify-between items-center">
               <div>
                 <Logo size="md" />
-                <p className="text-sm text-muted-foreground mt-1">{distribuidora.nome}</p>
+                <p className="text-sm text-muted-foreground mt-1">{distribuidora.name}</p>
               </div>
               <Badge variant="default" className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
@@ -157,7 +219,7 @@ const ScheduleDelivery = () => {
           </div>
 
           <form onSubmit={handleSchedule} className="space-y-6">
-            {/* Seleção de Produto */}
+            {/* Product Selection */}
             <Card>
               <CardHeader>
                 <CardTitle>1. Escolha o Produto</CardTitle>
@@ -166,33 +228,37 @@ const ScheduleDelivery = () => {
               <CardContent className="space-y-6">
                 <div className="space-y-3">
                   <Label className="text-base">Marca</Label>
-                  <RadioGroup value={selectedProduct} onValueChange={setSelectedProduct}>
-                    {products.map((product) => (
-                      <div
-                        key={product.id}
-                        className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                        onClick={() => setSelectedProduct(product.id)}
-                      >
-                        <RadioGroupItem value={product.id} id={`schedule-${product.id}`} />
-                        {product.foto && (
-                          <img 
-                            src={product.foto} 
-                            alt={product.name}
-                            className="w-16 h-16 object-cover rounded-md"
-                          />
-                        )}
-                        <Label htmlFor={`schedule-${product.id}`} className="flex-1 cursor-pointer">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <div className="font-medium">{product.name}</div>
-                              <div className="text-sm text-muted-foreground">{product.litros}L</div>
+                  {(products || []).length === 0 ? (
+                    <p className="text-muted-foreground">Nenhum produto disponível</p>
+                  ) : (
+                    <RadioGroup value={selectedProduct} onValueChange={setSelectedProduct}>
+                      {(products || []).map((product) => (
+                        <div
+                          key={product.id}
+                          className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                          onClick={() => setSelectedProduct(product.id)}
+                        >
+                          <RadioGroupItem value={product.id} id={`schedule-${product.id}`} />
+                          {product.image_url && (
+                            <img 
+                              src={product.image_url} 
+                              alt={product.name}
+                              className="w-16 h-16 object-cover rounded-md"
+                            />
+                          )}
+                          <Label htmlFor={`schedule-${product.id}`} className="flex-1 cursor-pointer">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <div className="font-medium">{product.name}</div>
+                                <div className="text-sm text-muted-foreground">{product.liters}L</div>
+                              </div>
+                              <span className="text-primary font-bold">R$ {Number(product.price).toFixed(2)}</span>
                             </div>
-                            <span className="text-primary font-bold">R$ {product.price.toFixed(2)}</span>
-                          </div>
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -220,11 +286,11 @@ const ScheduleDelivery = () => {
               </CardContent>
             </Card>
 
-            {/* Seleção de Data e Horário */}
+            {/* Date and Time Selection */}
             <div>
               <h3 className="text-xl font-semibold mb-3">2. Escolha Data e Horário</h3>
               <DeliveryScheduler
-                businessHours={distribuidora.businessHours}
+                businessHours={formattedBusinessHours}
                 selectedDate={selectedDate}
                 onDateChange={setSelectedDate}
                 selectedTime={selectedTime}
@@ -232,7 +298,7 @@ const ScheduleDelivery = () => {
               />
             </div>
 
-            {/* Endereço */}
+            {/* Address */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -254,7 +320,7 @@ const ScheduleDelivery = () => {
               </CardContent>
             </Card>
 
-            {/* Pagamento */}
+            {/* Payment */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -264,23 +330,29 @@ const ScheduleDelivery = () => {
               </CardHeader>
               <CardContent>
                 <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                    <RadioGroupItem value="dinheiro" id="schedule-dinheiro" />
-                    <Label htmlFor="schedule-dinheiro" className="cursor-pointer flex-1">Dinheiro</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                    <RadioGroupItem value="cartao" id="schedule-cartao" />
-                    <Label htmlFor="schedule-cartao" className="cursor-pointer flex-1">Cartão na Entrega</Label>
-                  </div>
-                  <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                    <RadioGroupItem value="pix" id="schedule-pix" />
-                    <Label htmlFor="schedule-pix" className="cursor-pointer flex-1">Pix</Label>
-                  </div>
+                  {distribuidora.accepts_cash && (
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                      <RadioGroupItem value="dinheiro" id="schedule-dinheiro" />
+                      <Label htmlFor="schedule-dinheiro" className="cursor-pointer flex-1">Dinheiro</Label>
+                    </div>
+                  )}
+                  {distribuidora.accepts_card && (
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                      <RadioGroupItem value="cartao" id="schedule-cartao" />
+                      <Label htmlFor="schedule-cartao" className="cursor-pointer flex-1">Cartão na Entrega</Label>
+                    </div>
+                  )}
+                  {distribuidora.accepts_pix && (
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                      <RadioGroupItem value="pix" id="schedule-pix" />
+                      <Label htmlFor="schedule-pix" className="cursor-pointer flex-1">Pix</Label>
+                    </div>
+                  )}
                 </RadioGroup>
               </CardContent>
             </Card>
 
-            {/* Resumo */}
+            {/* Summary */}
             {selectedProductData && (
               <Card className="border-primary">
                 <CardHeader>

@@ -11,24 +11,26 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ResponsiveTable } from '@/components/ui/ResponsiveTable';
-import { mockUsers } from '@/data/mockAdminData';
+import { useAdminUsers } from '@/hooks/useAdminData';
 import { Search, Eye } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function UserList() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
+  const { data: users, isLoading } = useAdminUsers();
 
-  const filteredUsers = mockUsers.filter((user) => {
-    const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredUsers = (users || []).filter((user) => {
+    const matchesSearch = (user.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.email || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     return matchesSearch && matchesRole;
   });
 
   const getRoleBadge = (role: string) => {
     const variants: Record<string, { label: string; className: string }> = {
-      admin: { label: 'Admin', className: 'bg-primary-light text-primary' },
+      admin: { label: 'Admin', className: 'bg-primary/10 text-primary' },
       distributor: { label: 'Distribuidora', className: 'bg-secondary/10 text-secondary' },
       customer: { label: 'Cliente', className: 'bg-muted text-muted-foreground' },
     };
@@ -36,42 +38,31 @@ export default function UserList() {
     return <Badge className={config.className}>{config.label}</Badge>;
   };
 
-  const getStatusBadge = (isActive: boolean) => (
-    <Badge className={isActive ? 'bg-secondary/10 text-secondary' : 'bg-destructive/10 text-destructive'}>
-      {isActive ? 'Ativo' : 'Inativo'}
-    </Badge>
-  );
-
   const columns = [
     {
       header: 'Nome',
-      accessor: (user: typeof mockUsers[0]) => user.full_name,
+      accessor: (user: any) => user.full_name || 'Não informado',
       mobileLabel: 'Nome',
     },
     {
       header: 'Email',
-      accessor: (user: typeof mockUsers[0]) => user.email,
+      accessor: (user: any) => user.email || '-',
       mobileLabel: 'Email',
     },
     {
       header: 'Tipo',
-      accessor: (user: typeof mockUsers[0]) => getRoleBadge(user.role),
+      accessor: (user: any) => getRoleBadge(user.role || 'customer'),
       mobileLabel: 'Tipo',
     },
     {
-      header: 'Status',
-      accessor: (user: typeof mockUsers[0]) => getStatusBadge(user.is_active),
-      mobileLabel: 'Status',
-    },
-    {
       header: 'Data de Cadastro',
-      accessor: (user: typeof mockUsers[0]) => new Date(user.created_at).toLocaleDateString('pt-BR'),
+      accessor: (user: any) => new Date(user.created_at).toLocaleDateString('pt-BR'),
       mobileLabel: 'Cadastro',
       hiddenOnMobile: true,
     },
     {
       header: 'Ações',
-      accessor: (user: typeof mockUsers[0]) => (
+      accessor: (user: any) => (
         <Button
           variant="ghost"
           size="sm"
@@ -87,12 +78,28 @@ export default function UserList() {
     },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <Skeleton className="h-8 w-32 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <div className="flex gap-4">
+          <Skeleton className="h-10 flex-1" />
+          <Skeleton className="h-10 w-48" />
+        </div>
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-heading-1 text-gray-900">Usuários</h1>
-          <p className="text-body-lg text-gray-600 mt-2">
+          <h1 className="text-heading-1 text-foreground">Usuários</h1>
+          <p className="text-body-lg text-muted-foreground mt-2">
             Gerencie todos os usuários do sistema
           </p>
         </div>
