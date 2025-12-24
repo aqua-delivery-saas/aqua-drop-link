@@ -23,7 +23,7 @@ export default function UserList() {
 
   const filteredUsers = (users || []).filter((user) => {
     const matchesSearch = (user.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (user.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+                         (user.phone || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     return matchesSearch && matchesRole;
   });
@@ -45,9 +45,9 @@ export default function UserList() {
       mobileLabel: 'Nome',
     },
     {
-      header: 'Email',
-      accessor: (user: any) => user.email || '-',
-      mobileLabel: 'Email',
+      header: 'Telefone',
+      accessor: (user: any) => user.phone || '-',
+      mobileLabel: 'Telefone',
     },
     {
       header: 'Tipo',
