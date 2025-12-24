@@ -265,6 +265,206 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          product_id: string | null
+          product_liters: number
+          product_name: string
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          product_id?: string | null
+          product_liters: number
+          product_name: string
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          product_id?: string | null
+          product_liters?: number
+          product_name?: string
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          change_for: number | null
+          created_at: string
+          customer_id: string | null
+          customer_name: string
+          customer_phone: string
+          delivery_city: string | null
+          delivery_complement: string | null
+          delivery_fee: number
+          delivery_neighborhood: string | null
+          delivery_number: string | null
+          delivery_period: Database["public"]["Enums"]["delivery_period"] | null
+          delivery_state: string | null
+          delivery_street: string
+          delivery_zip_code: string | null
+          discount_amount: number
+          distributor_id: string
+          id: string
+          loyalty_points_earned: number | null
+          notes: string | null
+          order_number: number
+          order_type: Database["public"]["Enums"]["order_type"]
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          scheduled_date: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          subtotal: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          change_for?: number | null
+          created_at?: string
+          customer_id?: string | null
+          customer_name: string
+          customer_phone: string
+          delivery_city?: string | null
+          delivery_complement?: string | null
+          delivery_fee?: number
+          delivery_neighborhood?: string | null
+          delivery_number?: string | null
+          delivery_period?:
+            | Database["public"]["Enums"]["delivery_period"]
+            | null
+          delivery_state?: string | null
+          delivery_street: string
+          delivery_zip_code?: string | null
+          discount_amount?: number
+          distributor_id: string
+          id?: string
+          loyalty_points_earned?: number | null
+          notes?: string | null
+          order_number?: number
+          order_type?: Database["public"]["Enums"]["order_type"]
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          scheduled_date?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          change_for?: number | null
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string
+          customer_phone?: string
+          delivery_city?: string | null
+          delivery_complement?: string | null
+          delivery_fee?: number
+          delivery_neighborhood?: string | null
+          delivery_number?: string | null
+          delivery_period?:
+            | Database["public"]["Enums"]["delivery_period"]
+            | null
+          delivery_state?: string | null
+          delivery_street?: string
+          delivery_zip_code?: string | null
+          discount_amount?: number
+          distributor_id?: string
+          id?: string
+          loyalty_points_earned?: number | null
+          notes?: string | null
+          order_number?: number
+          order_type?: Database["public"]["Enums"]["order_type"]
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          scheduled_date?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_distributor_id_fkey"
+            columns: ["distributor_id"]
+            isOneToOne: false
+            referencedRelation: "distributors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          paid_at: string | null
+          payment_method: string | null
+          reference_period_end: string | null
+          reference_period_start: string | null
+          status: string
+          subscription_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          reference_period_end?: string | null
+          reference_period_start?: string | null
+          status?: string
+          subscription_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          reference_period_end?: string | null
+          reference_period_start?: string | null
+          status?: string
+          subscription_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           created_at: string
@@ -342,6 +542,53 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          canceled_at: string | null
+          created_at: string
+          distributor_id: string
+          expires_at: string | null
+          id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          price: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["subscription_status"]
+          updated_at: string
+        }
+        Insert: {
+          canceled_at?: string | null
+          created_at?: string
+          distributor_id: string
+          expires_at?: string | null
+          id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          price: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+        }
+        Update: {
+          canceled_at?: string | null
+          created_at?: string
+          distributor_id?: string
+          expires_at?: string | null
+          id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          price?: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_distributor_id_fkey"
+            columns: ["distributor_id"]
+            isOneToOne: true
+            referencedRelation: "distributors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -378,6 +625,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "distributor" | "customer"
+      delivery_period: "manha" | "tarde" | "noite"
+      order_status: "novo" | "em_entrega" | "concluido" | "cancelado"
+      order_type: "immediate" | "scheduled"
+      payment_method: "dinheiro" | "pix" | "cartao" | "cartao_entrega"
+      subscription_plan: "monthly" | "annual"
+      subscription_status: "active" | "pending" | "expired" | "canceled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -506,6 +759,12 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "distributor", "customer"],
+      delivery_period: ["manha", "tarde", "noite"],
+      order_status: ["novo", "em_entrega", "concluido", "cancelado"],
+      order_type: ["immediate", "scheduled"],
+      payment_method: ["dinheiro", "pix", "cartao", "cartao_entrega"],
+      subscription_plan: ["monthly", "annual"],
+      subscription_status: ["active", "pending", "expired", "canceled"],
     },
   },
 } as const
