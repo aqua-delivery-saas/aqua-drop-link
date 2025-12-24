@@ -88,6 +88,47 @@ export type Database = {
         }
         Relationships: []
       }
+      discount_rules: {
+        Row: {
+          created_at: string
+          discount_percent: number
+          distributor_id: string
+          id: string
+          is_active: boolean
+          max_quantity: number | null
+          min_quantity: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discount_percent: number
+          distributor_id: string
+          id?: string
+          is_active?: boolean
+          max_quantity?: number | null
+          min_quantity: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discount_percent?: number
+          distributor_id?: string
+          id?: string
+          is_active?: boolean
+          max_quantity?: number | null
+          min_quantity?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discount_rules_distributor_id_fkey"
+            columns: ["distributor_id"]
+            isOneToOne: false
+            referencedRelation: "distributors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       distributors: {
         Row: {
           accepts_card: boolean | null
@@ -179,6 +220,97 @@ export type Database = {
             columns: ["city_id"]
             isOneToOne: false
             referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_programs: {
+        Row: {
+          created_at: string
+          distributor_id: string
+          id: string
+          is_enabled: boolean
+          points_per_order: number
+          reward_description: string | null
+          reward_threshold: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          distributor_id: string
+          id?: string
+          is_enabled?: boolean
+          points_per_order?: number
+          reward_description?: string | null
+          reward_threshold?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          distributor_id?: string
+          id?: string
+          is_enabled?: boolean
+          points_per_order?: number
+          reward_description?: string | null
+          reward_threshold?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_programs_distributor_id_fkey"
+            columns: ["distributor_id"]
+            isOneToOne: true
+            referencedRelation: "distributors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          created_at: string
+          description: string | null
+          distributor_id: string
+          id: string
+          image_url: string | null
+          is_available: boolean
+          liters: number
+          name: string
+          price: number
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          distributor_id: string
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          liters: number
+          name: string
+          price: number
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          distributor_id?: string
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          liters?: number
+          name?: string
+          price?: number
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_distributor_id_fkey"
+            columns: ["distributor_id"]
+            isOneToOne: false
+            referencedRelation: "distributors"
             referencedColumns: ["id"]
           },
         ]
