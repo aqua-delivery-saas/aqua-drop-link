@@ -3,18 +3,53 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Phone, Mail, Clock, ExternalLink, Heart } from "lucide-react";
-import { mockCidades, getCidadeBySlug, getDistribuidorasByCidade, getCidadeById } from "@/data/mockData";
 import { Helmet } from "react-helmet-async";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useCityBySlug, useDistributorsByCity, useCities } from "@/hooks/useCities";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const CityDistributors = () => {
   const { citySlug } = useParams<{ citySlug: string }>();
   const navigate = useNavigate();
   const { toggleFavorite, isFavorite } = useFavorites();
   
-  const cidade = getCidadeBySlug(citySlug || "");
+  const { data: cidade, isLoading: cityLoading } = useCityBySlug(citySlug || "");
+  const { data: distribuidoras, isLoading: distributorsLoading } = useDistributorsByCity(cidade?.id || "");
+  const { data: allCities } = useCities();
+
+  const isLoading = cityLoading || distributorsLoading;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="bg-gradient-to-br from-primary to-secondary py-16">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <Skeleton className="h-12 w-96 mx-auto mb-4 bg-primary-foreground/20" />
+              <Skeleton className="h-6 w-48 mx-auto bg-primary-foreground/20" />
+            </div>
+          </div>
+        </div>
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-5xl mx-auto space-y-6">
+            {[...Array(3)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-4 w-64" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   if (!cidade) {
     return (
@@ -34,10 +69,8 @@ const CityDistributors = () => {
     );
   }
   
-  const distribuidoras = getDistribuidorasByCidade(cidade.id);
-  
-  const pageTitle = `Distribuidoras de Água em ${cidade.nome} - ${cidade.estado}`;
-  const pageDescription = `Encontre as melhores distribuidoras de água mineral em ${cidade.nome}. Entrega rápida, preços competitivos e água de qualidade.`;
+  const pageTitle = `Distribuidoras de Água em ${cidade.name} - ${cidade.state}`;
+  const pageDescription = `Encontre as melhores distribuidoras de água mineral em ${cidade.name}. Entrega rápida, preços competitivos e água de qualidade.`;
 
   const handleToggleFavorite = (distId: string, distName: string) => {
     const wasFavorite = isFavorite(distId);
@@ -53,13 +86,15 @@ const CityDistributors = () => {
       });
     }
   };
+
+  const otherCities = (allCities || []).filter(c => c.id !== cidade.id && c.is_active);
   
   return (
     <>
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
-        <meta name="keywords" content={`água mineral ${cidade.nome}, distribuidora água ${cidade.nome}, galão água ${cidade.slug}, entrega água ${cidade.estado}`} />
+        <meta name="keywords" content={`água mineral ${cidade.name}, distribuidora água ${cidade.name}, galão água ${cidade.slug}, entrega água ${cidade.state}`} />
         <link rel="canonical" href={`/distribuidoras/${cidade.slug}`} />
       </Helmet>
       
@@ -69,13 +104,13 @@ const CityDistributors = () => {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Distribuidoras de Água em {cidade.nome}
+                Distribuidoras de Água em {cidade.name}
               </h1>
               <p className="text-xl opacity-90 mb-2">
-                {cidade.estado} - {cidade.pais}
+                {cidade.state} - {cidade.country}
               </p>
               <p className="text-lg opacity-80">
-                {distribuidoras.length} {distribuidoras.length === 1 ? 'distribuidora encontrada' : 'distribuidoras encontradas'}
+                {(distribuidoras || []).length} {(distribuidoras || []).length === 1 ? 'distribuidora encontrada' : 'distribuidoras encontradas'}
               </p>
             </div>
           </div>
@@ -84,12 +119,12 @@ const CityDistributors = () => {
         {/* Distribuidoras List */}
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-5xl mx-auto">
-            {distribuidoras.length === 0 ? (
+            {(distribuidoras || []).length === 0 ? (
               <Card>
                 <CardHeader>
                   <CardTitle>Nenhuma distribuidora encontrada</CardTitle>
                   <CardDescription>
-                    Ainda não temos distribuidoras cadastradas em {cidade.nome}.
+                    Ainda não temos distribuidoras cadastradas em {cidade.name}.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -100,34 +135,24 @@ const CityDistributors = () => {
               </Card>
             ) : (
               <div className="space-y-6">
-                {distribuidoras.map((dist) => {
-                  const cidadeInfo = getCidadeById(dist.cidade_id);
-                  const now = new Date();
-                  const currentDay = now.toLocaleDateString('pt-BR', { weekday: 'long' });
-                  const currentTime = now.toTimeString().slice(0, 5);
-                  const todayHours = dist.businessHours.find(h => 
-                    h.dia_semana.toLowerCase() === currentDay.toLowerCase()
-                  );
-                  const isOpen = todayHours?.ativo && 
-                    currentTime >= todayHours.hora_abertura && 
-                    currentTime <= todayHours.hora_fechamento;
-                  const favorited = isFavorite(String(dist.id));
+                {(distribuidoras || []).map((dist) => {
+                  const favorited = isFavorite(dist.id);
                   
                   return (
                     <Card key={dist.id} className="hover:shadow-lg transition-shadow">
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <CardTitle className="text-2xl mb-2">{dist.nome}</CardTitle>
+                            <CardTitle className="text-2xl mb-2">{dist.name}</CardTitle>
                             <CardDescription className="text-base">
-                              {dist.descricao_curta}
+                              {dist.meta_description || 'Distribuidora de água mineral'}
                             </CardDescription>
                           </div>
                           <div className="flex items-center gap-2 ml-4">
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleToggleFavorite(String(dist.id), dist.nome)}
+                              onClick={() => handleToggleFavorite(dist.id, dist.name)}
                               className={cn(
                                 "transition-colors",
                                 favorited && "text-destructive hover:text-destructive"
@@ -140,52 +165,44 @@ const CityDistributors = () => {
                                 )} 
                               />
                             </Button>
-                            <Badge variant={isOpen ? "default" : "secondary"}>
-                              {isOpen ? "Aberta" : "Fechada"}
+                            <Badge variant={dist.is_active ? "default" : "secondary"}>
+                              {dist.is_active ? "Ativa" : "Inativa"}
                             </Badge>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         {/* Address */}
-                        <div className="flex items-start gap-3">
-                          <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                          <div>
-                            <p className="font-medium">Endereço</p>
-                            <p className="text-muted-foreground">
-                              {dist.rua}, {dist.numero} - {dist.bairro}
-                            </p>
-                            <p className="text-muted-foreground">
-                              {cidadeInfo?.nome} - {cidadeInfo?.estado}, CEP: {dist.cep}
-                            </p>
+                        {dist.street && (
+                          <div className="flex items-start gap-3">
+                            <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
+                            <div>
+                              <p className="font-medium">Endereço</p>
+                              <p className="text-muted-foreground">
+                                {dist.street}, {dist.number} - {dist.neighborhood}
+                              </p>
+                              <p className="text-muted-foreground">
+                                {cidade.name} - {cidade.state}, CEP: {dist.zip_code}
+                              </p>
+                            </div>
                           </div>
-                        </div>
+                        )}
                         
                         {/* Contact */}
                         <div className="flex flex-wrap gap-4">
-                          {dist.telefone && (
+                          {dist.phone && (
                             <div className="flex items-center gap-2">
                               <Phone className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{dist.telefone}</span>
+                              <span className="text-sm">{dist.phone}</span>
                             </div>
                           )}
-                          {dist.email_contato && (
+                          {dist.email && (
                             <div className="flex items-center gap-2">
                               <Mail className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{dist.email_contato}</span>
+                              <span className="text-sm">{dist.email}</span>
                             </div>
                           )}
                         </div>
-                        
-                        {/* Business Hours Today */}
-                        {todayHours && todayHours.ativo && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Clock className="h-4 w-4" />
-                            <span>
-                              Hoje: {todayHours.hora_abertura} - {todayHours.hora_fechamento}
-                            </span>
-                          </div>
-                        )}
                         
                         {/* Actions */}
                         <div className="flex gap-3 pt-2">
@@ -194,14 +211,6 @@ const CityDistributors = () => {
                               Fazer Pedido
                             </Link>
                           </Button>
-                          {dist.site && (
-                            <Button variant="outline" asChild>
-                              <a href={dist.site} target="_blank" rel="noopener noreferrer">
-                                <ExternalLink className="h-4 w-4 mr-2" />
-                                Site
-                              </a>
-                            </Button>
-                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -213,30 +222,32 @@ const CityDistributors = () => {
         </div>
         
         {/* Other Cities Section */}
-        <div className="bg-muted py-12">
-          <div className="container mx-auto px-4">
-            <div className="max-w-5xl mx-auto">
-              <h2 className="text-2xl font-bold mb-6">Outras Cidades</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {mockCidades.filter(c => c.id !== cidade.id && c.ativo).map((c) => (
-                  <Button
-                    key={c.id}
-                    variant="outline"
-                    asChild
-                    className="h-auto py-4"
-                  >
-                    <Link to={`/distribuidoras/${c.slug}`}>
-                      <div className="text-center">
-                        <p className="font-semibold">{c.nome}</p>
-                        <p className="text-sm text-muted-foreground">{c.estado}</p>
-                      </div>
-                    </Link>
-                  </Button>
-                ))}
+        {otherCities.length > 0 && (
+          <div className="bg-muted py-12">
+            <div className="container mx-auto px-4">
+              <div className="max-w-5xl mx-auto">
+                <h2 className="text-2xl font-bold mb-6">Outras Cidades</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {otherCities.slice(0, 8).map((c) => (
+                    <Button
+                      key={c.id}
+                      variant="outline"
+                      asChild
+                      className="h-auto py-4"
+                    >
+                      <Link to={`/distribuidoras/${c.slug}`}>
+                        <div className="text-center">
+                          <p className="font-semibold">{c.name}</p>
+                          <p className="text-sm text-muted-foreground">{c.state}</p>
+                        </div>
+                      </Link>
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

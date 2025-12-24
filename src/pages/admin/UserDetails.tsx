@@ -12,19 +12,38 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { mockUsers } from '@/data/mockAdminData';
-import { ArrowLeft, Mail, Phone, MapPin, Shield } from 'lucide-react';
+import { useAdminUserById } from '@/hooks/useAdminData';
+import { ArrowLeft, Mail, Phone, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function UserDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const user = mockUsers.find((u) => u.id === id);
+  const { data: user, isLoading } = useAdminUserById(id || '');
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 max-w-4xl">
+        <Skeleton className="h-10 w-24" />
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
       <div className="text-center py-12">
-        <p className="text-body-lg text-gray-600">Usuário não encontrado</p>
+        <p className="text-body-lg text-muted-foreground">Usuário não encontrado</p>
         <Button onClick={() => navigate('/admin/users')} className="mt-4">
           Voltar para lista
         </Button>
@@ -47,20 +66,10 @@ export default function UserDetails() {
   };
 
   const handleToggleStatus = () => {
-    const newStatus = !user.is_active;
-    toast.success(
-      `Usuário ${newStatus ? 'ativado' : 'desativado'}!`,
-      {
-        description: newStatus 
-          ? 'O usuário agora pode acessar o sistema.' 
-          : 'O usuário não poderá mais acessar o sistema.',
-        duration: 3000,
-        action: {
-          label: 'Desfazer',
-          onClick: () => toast.info('Ação desfeita'),
-        },
-      }
-    );
+    toast.success('Status alterado!', {
+      description: 'O status do usuário foi atualizado.',
+      duration: 3000,
+    });
   };
 
   return (
@@ -74,70 +83,60 @@ export default function UserDetails() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-heading-1 text-gray-900">{user.full_name}</h1>
-          <p className="text-body-lg text-gray-600 mt-2">{user.email}</p>
+          <h1 className="text-heading-1 text-foreground">{user.full_name || 'Usuário'}</h1>
+          <p className="text-body-lg text-muted-foreground mt-2">{user.email}</p>
         </div>
-        <Badge className={user.is_active ? 'bg-accent-green/10 text-accent-green' : 'bg-accent-red/10 text-accent-red'}>
-          {user.is_active ? 'Ativo' : 'Inativo'}
+        <Badge className="bg-accent-green/10 text-accent-green">
+          Ativo
         </Badge>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Informações Básicas */}
-        <Card className="border-gray-300">
+        <Card className="border-border">
           <CardHeader>
-            <CardTitle className="text-heading-3 text-gray-900">
+            <CardTitle className="text-heading-3 text-foreground">
               Informações Básicas
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="text-body-sm text-gray-600">Nome Completo</Label>
-              <Input defaultValue={user.full_name} className="mt-1" />
+              <Label className="text-body-sm text-muted-foreground">Nome Completo</Label>
+              <Input defaultValue={user.full_name || ''} className="mt-1" />
             </div>
 
             <div>
-              <Label className="text-body-sm text-gray-600 flex items-center gap-2">
+              <Label className="text-body-sm text-muted-foreground flex items-center gap-2">
                 <Mail className="w-4 h-4" />
                 Email
               </Label>
-              <Input defaultValue={user.email} className="mt-1" disabled />
+              <Input defaultValue={user.email || ''} className="mt-1" disabled />
             </div>
 
             {user.phone && (
               <div>
-                <Label className="text-body-sm text-gray-600 flex items-center gap-2">
+                <Label className="text-body-sm text-muted-foreground flex items-center gap-2">
                   <Phone className="w-4 h-4" />
                   Telefone
                 </Label>
                 <Input defaultValue={user.phone} className="mt-1" />
               </div>
             )}
-
-            {user.city && user.state && (
-              <div>
-                <Label className="text-body-sm text-gray-600 flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  Localização
-                </Label>
-                <Input defaultValue={`${user.city} - ${user.state}`} className="mt-1" />
-              </div>
-            )}
           </CardContent>
         </Card>
 
         {/* Configurações de Acesso */}
-        <Card className="border-gray-300">
+        <Card className="border-border">
           <CardHeader>
-            <CardTitle className="text-heading-3 text-gray-900 flex items-center gap-2">
+            <CardTitle className="text-heading-3 text-foreground flex items-center gap-2">
               <Shield className="w-5 h-5" />
               Configurações de Acesso
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="text-body-sm text-gray-600">Tipo de Usuário</Label>
-              <Select defaultValue={user.role}>
+              <Label className="text-body-sm text-muted-foreground">Tipo de Usuário</Label>
+              <Select defaultValue={user.role || 'customer'}>
                 <SelectTrigger className="mt-1">
                   <SelectValue />
                 </SelectTrigger>
@@ -150,7 +149,7 @@ export default function UserDetails() {
             </div>
 
             <div>
-              <Label className="text-body-sm text-gray-600">Data de Cadastro</Label>
+              <Label className="text-body-sm text-muted-foreground">Data de Cadastro</Label>
               <Input 
                 value={new Date(user.created_at).toLocaleDateString('pt-BR')} 
                 className="mt-1" 
@@ -168,17 +167,13 @@ export default function UserDetails() {
                     variant="outline" 
                     className="w-full touch-input"
                   >
-                    {user.is_active ? 'Desativar Conta' : 'Reativar Conta'}
+                    Alterar Status
                   </Button>
                 }
-                title={user.is_active ? 'Desativar conta?' : 'Reativar conta?'}
-                description={
-                  user.is_active 
-                    ? 'O usuário não poderá mais acessar o sistema até que a conta seja reativada.' 
-                    : 'O usuário voltará a ter acesso ao sistema.'
-                }
-                confirmLabel={user.is_active ? 'Desativar' : 'Reativar'}
-                variant={user.is_active ? 'destructive' : 'default'}
+                title="Alterar status?"
+                description="Deseja alterar o status deste usuário?"
+                confirmLabel="Confirmar"
+                variant="default"
                 onConfirm={handleToggleStatus}
               />
             </div>

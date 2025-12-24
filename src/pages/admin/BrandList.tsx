@@ -26,15 +26,24 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ResponsiveTable } from '@/components/ui/ResponsiveTable';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
-import { mockBrands, MockBrand } from '@/data/mockAdminData';
+
+interface Brand {
+  id: string;
+  name: string;
+  description: string;
+  logo_url: string;
+  is_active: boolean;
+  created_at: string;
+  products_count: number;
+}
 
 export default function BrandList() {
   const { toast } = useToast();
-  const [brands, setBrands] = useState<MockBrand[]>(mockBrands);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingBrand, setEditingBrand] = useState<MockBrand | null>(null);
+  const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -56,7 +65,7 @@ export default function BrandList() {
   const activeBrands = brands.filter((b) => b.is_active).length;
   const inactiveBrands = brands.filter((b) => !b.is_active).length;
 
-  const handleOpenDialog = (brand?: MockBrand) => {
+  const handleOpenDialog = (brand?: Brand) => {
     if (brand) {
       setEditingBrand(brand);
       setFormData({
@@ -92,7 +101,7 @@ export default function BrandList() {
       );
       toast({ title: 'Marca atualizada', description: `${formData.name} foi atualizada com sucesso.` });
     } else {
-      const newBrand: MockBrand = {
+      const newBrand: Brand = {
         id: `b${Date.now()}`,
         name: formData.name,
         description: formData.description,
@@ -108,7 +117,7 @@ export default function BrandList() {
     setIsDialogOpen(false);
   };
 
-  const handleDelete = (brand: MockBrand) => {
+  const handleDelete = (brand: Brand) => {
     setBrands((prev) => prev.filter((b) => b.id !== brand.id));
     toast({
       title: 'Marca excluída',
@@ -119,7 +128,7 @@ export default function BrandList() {
   const columns = [
     {
       header: 'Logo',
-      accessor: (brand: MockBrand) => (
+      accessor: (brand: Brand) => (
         <Avatar className="h-10 w-10">
           <AvatarImage src={brand.logo_url} alt={brand.name} />
           <AvatarFallback className="bg-primary/10 text-primary text-xs">
@@ -136,14 +145,14 @@ export default function BrandList() {
     },
     {
       header: 'Descrição',
-      accessor: (brand: MockBrand) => (
+      accessor: (brand: Brand) => (
         <span className="text-muted-foreground line-clamp-1">{brand.description || '-'}</span>
       ),
       mobileLabel: 'Descrição',
     },
     {
       header: 'Status',
-      accessor: (brand: MockBrand) => (
+      accessor: (brand: Brand) => (
         <Badge variant={brand.is_active ? 'default' : 'secondary'}>
           {brand.is_active ? 'Ativo' : 'Inativo'}
         </Badge>
@@ -152,17 +161,17 @@ export default function BrandList() {
     },
     {
       header: 'Produtos',
-      accessor: (brand: MockBrand) => <span className="font-medium">{brand.products_count}</span>,
+      accessor: (brand: Brand) => <span className="font-medium">{brand.products_count}</span>,
       mobileLabel: 'Produtos',
     },
     {
       header: 'Cadastro',
-      accessor: (brand: MockBrand) => new Date(brand.created_at).toLocaleDateString('pt-BR'),
+      accessor: (brand: Brand) => new Date(brand.created_at).toLocaleDateString('pt-BR'),
       mobileLabel: 'Cadastro',
     },
     {
       header: 'Ações',
-      accessor: (brand: MockBrand) => (
+      accessor: (brand: Brand) => (
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleOpenDialog(brand); }}>
             <Pencil className="h-4 w-4" />
@@ -278,6 +287,7 @@ export default function BrandList() {
               data={filteredBrands}
               columns={columns}
               getRowKey={(brand) => brand.id}
+              emptyMessage="Nenhuma marca cadastrada. Clique em 'Adicionar Marca' para começar."
             />
           </CardContent>
         </Card>

@@ -10,33 +10,227 @@ import { Logo } from "@/components/Logo";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Minus, Plus, Clock, Gift, CalendarDays, AlertTriangle } from "lucide-react";
+import { Minus, Plus, Clock, Gift, CalendarDays, AlertTriangle, MapPin, CreditCard } from "lucide-react";
 import { toast } from "sonner";
-import { getDistribuidoraBySlug } from "@/data/mockData";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/hooks/useAuth";
 import { LoginRequiredModal } from "@/components/customer/LoginRequiredModal";
 import { format, addDays, setHours, setMinutes } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-interface Product {
-  id: string;
-  name: string;
-  litros: number;
-  price: number;
-  foto?: string;
-}
+import { useDistributorBySlug } from "@/hooks/useCities";
+import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+
 type DeliveryPeriod = "manha" | "tarde" | "noite";
 const periodLabels: Record<DeliveryPeriod, string> = {
   manha: "Manhã (08:00 - 12:00)",
   tarde: "Tarde (12:00 - 18:00)",
   noite: "Noite (18:00 - 21:00)",
 };
+
 const OrderPage = () => {
   const navigate = useNavigate();
   const { distributorSlug } = useParams();
   const { user, isAuthenticated, isCustomer } = useAuth();
-  const distribuidora = getDistribuidoraBySlug(distributorSlug || "");
+  const { data: distribuidora, isLoading: distributorLoading } = useDistributorBySlug(distributorSlug || "");
+
+  // Fetch products for this distributor
+  const { data: products, isLoading: productsLoading } = useQuery({
+    queryKey: ['distributor-products', distribuidora?.id],
+    queryFn: async () => {
+      if (!distribuidora?.id) return [];
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('distributor_id', distribuidora.id)
+        .eq('is_available', true)
+        .order('sort_order');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!distribuidora?.id,
+  });
+
+  // Fetch business hours
+  const { data: businessHours } = useQuery({
+    queryKey: ['business-hours', distribuidora?.id],
+    queryFn: async () => {
+      if (!distribuidora?.id) return [];
+      const { data, error } = await supabase
+        .from('business_hours')
+        .select('*')
+        .eq('distributor_id', distribuidora.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!distribuidora?.id,
+  });
+
+  // Fetch discount rules
+  const { data: discountRules } = useQuery({
+    queryKey: ['discount-rules', distribuidora?.id],
+    queryFn: async () => {
+      if (!distribuidora?.id) return [];
+      const { data, error } = await supabase
+        .from('discount_rules')
+        .select('*')
+        .eq('distributor_id', distribuidora.id)
+        .eq('is_active', true)
+        .order('min_quantity');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!distribuidora?.id,
+  });
+
+  const isLoading = distributorLoading || productsLoading;
+
+  const mockCustomer = {
+    isLoggedIn: isAuthenticated && isCustomer(),
+    name: user?.user_metadata?.full_name || "Cliente",
+    orderCount: 0,
+  };
+
+  const [selectedProduct, setSelectedProduct] = useState<string>("");
+  const [quantity, setQuantity] = useState(1);
+  const [address, setAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+  const [wantsToSchedule, setWantsToSchedule] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
+  const [scheduledPeriod, setScheduledPeriod] = useState<DeliveryPeriod | "">("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Check if distributor is open
+  useEffect(() => {
+    if (!businessHours || businessHours.length === 0) {
+      setIsOpen(true);
+      return;
+    }
+
+    const checkIfOpen = () => {
+      const now = new Date();
+      const dayOfWeek = now.getDay();
+      const currentTime = now.toTimeString().slice(0, 5);
+      
+      const todaySchedule = businessHours.find(h => h.day_of_week === dayOfWeek);
+      
+      if (!todaySchedule || !todaySchedule.is_open) {
+        setIsOpen(false);
+        setWantsToSchedule(true);
+        return;
+      }
+      
+      const open = todaySchedule.open_time && todaySchedule.close_time && 
+                   currentTime >= todaySchedule.open_time && 
+                   currentTime <= todaySchedule.close_time;
+      setIsOpen(!!open);
+      if (!open) setWantsToSchedule(true);
+    };
+
+    checkIfOpen();
+    const interval = setInterval(checkIfOpen, 60000);
+    return () => clearInterval(interval);
+  }, [businessHours]);
+
+  // Calculate discount based on quantity
+  const calculateDiscount = (qty: number): number => {
+    if (!discountRules || discountRules.length === 0) return 0;
+    
+    const applicableRule = discountRules
+      .filter(rule => qty >= rule.min_quantity && (!rule.max_quantity || qty <= rule.max_quantity))
+      .sort((a, b) => b.discount_percent - a.discount_percent)[0];
+    
+    return applicableRule ? Number(applicableRule.discount_percent) : 0;
+  };
+
+  const handleQuantityChange = (delta: number) => {
+    setQuantity(Math.max(1, quantity + delta));
+  };
+
+  const isSchedulingRequired = !isOpen;
+
+  const canSubmit = useMemo(() => {
+    const baseFieldsValid = selectedProduct && address && paymentMethod;
+    if (isSchedulingRequired || wantsToSchedule) {
+      return baseFieldsValid && scheduledDate && scheduledPeriod && mockCustomer.isLoggedIn;
+    }
+    return baseFieldsValid;
+  }, [selectedProduct, address, paymentMethod, isSchedulingRequired, wantsToSchedule, scheduledDate, scheduledPeriod, mockCustomer.isLoggedIn]);
+
+  const handleScheduleToggle = (checked: boolean) => {
+    if (checked && !mockCustomer.isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+    setWantsToSchedule(checked);
+  };
+
+  const handleOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProduct || !address || !paymentMethod) {
+      toast.error("Preencha todos os campos obrigatórios");
+      return;
+    }
+    if ((isSchedulingRequired || wantsToSchedule) && (!scheduledDate || !scheduledPeriod)) {
+      toast.error("Para agendar, selecione a data e o período de entrega");
+      return;
+    }
+    if ((isSchedulingRequired || wantsToSchedule) && !mockCustomer.isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    setLoading(true);
+    const product = (products || []).find((p) => p.id === selectedProduct);
+    const subtotal = (product?.price || 0) * quantity;
+    const discountPercentage = calculateDiscount(quantity);
+    const discountAmount = subtotal * (discountPercentage / 100);
+    const total = subtotal - discountAmount;
+
+    navigate("/order/confirmation", {
+      state: {
+        product: product?.name,
+        quantity,
+        address,
+        paymentMethod,
+        subtotal,
+        discount: discountAmount,
+        total,
+        distributor: distribuidora?.name,
+        isScheduled: wantsToSchedule || isSchedulingRequired,
+        scheduledDate: scheduledDate ? format(scheduledDate, "dd/MM/yyyy") : null,
+        scheduledPeriod: scheduledPeriod ? periodLabels[scheduledPeriod] : null,
+        whatsappUrl: distribuidora?.whatsapp ? `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(`Olá! Pedido:\n\nProduto: ${product?.name}\nQtd: ${quantity}\nTotal: R$ ${total.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}`)}` : null,
+      },
+    });
+    setLoading(false);
+  };
+
+  const selectedProductData = (products || []).find((p) => p.id === selectedProduct);
+  const subtotal = selectedProductData ? Number(selectedProductData.price) * quantity : 0;
+  const discountPercentage = calculateDiscount(quantity);
+  const discountAmount = subtotal * (discountPercentage / 100);
+  const total = subtotal - discountAmount;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b bg-card shadow-sm">
+          <div className="container mx-auto px-4 py-4">
+            <Skeleton className="h-8 w-32" />
+          </div>
+        </header>
+        <main className="container mx-auto px-4 py-8 max-w-2xl">
+          <Skeleton className="h-96 w-full" />
+        </main>
+      </div>
+    );
+  }
+
   if (!distribuidora) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -54,233 +248,15 @@ const OrderPage = () => {
       </div>
     );
   }
-  const products = distribuidora.products.map((p) => ({
-    id: p.id.toString(),
-    name: p.name,
-    litros: p.litros,
-    price: p.price,
-    foto: p.foto,
-  }));
 
-  // Mock de cliente logado (simulando 8 pedidos já feitos)
-  const mockCustomer = {
-    isLoggedIn: isAuthenticated && isCustomer(),
-    name: user?.user_metadata?.full_name || "Cliente",
-    orderCount: 8,
-  };
-  const [selectedProduct, setSelectedProduct] = useState<string>("");
-  const [quantity, setQuantity] = useState(1);
-  const [address, setAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [anoVasilhameInicial, setAnoVasilhameInicial] = useState("");
-  const [anoVasilhameFinal, setAnoVasilhameFinal] = useState("");
-  const [detalhesPedido, setDetalhesPedido] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const pageTitle = `${distribuidora.name} - Pedido de Água`;
+  const pageDescription = distribuidora.meta_description || 'Faça seu pedido de água mineral';
 
-  // Scheduling states
-  const [wantsToSchedule, setWantsToSchedule] = useState(false);
-  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
-  const [scheduledPeriod, setScheduledPeriod] = useState<DeliveryPeriod | "">("");
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [nextOpenTime, setNextOpenTime] = useState<string>("");
-
-  // Calculate next open time
-  const getNextOpenTime = useMemo(() => {
-    const now = new Date();
-    const weekDays = [
-      "domingo",
-      "segunda-feira",
-      "terça-feira",
-      "quarta-feira",
-      "quinta-feira",
-      "sexta-feira",
-      "sábado",
-    ];
-    for (let i = 0; i <= 7; i++) {
-      const checkDate = addDays(now, i);
-      const dayName = weekDays[checkDate.getDay()];
-      const schedule = distribuidora.businessHours.find(
-        (s) => s.dia_semana.toLowerCase() === dayName.toLowerCase() && s.ativo,
-      );
-      if (schedule) {
-        const [openHour, openMinute] = schedule.hora_abertura.split(":").map(Number);
-        const openTime = setMinutes(setHours(checkDate, openHour), openMinute);
-        if (i === 0) {
-          // Today - check if still has time to open
-          const currentTime = now.toTimeString().slice(0, 5);
-          if (currentTime < schedule.hora_abertura) {
-            return `hoje às ${schedule.hora_abertura}`;
-          }
-          if (currentTime >= schedule.hora_abertura && currentTime <= schedule.hora_fechamento) {
-            return null; // Already open
-          }
-        } else if (i === 1) {
-          return `amanhã às ${schedule.hora_abertura}`;
-        } else {
-          return `${format(checkDate, "EEEE", {
-            locale: ptBR,
-          })} às ${schedule.hora_abertura}`;
-        }
-      }
-    }
-    return "em breve";
-  }, [distribuidora.businessHours]);
-
-  // Verificar se está aberta
-  useEffect(() => {
-    const checkIfOpen = () => {
-      const now = new Date();
-      const currentDay = now.toLocaleDateString("pt-BR", {
-        weekday: "long",
-      });
-      const currentTime = now.toTimeString().slice(0, 5);
-      const todaySchedule = distribuidora.businessHours.find(
-        (s) => s.dia_semana.toLowerCase() === currentDay.toLowerCase(),
-      );
-      if (!todaySchedule || !todaySchedule.ativo) {
-        setIsOpen(false);
-        return;
-      }
-      const open = currentTime >= todaySchedule.hora_abertura && currentTime <= todaySchedule.hora_fechamento;
-      setIsOpen(open);
-
-      // If closed, scheduling becomes mandatory
-      if (!open) {
-        setWantsToSchedule(true);
-      }
-    };
-    checkIfOpen();
-    const interval = setInterval(checkIfOpen, 60000);
-    return () => clearInterval(interval);
-  }, [distribuidora]);
-
-  // Calcular desconto baseado na quantidade
-  const calculateDiscount = (qty: number): number => {
-    const { tier1, tier2 } = distribuidora.discounts;
-    if (qty >= tier2.min) {
-      return tier2.percentage;
-    } else if (qty >= tier1.min && qty <= tier1.max) {
-      return tier1.percentage;
-    }
-    return 0;
-  };
-
-  // Calcular progresso da fidelização
-  const loyaltyProgress = mockCustomer.isLoggedIn ? mockCustomer.orderCount % distribuidora.loyalty.ordersRequired : 0;
-  const loyaltyRemaining = distribuidora.loyalty.ordersRequired - loyaltyProgress;
-  const handleQuantityChange = (delta: number) => {
-    setQuantity(Math.max(1, quantity + delta));
-  };
-
-  // Check if scheduling is required (when closed)
-  const isSchedulingRequired = !isOpen;
-
-  // Check if can submit
-  const canSubmit = useMemo(() => {
-    const baseFieldsValid = selectedProduct && address && paymentMethod;
-    if (isSchedulingRequired || wantsToSchedule) {
-      return baseFieldsValid && scheduledDate && scheduledPeriod && mockCustomer.isLoggedIn;
-    }
-    return baseFieldsValid;
-  }, [
-    selectedProduct,
-    address,
-    paymentMethod,
-    isSchedulingRequired,
-    wantsToSchedule,
-    scheduledDate,
-    scheduledPeriod,
-    mockCustomer.isLoggedIn,
-  ]);
-
-  // Handle scheduling toggle
-  const handleScheduleToggle = (checked: boolean) => {
-    if (checked && !mockCustomer.isLoggedIn) {
-      setShowLoginModal(true);
-      return;
-    }
-    setWantsToSchedule(checked);
-  };
-
-  // Handle scheduling field click when not logged in
-  const handleScheduleFieldClick = () => {
-    if (!mockCustomer.isLoggedIn) {
-      setShowLoginModal(true);
-    }
-  };
-
-  // Disable past dates and closed days
-  const isDateDisabled = (date: Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (date < today) return true;
-    const weekDays = [
-      "domingo",
-      "segunda-feira",
-      "terça-feira",
-      "quarta-feira",
-      "quinta-feira",
-      "sexta-feira",
-      "sábado",
-    ];
-    const dayName = weekDays[date.getDay()];
-    const schedule = distribuidora.businessHours.find((s) => s.dia_semana.toLowerCase() === dayName.toLowerCase());
-    return !schedule || !schedule.ativo;
-  };
-  const handleOrder = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedProduct || !address || !paymentMethod) {
-      toast.error("Preencha todos os campos obrigatórios");
-      return;
-    }
-    if ((isSchedulingRequired || wantsToSchedule) && (!scheduledDate || !scheduledPeriod)) {
-      toast.error("Para agendar, selecione a data e o período de entrega");
-      return;
-    }
-    if ((isSchedulingRequired || wantsToSchedule) && !mockCustomer.isLoggedIn) {
-      setShowLoginModal(true);
-      return;
-    }
-    setLoading(true);
-    setTimeout(() => {
-      const product = products.find((p) => p.id === selectedProduct);
-      const subtotal = (product?.price || 0) * quantity;
-      const discountPercentage = calculateDiscount(quantity);
-      const discountAmount = subtotal * (discountPercentage / 100);
-      const total = subtotal - discountAmount;
-      navigate("/order/confirmation", {
-        state: {
-          product: product?.name,
-          quantity,
-          address,
-          paymentMethod,
-          subtotal,
-          discount: discountAmount,
-          total,
-          distributor: distribuidora.nome,
-          isScheduled: wantsToSchedule || isSchedulingRequired,
-          scheduledDate: scheduledDate ? format(scheduledDate, "dd/MM/yyyy") : null,
-          scheduledPeriod: scheduledPeriod ? periodLabels[scheduledPeriod] : null,
-          whatsappUrl: `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(`Olá! Pedido:\n\nProduto: ${product?.name}\nQtd: ${quantity}\nTotal: R$ ${total.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}${(wantsToSchedule || isSchedulingRequired) && scheduledDate ? `\n📅 Agendado para: ${format(scheduledDate, "dd/MM/yyyy")} - ${periodLabels[scheduledPeriod as DeliveryPeriod]}` : ""}`)}`,
-        },
-      });
-      setLoading(false);
-    }, 1000);
-  };
-  const selectedProductData = products.find((p) => p.id === selectedProduct);
-  const subtotal = selectedProductData ? selectedProductData.price * quantity : 0;
-  const discountPercentage = calculateDiscount(quantity);
-  const discountAmount = subtotal * (discountPercentage / 100);
-  const total = subtotal - discountAmount;
-  const pageTitle = `${distribuidora.nome} - Pedido de Água`;
-  const pageDescription = distribuidora.descricao_curta;
   return (
     <>
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
-        <meta name="keywords" content={distribuidora.palavras_chave} />
       </Helmet>
 
       <LoginRequiredModal open={showLoginModal} onOpenChange={setShowLoginModal} distributorClosed={!isOpen} />
@@ -291,7 +267,7 @@ const OrderPage = () => {
             <div className="flex justify-between items-center">
               <div>
                 <Logo size="md" />
-                <p className="text-sm text-muted-foreground mt-1">{distribuidora.nome}</p>
+                <p className="text-sm text-muted-foreground mt-1">{distribuidora.name}</p>
               </div>
               <Badge variant={isOpen ? "default" : "destructive"} className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
@@ -302,7 +278,7 @@ const OrderPage = () => {
         </header>
 
         <main className="container mx-auto px-4 py-8 max-w-2xl space-y-4">
-          {/* Closed warning with next open time */}
+          {/* Closed warning */}
           {!isOpen && (
             <Card className="border-destructive bg-destructive/10">
               <CardContent className="pt-6">
@@ -311,433 +287,187 @@ const OrderPage = () => {
                   <div className="space-y-1">
                     <p className="font-semibold text-destructive">A distribuidora está fechada no momento</p>
                     <p className="text-sm text-destructive/80">Para continuar, é necessário agendar seu pedido.</p>
-                    {getNextOpenTime && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        <Clock className="h-4 w-4 inline mr-1" />
-                        Próximo horário de atendimento: <span className="font-medium">{getNextOpenTime}</span>
-                      </p>
-                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Loyalty card - only when open or when logged in */}
-          {distribuidora.loyalty.enabled && mockCustomer.isLoggedIn && isOpen && (
-            <Card className="border-primary bg-primary/5">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <Gift className="h-8 w-8 text-primary" />
-                  <div className="flex-1">
-                    <p className="font-medium text-primary">Programa de Fidelização Ativo</p>
-                    <p className="text-sm text-muted-foreground">
-                      Faltam apenas {loyaltyRemaining} pedidos para ganhar: {distribuidora.loyalty.reward}
-                    </p>
-                    <div className="w-full bg-muted rounded-full h-2 mt-2">
-                      <div
-                        className="bg-primary h-2 rounded-full transition-all"
-                        style={{
-                          width: `${(loyaltyProgress / distribuidora.loyalty.ordersRequired) * 100}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* ========== DISTRIBUTOR OPEN: Show full order form ========== */}
-          {isOpen && (
-            <Card className="shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-3xl">Fazer Pedido</CardTitle>
-                <CardDescription>Escolha sua água e finalize em menos de 1 minuto</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleOrder} className="space-y-6">
-                  <div className="space-y-3">
-                    <Label className="text-base">Escolha a Marca</Label>
+          {/* Order Form */}
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-3xl">Fazer Pedido</CardTitle>
+              <CardDescription>Escolha sua água e finalize em menos de 1 minuto</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleOrder} className="space-y-6">
+                {/* Product Selection */}
+                <div className="space-y-3">
+                  <Label className="text-base">Escolha o Produto</Label>
+                  {(products || []).length === 0 ? (
+                    <p className="text-muted-foreground">Nenhum produto disponível</p>
+                  ) : (
                     <RadioGroup value={selectedProduct} onValueChange={setSelectedProduct}>
-                      {products.map((product) => (
+                      {(products || []).map((product) => (
                         <div
                           key={product.id}
                           className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
                           onClick={() => setSelectedProduct(product.id)}
                         >
                           <RadioGroupItem value={product.id} id={product.id} />
-                          {product.foto && (
-                            <img src={product.foto} alt={product.name} className="w-16 h-16 object-cover rounded-md" />
+                          {product.image_url && (
+                            <img src={product.image_url} alt={product.name} className="w-16 h-16 object-cover rounded-md" />
                           )}
                           <Label htmlFor={product.id} className="flex-1 cursor-pointer">
                             <div className="flex justify-between items-center">
                               <div>
                                 <div className="font-medium">{product.name}</div>
-                                <div className="text-sm text-muted-foreground">{product.litros}L</div>
+                                <div className="text-sm text-muted-foreground">{product.liters}L</div>
                               </div>
-                              <span className="text-primary font-bold">R$ {product.price.toFixed(2)}</span>
+                              <span className="text-primary font-bold">R$ {Number(product.price).toFixed(2)}</span>
                             </div>
                           </Label>
                         </div>
                       ))}
                     </RadioGroup>
-                  </div>
+                  )}
+                </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-base">Quantidade</Label>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-center gap-4 w-full">
-                        <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(-1)}>
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
-                        <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(1)}>
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      {selectedProductData && (
-                        <div className="w-full">
-                          {discountPercentage > 0 ? (
-                            <div className="space-y-1">
-                              <p className="text-sm text-muted-foreground">
-                                Subtotal: <span className="line-through">R$ {subtotal.toFixed(2)}</span>
-                              </p>
-                              <p className="text-sm text-green-600 font-medium">
-                                Desconto ({discountPercentage}%): -R$ {discountAmount.toFixed(2)}
-                              </p>
-                              <p className="text-primary font-bold text-xl">Total: R$ {total.toFixed(2)}</p>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">
-                              Total: <span className="text-primary font-bold text-xl">R$ {total.toFixed(2)}</span>
-                            </span>
-                          )}
+                {/* Quantity */}
+                <div className="space-y-2">
+                  <Label className="text-base">Quantidade</Label>
+                  <div className="flex items-center justify-center gap-4">
+                    <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(-1)}>
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
+                    <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(1)}>
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {selectedProductData && (
+                    <div className="text-center mt-2">
+                      {discountPercentage > 0 ? (
+                        <div className="space-y-1">
+                          <p className="text-sm text-muted-foreground">
+                            Subtotal: <span className="line-through">R$ {subtotal.toFixed(2)}</span>
+                          </p>
+                          <p className="text-sm text-green-600 font-medium">
+                            Desconto ({discountPercentage}%): -R$ {discountAmount.toFixed(2)}
+                          </p>
+                          <p className="text-primary font-bold text-xl">Total: R$ {total.toFixed(2)}</p>
                         </div>
+                      ) : (
+                        <p className="text-primary font-bold text-xl">Total: R$ {total.toFixed(2)}</p>
                       )}
                     </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="address" className="text-base">
-                      Endereço de Entrega
-                    </Label>
-                    <Input
-                      id="address"
-                      placeholder="Rua, número, complemento"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="anoVasilhameInicial" className="text-base">
-                        Ano Vasilhame Inicial
-                      </Label>
-                      <Input
-                        id="anoVasilhameInicial"
-                        type="number"
-                        placeholder="Ex: 2020"
-                        value={anoVasilhameInicial}
-                        onChange={(e) => setAnoVasilhameInicial(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="anoVasilhameFinal" className="text-base">
-                        Ano Vasilhame Final
-                      </Label>
-                      <Input
-                        id="anoVasilhameFinal"
-                        type="number"
-                        placeholder="Ex: 2024"
-                        value={anoVasilhameFinal}
-                        onChange={(e) => setAnoVasilhameFinal(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="detalhesPedido" className="text-base">
-                      Detalhes do Pedido
-                    </Label>
-                    <textarea
-                      id="detalhesPedido"
-                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                      placeholder="Observações adicionais sobre o pedido..."
-                      value={detalhesPedido}
-                      onChange={(e) => setDetalhesPedido(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label className="text-base">Forma de Pagamento</Label>
-                    <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                        <RadioGroupItem value="dinheiro" id="dinheiro" />
-                        <Label htmlFor="dinheiro" className="cursor-pointer flex-1">
-                          Dinheiro
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                        <RadioGroupItem value="cartao" id="cartao" />
-                        <Label htmlFor="cartao" className="cursor-pointer flex-1">
-                          Cartão na Entrega
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                        <RadioGroupItem value="pix" id="pix" />
-                        <Label htmlFor="pix" className="cursor-pointer flex-1">
-                          Pix (Manual)
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-
-                  <Button type="submit" size="lg" className="w-full" disabled={loading || !canSubmit}>
-                    {loading ? "Processando..." : wantsToSchedule ? "Agendar Pedido" : "Fazer Pedido"}
-                  </Button>
-
-                  {!isAuthenticated && (
-                    <div className="text-center">
-                      <Button type="button" variant="link" onClick={() => navigate("/customer/signup")}>
-                        Crie uma conta para agendar entregas e ganhar benefícios
-                      </Button>
-                    </div>
                   )}
-                </form>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* ========== DISTRIBUTOR CLOSED: Show only scheduling card ========== */}
-          {!isOpen && (
-            <Card className="shadow-xl border-primary">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-2xl flex items-center gap-2">
-                      <CalendarDays className="h-6 w-6 text-primary" /> Agendar entrega
-                    </CardTitle>
-                    <CardDescription className="py-[5px]">
-                      A distribuidora está fechada. Agende seu pedido para o próximo dia disponível.
-                    </CardDescription>
-                  </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {/* Not logged in - show login CTA */}
-                {!mockCustomer.isLoggedIn ? (
-                  <div className="space-y-6">
-                    <div className="text-center p-6 bg-muted/50 rounded-lg border-2 border-dashed">
-                      <CalendarDays className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="font-semibold text-lg mb-2">Faça login para agendar</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Para agendar um pedido fora do horário de funcionamento, é necessário fazer login ou criar uma
-                        conta.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <Button onClick={() => navigate("/customer/login")} size="lg">
-                          Entrar
-                        </Button>
-                        <Button variant="outline" onClick={() => navigate("/customer/signup")} size="lg">
-                          Criar conta
-                        </Button>
-                      </div>
-                    </div>
-                  </div> /* Logged in - show scheduling form */
-                ) : (
-                  <form onSubmit={handleOrder} className="space-y-6">
-                    <div className="space-y-3">
-                      <Label className="text-base">Escolha a Marca</Label>
-                      <RadioGroup value={selectedProduct} onValueChange={setSelectedProduct}>
-                        {products.map((product) => (
-                          <div
-                            key={product.id}
-                            className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                            onClick={() => setSelectedProduct(product.id)}
-                          >
-                            <RadioGroupItem value={product.id} id={`schedule-${product.id}`} />
-                            {product.foto && (
-                              <img
-                                src={product.foto}
-                                alt={product.name}
-                                className="w-16 h-16 object-cover rounded-md"
-                              />
-                            )}
-                            <Label htmlFor={`schedule-${product.id}`} className="flex-1 cursor-pointer">
-                              <div className="flex justify-between items-center">
-                                <div>
-                                  <div className="font-medium">{product.name}</div>
-                                  <div className="text-sm text-muted-foreground">{product.litros}L</div>
-                                </div>
-                                <span className="text-primary font-bold">R$ {product.price.toFixed(2)}</span>
-                              </div>
-                            </Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
-                    </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-base">Quantidade</Label>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-center gap-4 w-full">
-                          <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(-1)}>
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
-                          <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(1)}>
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        {selectedProductData && (
-                          <div className="w-full text-center">
-                            {discountPercentage > 0 ? (
-                              <div className="space-y-1">
-                                <p className="text-sm text-muted-foreground">
-                                  Subtotal: <span className="line-through">R$ {subtotal.toFixed(2)}</span>
-                                </p>
-                                <p className="text-sm text-green-600 font-medium">
-                                  Desconto ({discountPercentage}%): -R$ {discountAmount.toFixed(2)}
-                                </p>
-                                <p className="text-primary font-bold text-xl">Total: R$ {total.toFixed(2)}</p>
-                              </div>
-                            ) : (
-                              <span className="text-muted-foreground">
-                                Total: <span className="text-primary font-bold text-xl">R$ {total.toFixed(2)}</span>
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="schedule-address" className="text-base">
-                        Endereço de Entrega
-                      </Label>
-                      <Input
-                        id="schedule-address"
-                        placeholder="Rua, número, complemento"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    {/* Scheduling fields */}
-                    <div className="space-y-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
-                      <div className="flex items-center gap-2 text-primary font-medium">
+                {/* Scheduling */}
+                {(isSchedulingRequired || wantsToSchedule) && (
+                  <Card className="border-primary/20">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
                         <CalendarDays className="h-5 w-5" />
-                        Data e Período da Entrega
-                      </div>
-
+                        Agendar Entrega
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
                       <div className="space-y-2">
-                        <Label className="text-base">Data da Entrega</Label>
+                        <Label>Data</Label>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !scheduledDate && "text-muted-foreground",
-                              )}
-                            >
-                              <CalendarDays className="mr-2 h-4 w-4" />
-                              {scheduledDate
-                                ? format(scheduledDate, "PPP", {
-                                    locale: ptBR,
-                                  })
-                                : "Selecione a data"}
+                            <Button variant="outline" className="w-full justify-start">
+                              {scheduledDate ? format(scheduledDate, "dd/MM/yyyy") : "Selecione a data"}
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0 bg-popover" align="start">
+                          <PopoverContent className="w-auto p-0">
                             <Calendar
                               mode="single"
                               selected={scheduledDate}
                               onSelect={setScheduledDate}
-                              disabled={isDateDisabled}
-                              initialFocus
-                              className="pointer-events-auto"
+                              disabled={(date) => date < new Date()}
+                              locale={ptBR}
                             />
                           </PopoverContent>
                         </Popover>
                       </div>
-
                       <div className="space-y-2">
-                        <Label className="text-base">Período da Entrega</Label>
-                        <Select
-                          value={scheduledPeriod}
-                          onValueChange={(value) => setScheduledPeriod(value as DeliveryPeriod)}
-                        >
-                          <SelectTrigger className="w-full">
+                        <Label>Período</Label>
+                        <Select value={scheduledPeriod} onValueChange={(v) => setScheduledPeriod(v as DeliveryPeriod)}>
+                          <SelectTrigger>
                             <SelectValue placeholder="Selecione o período" />
                           </SelectTrigger>
-                          <SelectContent className="bg-popover">
+                          <SelectContent>
                             <SelectItem value="manha">{periodLabels.manha}</SelectItem>
                             <SelectItem value="tarde">{periodLabels.tarde}</SelectItem>
                             <SelectItem value="noite">{periodLabels.noite}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
-                    </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-                    <div className="space-y-3">
-                      <Label className="text-base">Forma de Pagamento</Label>
-                      <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                        <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                          <RadioGroupItem value="dinheiro" id="schedule-dinheiro" />
-                          <Label htmlFor="schedule-dinheiro" className="cursor-pointer flex-1">
-                            Dinheiro
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                          <RadioGroupItem value="cartao" id="schedule-cartao" />
-                          <Label htmlFor="schedule-cartao" className="cursor-pointer flex-1">
-                            Cartão na Entrega
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                          <RadioGroupItem value="pix" id="schedule-pix" />
-                          <Label htmlFor="schedule-pix" className="cursor-pointer flex-1">
-                            Pix (Manual)
-                          </Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
+                {/* Address */}
+                <div className="space-y-2">
+                  <Label className="text-base flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Endereço de Entrega
+                  </Label>
+                  <Input
+                    placeholder="Rua, número, complemento, bairro"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    required
+                  />
+                </div>
 
-                    <Button type="submit" size="lg" className="w-full" disabled={loading || !canSubmit}>
-                      {loading ? "Processando..." : "Agendar Pedido"}
-                    </Button>
-
-                    {/* Order summary when scheduling */}
-                    {scheduledDate && scheduledPeriod && (
-                      <div className="p-4 bg-muted rounded-lg text-center">
-                        <p className="text-sm text-muted-foreground">Resumo do agendamento:</p>
-                        <p className="font-medium flex items-center justify-center gap-2 mt-1">
-                          <CalendarDays className="h-4 w-4 text-primary" />
-                          {format(scheduledDate, "dd/MM/yyyy")} - {periodLabels[scheduledPeriod]}
-                        </p>
+                {/* Payment Method */}
+                <div className="space-y-3">
+                  <Label className="text-base flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    Forma de Pagamento
+                  </Label>
+                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                    {distribuidora.accepts_cash && (
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                        <RadioGroupItem value="dinheiro" id="dinheiro" />
+                        <Label htmlFor="dinheiro" className="cursor-pointer flex-1">Dinheiro</Label>
                       </div>
                     )}
-                  </form>
-                )}
-              </CardContent>
-            </Card>
-          )}
+                    {distribuidora.accepts_pix && (
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                        <RadioGroupItem value="pix" id="pix" />
+                        <Label htmlFor="pix" className="cursor-pointer flex-1">Pix</Label>
+                      </div>
+                    )}
+                    {distribuidora.accepts_card && (
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                        <RadioGroupItem value="cartao" id="cartao" />
+                        <Label htmlFor="cartao" className="cursor-pointer flex-1">Cartão na Entrega</Label>
+                      </div>
+                    )}
+                  </RadioGroup>
+                </div>
 
-          {products.length === 0 && (
-            <Card className="text-center py-12">
-              <CardContent>
-                <p className="text-muted-foreground">Nenhuma marca disponível no momento.</p>
-              </CardContent>
-            </Card>
-          )}
+                <Button type="submit" size="lg" className="w-full" disabled={loading || !canSubmit}>
+                  {loading ? "Processando..." : isSchedulingRequired ? "Agendar Pedido" : "Finalizar Pedido"}
+                </Button>
+
+                <div className="text-center">
+                  <Button type="button" variant="ghost" onClick={() => navigate(-1)}>
+                    Voltar
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         </main>
       </div>
     </>
   );
 };
+
 export default OrderPage;

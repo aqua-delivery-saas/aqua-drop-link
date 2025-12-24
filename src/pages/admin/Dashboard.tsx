@@ -1,13 +1,83 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Building2, DollarSign, TrendingUp } from 'lucide-react';
-import { mockMetrics, mockMonthlyUsers, mockDailyOrders } from '@/data/mockAdminData';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { useAdminMetrics, useAllOrders } from '@/hooks/useAdminData';
 import { AdvancedMetricsCards } from '@/components/admin/AdvancedMetricsCards';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { format, subDays, startOfDay, eachDayOfInterval, getDay } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export default function AdminDashboard() {
   const [period, setPeriod] = useState<'7d' | '30d' | '90d'>('30d');
+  const { data: metrics, isLoading: metricsLoading } = useAdminMetrics();
+  const { data: orders, isLoading: ordersLoading } = useAllOrders();
+
+  const isLoading = metricsLoading || ordersLoading;
+
+  // Calculate orders by day of week
+  const ordersByDay = useMemo(() => {
+    if (!orders) return [];
+    const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+    
+    orders.forEach(order => {
+      const day = getDay(new Date(order.created_at));
+      counts[day]++;
+    });
+
+    return dayNames.map((day, index) => ({
+      day,
+      orders: counts[index]
+    }));
+  }, [orders]);
+
+  // Calculate monthly user growth (simulated from orders)
+  const monthlyData = useMemo(() => {
+    if (!orders) return [];
+    const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
+    const interval = eachDayOfInterval({
+      start: subDays(new Date(), days),
+      end: new Date()
+    });
+
+    const groupedByMonth: Record<string, number> = {};
+    orders.forEach(order => {
+      const month = format(new Date(order.created_at), 'MMM', { locale: ptBR });
+      groupedByMonth[month] = (groupedByMonth[month] || 0) + 1;
+    });
+
+    return Object.entries(groupedByMonth).map(([month, count]) => ({
+      month,
+      users: count
+    }));
+  }, [orders, period]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <Skeleton className="h-8 w-64 mb-2" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="border-border">
+              <CardHeader className="pb-2">
+                <Skeleton className="h-4 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-24" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -40,9 +110,9 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-heading-1 text-foreground">{mockMetrics.activeDistributors}</p>
+            <p className="text-heading-1 text-foreground">{metrics?.activeDistributors || 0}</p>
             <p className="text-body-sm text-muted-foreground mt-1">
-              de {mockMetrics.totalDistributors} totais
+              de {metrics?.totalDistributors || 0} totais
             </p>
           </CardContent>
         </Card>
@@ -51,16 +121,16 @@ export default function AdminDashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="text-body-md text-muted-foreground font-normal flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
-              Ganhos Mensais
+              Receita Total
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-heading-1 text-foreground">
-              R$ {mockMetrics.monthlyRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R$ {(metrics?.totalRevenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </p>
             <p className="text-body-sm text-accent-green mt-1 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" />
-              +{mockMetrics.monthlyGrowth}% vs mês anterior
+              {metrics?.totalOrders || 0} pedidos
             </p>
           </CardContent>
         </Card>
@@ -69,13 +139,13 @@ export default function AdminDashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="text-body-md text-muted-foreground font-normal flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Novos Usuários
+              Assinaturas Ativas
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-heading-1 text-foreground">{mockMetrics.newUsersThisMonth}</p>
+            <p className="text-heading-1 text-foreground">{metrics?.activeSubscriptions || 0}</p>
             <p className="text-body-sm text-muted-foreground mt-1">
-              neste mês
+              assinaturas em vigor
             </p>
           </CardContent>
         </Card>
@@ -94,13 +164,13 @@ export default function AdminDashboard() {
           <Card className="border-border hover-lift animate-fade-in">
             <CardHeader>
               <CardTitle className="text-heading-3 text-foreground">
-                Novos Usuários por Mês
+                Pedidos por Mês
               </CardTitle>
-              <p className="text-body-sm text-muted-foreground">Crescimento de usuários cadastrados</p>
+              <p className="text-body-sm text-muted-foreground">Volume de pedidos mensais</p>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={mockMonthlyUsers}>
+                <LineChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis 
                     dataKey="month" 
@@ -127,7 +197,7 @@ export default function AdminDashboard() {
                     strokeWidth={3}
                     dot={{ fill: 'hsl(var(--primary))', r: 5 }}
                     activeDot={{ r: 7 }}
-                    name="Usuários"
+                    name="Pedidos"
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -143,7 +213,7 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={mockDailyOrders}>
+                <BarChart data={ordersByDay}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis 
                     dataKey="day" 
