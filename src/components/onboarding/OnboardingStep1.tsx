@@ -42,7 +42,11 @@ const formSchema = z.object({
   name: nameSchema,
   cnpj: cnpjSchema,
   phone: phoneSchema,
-  address: z.string().min(5, "Endereço deve ter pelo menos 5 caracteres").max(200, "Endereço muito longo"),
+  street: z.string().min(3, "Rua deve ter pelo menos 3 caracteres").max(200, "Rua muito longa"),
+  number: z.string().min(1, "Número é obrigatório").max(20, "Número muito longo"),
+  complement: z.string().max(100, "Complemento muito longo").optional(),
+  neighborhood: z.string().min(2, "Bairro deve ter pelo menos 2 caracteres").max(100, "Bairro muito longo"),
+  zip_code: z.string().regex(/^\d{5}-?\d{3}$/, "CEP inválido (formato: 00000-000)"),
   city: z.string().min(2, "Cidade deve ter pelo menos 2 caracteres").max(100, "Cidade muito longa"),
   state: z.string().length(2, "Selecione um estado"),
 });
@@ -59,7 +63,11 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
       name: "",
       cnpj: "",
       phone: "",
-      address: "",
+      street: "",
+      number: "",
+      complement: "",
+      neighborhood: "",
+      zip_code: "",
       city: "",
       state: "",
     },
@@ -140,17 +148,87 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
 
         <FormField
           control={form.control}
-          name="address"
+          name="street"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Endereço *</FormLabel>
+              <FormLabel>Rua/Logradouro *</FormLabel>
               <FormControl>
-                <Input placeholder="Rua, número, bairro" {...field} />
+                <Input placeholder="Rua das Flores" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Número *</FormLabel>
+                <FormControl>
+                  <Input placeholder="123" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="complement"
+            render={({ field }) => (
+              <FormItem className="md:col-span-2">
+                <FormLabel>Complemento</FormLabel>
+                <FormControl>
+                  <Input placeholder="Sala 101, Bloco A" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="neighborhood"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Bairro *</FormLabel>
+                <FormControl>
+                  <Input placeholder="Centro" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="zip_code"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>CEP *</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="00000-000" 
+                    {...field}
+                    onChange={(e) => {
+                      let value = e.target.value.replace(/\D/g, '');
+                      if (value.length > 5) {
+                        value = value.slice(0, 5) + '-' + value.slice(5, 8);
+                      }
+                      field.onChange(value);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
@@ -176,7 +254,7 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
+                      <SelectValue placeholder="UF" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>

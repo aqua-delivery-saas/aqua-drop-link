@@ -19,7 +19,11 @@ export interface OnboardingData {
     name: string;
     cnpj: string;
     phone: string;
-    address: string;
+    street: string;
+    number: string;
+    complement?: string;
+    neighborhood: string;
+    zip_code: string;
     city: string;
     state: string;
     logo?: File;
@@ -53,7 +57,11 @@ const Onboarding = () => {
             name: parsed.name || '',
             cnpj: '',
             phone: parsed.whatsapp || '',
-            address: '',
+            street: '',
+            number: '',
+            complement: '',
+            neighborhood: '',
+            zip_code: '',
             city: '',
             state: '',
           }
@@ -132,6 +140,10 @@ const Onboarding = () => {
     setIsSaving(true);
 
     try {
+      // Get email from sessionStorage (saved during signup)
+      const signupData = sessionStorage.getItem('distributorSignup');
+      const signupEmail = signupData ? JSON.parse(signupData).email : null;
+
       // Prepare products from marcasSelecionadas
       const products = (onboardingData.products || []).map(marca => ({
         name: marca.nome,
@@ -146,9 +158,12 @@ const Onboarding = () => {
           cnpj: onboardingData.distributor?.cnpj,
           phone: onboardingData.distributor?.phone,
           whatsapp: onboardingData.distributor?.phone,
-          street: onboardingData.distributor?.address,
-          city: onboardingData.distributor?.city,
-          state: onboardingData.distributor?.state,
+          email: signupEmail,
+          street: onboardingData.distributor?.street,
+          number: onboardingData.distributor?.number,
+          complement: onboardingData.distributor?.complement,
+          neighborhood: onboardingData.distributor?.neighborhood,
+          zip_code: onboardingData.distributor?.zip_code,
         },
         businessHours: onboardingData.businessHours,
         products,
