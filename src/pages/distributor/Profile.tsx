@@ -1,19 +1,55 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Profile = () => {
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
-    name: "João Silva",
-    email: "joao@aguapura.com.br",
-    phone: "21 98765-4321",
+    name: "",
+    email: "",
+    phone: "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
+
+  useEffect(() => {
+    async function fetchProfile() {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name, phone')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        setFormData(prev => ({
+          ...prev,
+          name: data?.full_name || "",
+          email: user.email || "",
+          phone: data?.phone || "",
+        }));
+      } catch (error) {
+        console.error('Erro ao buscar perfil:', error);
+        toast.error('Erro ao carregar dados do perfil');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchProfile();
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -22,7 +58,9 @@ const Profile = () => {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!user) return;
+
     if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
       toast.error("As senhas não coincidem!");
       return;
@@ -31,14 +69,69 @@ const Profile = () => {
       toast.error("A nova senha deve ter no mínimo 6 caracteres!");
       return;
     }
-    toast.success("Perfil atualizado com sucesso!");
-    setFormData({
-      ...formData,
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
+
+    setIsSaving(true);
+    try {
+      // Atualizar perfil no banco
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          full_name: formData.name,
+          phone: formData.phone,
+        })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
+      // Se tiver nova senha, atualizar via Supabase Auth
+      if (formData.newPassword) {
+        const { error: passwordError } = await supabase.auth.updateUser({
+          password: formData.newPassword
+        });
+
+        if (passwordError) throw passwordError;
+      }
+
+      toast.success("Perfil atualizado com sucesso!");
+      setFormData(prev => ({
+        ...prev,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      }));
+    } catch (error: any) {
+      console.error('Erro ao salvar perfil:', error);
+      toast.error(error.message || 'Erro ao salvar perfil');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <main className="container mx-auto px-4 py-8 max-w-2xl">
+          <div className="mb-8">
+            <Skeleton className="h-9 w-48 mb-2" />
+            <Skeleton className="h-5 w-80" />
+          </div>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="h-4 w-56" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -133,7 +226,7 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          <Button onClick={handleSave} size="lg" className="w-full">
+          <Button onClick={handleSave} size="lg" className="w-full" disabled={isSaving}>
             Salvar Alterações
           </Button>
         </div>
