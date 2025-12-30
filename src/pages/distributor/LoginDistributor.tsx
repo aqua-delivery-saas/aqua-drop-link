@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,13 +6,24 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 import heroWater from "@/assets/hero-water.jpg";
 
 const LoginDistributor = () => {
   const navigate = useNavigate();
+  const { login, isAuthenticated, isDistributor, isLoading: authLoading, role } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Redirect if already authenticated as distributor
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && role) {
+      if (isDistributor()) {
+        navigate("/distributor/dashboard");
+      }
+    }
+  }, [isAuthenticated, authLoading, role, isDistributor, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,16 +35,28 @@ const LoginDistributor = () => {
 
     setLoading(true);
     
-    // Simular login
-    setTimeout(() => {
-      if (email === "distribuidora@aqua.com" && password === "123456") {
-        toast.success("Login realizado com sucesso!");
-        navigate("/distributor/dashboard");
-      } else {
+    try {
+      await login(email, password);
+      
+      // Role will be fetched by the auth hook, we need to wait for it
+      // The useEffect above will handle the redirect once role is set
+      toast.success("Login realizado com sucesso!");
+    } catch (error: unknown) {
+      console.error('Login error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      
+      if (errorMessage.includes('Invalid login credentials')) {
         toast.error("E-mail ou senha incorretos");
+      } else if (errorMessage.includes('Email not confirmed')) {
+        toast.error("E-mail não confirmado", {
+          description: "Verifique sua caixa de entrada",
+        });
+      } else {
+        toast.error("Erro ao fazer login", { description: errorMessage });
       }
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -89,7 +112,7 @@ const LoginDistributor = () => {
                 type="submit" 
                 className="w-full" 
                 size="lg"
-                disabled={loading}
+                disabled={loading || authLoading}
               >
                 {loading ? "Entrando..." : "Entrar"}
               </Button>

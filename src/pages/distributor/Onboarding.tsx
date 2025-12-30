@@ -1,15 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { OnboardingStep1 } from "@/components/onboarding/OnboardingStep1";
 import { OnboardingStep2 } from "@/components/onboarding/OnboardingStep2";
 import { OnboardingStep3A, MarcaSelecionada } from "@/components/onboarding/OnboardingStep3A";
 import { OnboardingStep3B } from "@/components/onboarding/OnboardingStep3B";
 import { OnboardingStep4 } from "@/components/onboarding/OnboardingStep4";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useDistributor } from "@/hooks/useDistributor";
+import { useCreateDistributor } from "@/hooks/useCreateDistributor";
 
 export interface OnboardingData {
   distributor?: {
@@ -30,8 +33,48 @@ export interface OnboardingData {
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const { data: existingDistributor, isLoading: distributorLoading } = useDistributor();
+  const createDistributor = useCreateDistributor();
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Load initial data from sessionStorage (from signup)
+  useEffect(() => {
+    const signupData = sessionStorage.getItem('distributorSignup');
+    if (signupData) {
+      try {
+        const parsed = JSON.parse(signupData);
+        setOnboardingData(prev => ({
+          ...prev,
+          distributor: {
+            name: parsed.name || '',
+            cnpj: '',
+            phone: parsed.whatsapp || '',
+            address: '',
+            city: '',
+            state: '',
+          }
+        }));
+      } catch (e) {
+        console.error('Error parsing signup data:', e);
+      }
+    }
+  }, []);
+
+  // Redirect if not authenticated or already has distributor
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate('/distributor/login');
+      return;
+    }
+    
+    if (!distributorLoading && existingDistributor) {
+      navigate('/distributor/dashboard');
+    }
+  }, [authLoading, isAuthenticated, distributorLoading, existingDistributor, navigate]);
 
   // Total de passos visuais (3A e 3B contam como passo 3)
   const totalSteps = 4;
@@ -80,9 +123,50 @@ const Onboarding = () => {
     }
   };
 
-  const handleFinish = () => {
-    toast.success("Configuração concluída com sucesso!");
-    navigate("/distributor/dashboard");
+  const handleFinish = async () => {
+    if (!user?.id) {
+      toast.error("Usuário não autenticado");
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      // Prepare products from marcasSelecionadas
+      const products = (onboardingData.products || []).map(marca => ({
+        name: marca.nome,
+        liters: marca.litros,
+        price: marca.preco || 0,
+      }));
+
+      // Create distributor with all data
+      await createDistributor.mutateAsync({
+        distributor: {
+          name: onboardingData.distributor?.name || '',
+          cnpj: onboardingData.distributor?.cnpj,
+          phone: onboardingData.distributor?.phone,
+          whatsapp: onboardingData.distributor?.phone,
+          street: onboardingData.distributor?.address,
+          city: onboardingData.distributor?.city,
+          state: onboardingData.distributor?.state,
+        },
+        businessHours: onboardingData.businessHours,
+        products,
+      });
+
+      // Clear signup data from sessionStorage
+      sessionStorage.removeItem('distributorSignup');
+
+      toast.success("Configuração concluída com sucesso!");
+      navigate("/distributor/dashboard");
+    } catch (error) {
+      console.error('Error finishing onboarding:', error);
+      toast.error("Erro ao salvar dados", {
+        description: "Tente novamente",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const renderStep = () => {
@@ -113,6 +197,15 @@ const Onboarding = () => {
         return null;
     }
   };
+
+  // Show loading while checking auth/distributor status
+  if (authLoading || distributorLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -156,7 +249,17 @@ const Onboarding = () => {
             </div>
 
             {/* Step Content */}
-            <div className="min-h-[400px]">{renderStep()}</div>
+            <div className="min-h-[400px] relative">
+              {isSaving && (
+                <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="text-sm text-muted-foreground">Salvando dados...</span>
+                  </div>
+                </div>
+              )}
+              {renderStep()}
+            </div>
           </Card>
         </div>
       </div>
