@@ -5,33 +5,28 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle, AlertCircle, XCircle, Calendar, CreditCard, Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-
-type SubscriptionStatus = "active" | "pending" | "expired";
-
-interface Payment {
-  date: string;
-  type: string;
-  value: string;
-  status: string;
-}
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { useDistributorSubscription, useSubscriptionPayments } from "@/hooks/useDistributor";
 
 export default function Subscription() {
-  const [subscriptionStatus] = useState<SubscriptionStatus>("active");
-  const [currentPlan, setCurrentPlan] = useState<"monthly" | "annual">("monthly");
+  const { data: subscription, isLoading: isLoadingSubscription } = useDistributorSubscription();
+  const { data: payments = [], isLoading: isLoadingPayments } = useSubscriptionPayments();
+
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annual" | null>(null);
 
-  const nextRenewal = "01/11/2025";
-  const lastRenewal = "01/10/2025";
+  const subscriptionStatus = subscription?.status || "pending";
+  const currentPlan = subscription?.plan || "monthly";
 
-  const paymentHistory: Payment[] = [
-    { date: "01/09/2025", type: "Mensal", value: "R$ 30,00", status: "Confirmado" },
-    { date: "01/08/2025", type: "Mensal", value: "R$ 30,00", status: "Confirmado" },
-    { date: "01/07/2025", type: "Mensal", value: "R$ 30,00", status: "Confirmado" },
-  ];
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "—";
+    return format(new Date(dateString), "dd/MM/yyyy", { locale: ptBR });
+  };
 
   const getStatusBadge = () => {
     switch (subscriptionStatus) {
@@ -41,6 +36,10 @@ export default function Subscription() {
         return <Badge className="bg-yellow-500"><AlertCircle className="w-3 h-3 mr-1" /> Pendente</Badge>;
       case "expired":
         return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Expirado</Badge>;
+      case "canceled":
+        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Cancelado</Badge>;
+      default:
+        return <Badge variant="secondary">Desconhecido</Badge>;
     }
   };
 
@@ -65,6 +64,7 @@ export default function Subscription() {
           </Alert>
         );
       case "expired":
+      case "canceled":
         return (
           <Alert variant="destructive" className="bg-red-50 border-red-200">
             <XCircle className="h-4 w-4 text-red-600" />
@@ -73,6 +73,8 @@ export default function Subscription() {
             </AlertDescription>
           </Alert>
         );
+      default:
+        return null;
     }
   };
 
@@ -95,6 +97,63 @@ export default function Subscription() {
     return selectedPlan === "monthly" ? "R$ 30,00" : "R$ 300,00";
   };
 
+  const getPaymentStatusBadge = (status: string) => {
+    switch (status) {
+      case "paid":
+        return <Badge variant="secondary" className="bg-green-100 text-green-800">Confirmado</Badge>;
+      case "pending":
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Pendente</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  if (isLoadingSubscription) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto space-y-6">
+        <div>
+          <Skeleton className="h-9 w-48 mb-2" />
+          <Skeleton className="h-5 w-64" />
+        </div>
+        <Skeleton className="h-16 w-full" />
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-56" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              {[...Array(4)].map((_, i) => (
+                <div key={i}>
+                  <Skeleton className="h-4 w-20 mb-1" />
+                  <Skeleton className="h-6 w-32" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!subscription) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Minha Assinatura</h1>
+          <p className="text-muted-foreground mt-1">Gerencie seu plano e pagamentos</p>
+        </div>
+
+        <Alert className="bg-yellow-50 border-yellow-200">
+          <AlertCircle className="h-4 w-4 text-yellow-600" />
+          <AlertDescription className="text-yellow-800">
+            Você ainda não possui uma assinatura ativa. Entre em contato com o suporte para ativar seu plano.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div>
@@ -115,7 +174,9 @@ export default function Subscription() {
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <p className="text-sm text-muted-foreground">Plano</p>
-                <p className="text-lg font-semibold">Padrão Aqua Delivery</p>
+                <p className="text-lg font-semibold">
+                  {currentPlan === "monthly" ? "Mensal" : "Anual"}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Valor</p>
@@ -132,11 +193,11 @@ export default function Subscription() {
                   <Calendar className="w-4 h-4 inline mr-1" />
                   Próxima renovação
                 </p>
-                <p className="text-lg font-semibold">{nextRenewal}</p>
+                <p className="text-lg font-semibold">{formatDate(subscription.expires_at)}</p>
               </div>
               <div className="md:col-span-2">
-                <p className="text-sm text-muted-foreground">Data da última renovação</p>
-                <p className="text-base">{lastRenewal}</p>
+                <p className="text-sm text-muted-foreground">Data de início</p>
+                <p className="text-base">{formatDate(subscription.started_at)}</p>
               </div>
             </div>
 
@@ -299,22 +360,31 @@ export default function Subscription() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Data</TableHead>
-                  <TableHead>Tipo</TableHead>
+                  <TableHead>Método</TableHead>
                   <TableHead>Valor</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paymentHistory.length > 0 ? (
-                  paymentHistory.map((payment, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{payment.date}</TableCell>
-                      <TableCell>{payment.type}</TableCell>
-                      <TableCell className="font-medium">{payment.value}</TableCell>
+                {isLoadingPayments ? (
+                  [...Array(3)].map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : payments.length > 0 ? (
+                  payments.map((payment) => (
+                    <TableRow key={payment.id}>
+                      <TableCell>{formatDate(payment.paid_at || payment.created_at)}</TableCell>
+                      <TableCell>{payment.payment_method || "Pix"}</TableCell>
+                      <TableCell className="font-medium">
+                        R$ {Number(payment.amount).toFixed(2).replace(".", ",")}
+                      </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          {payment.status}
-                        </Badge>
+                        {getPaymentStatusBadge(payment.status)}
                       </TableCell>
                     </TableRow>
                   ))

@@ -8,6 +8,11 @@ export type Distributor = Tables<'distributors'>;
 export type Product = Tables<'products'>;
 export type Order = Tables<'orders'>;
 export type OrderItem = Tables<'order_items'>;
+export type BusinessHour = Tables<'business_hours'>;
+export type DiscountRule = Tables<'discount_rules'>;
+export type LoyaltyProgram = Tables<'loyalty_programs'>;
+export type Subscription = Tables<'subscriptions'>;
+export type Payment = Tables<'payments'>;
 
 export function useDistributor() {
   const { user } = useAuth();
@@ -27,6 +32,33 @@ export function useDistributor() {
       return data;
     },
     enabled: !!user?.id,
+  });
+}
+
+export function useUpdateDistributor() {
+  const queryClient = useQueryClient();
+  const { data: distributor } = useDistributor();
+
+  return useMutation({
+    mutationFn: async (updates: TablesUpdate<'distributors'>) => {
+      if (!distributor?.id) throw new Error('Distribuidor não encontrado');
+
+      const { data, error } = await supabase
+        .from('distributors')
+        .update(updates)
+        .eq('id', distributor.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['distributor'] });
+    },
+    onError: (error) => {
+      toast.error('Erro ao atualizar dados', { description: error.message });
+    },
   });
 }
 
@@ -127,6 +159,236 @@ export function useDistributorStats() {
   };
 }
 
+// Business Hours hooks
+export function useDistributorBusinessHours() {
+  const { data: distributor } = useDistributor();
+
+  return useQuery({
+    queryKey: ['distributor-business-hours', distributor?.id],
+    queryFn: async () => {
+      if (!distributor?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('business_hours')
+        .select('*')
+        .eq('distributor_id', distributor.id)
+        .order('day_of_week', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!distributor?.id,
+  });
+}
+
+export function useSaveBusinessHours() {
+  const queryClient = useQueryClient();
+  const { data: distributor } = useDistributor();
+
+  return useMutation({
+    mutationFn: async (hours: { day_of_week: number; open_time: string | null; close_time: string | null; is_open: boolean }[]) => {
+      if (!distributor?.id) throw new Error('Distribuidor não encontrado');
+
+      // Delete existing and insert new
+      await supabase
+        .from('business_hours')
+        .delete()
+        .eq('distributor_id', distributor.id);
+
+      const { data, error } = await supabase
+        .from('business_hours')
+        .insert(hours.map(h => ({ ...h, distributor_id: distributor.id })))
+        .select();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['distributor-business-hours'] });
+      toast.success('Horários salvos com sucesso!');
+    },
+    onError: (error) => {
+      toast.error('Erro ao salvar horários', { description: error.message });
+    },
+  });
+}
+
+// Discount Rules hooks
+export function useDistributorDiscountRules() {
+  const { data: distributor } = useDistributor();
+
+  return useQuery({
+    queryKey: ['distributor-discount-rules', distributor?.id],
+    queryFn: async () => {
+      if (!distributor?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('discount_rules')
+        .select('*')
+        .eq('distributor_id', distributor.id)
+        .order('min_quantity', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!distributor?.id,
+  });
+}
+
+export function useSaveDiscountRules() {
+  const queryClient = useQueryClient();
+  const { data: distributor } = useDistributor();
+
+  return useMutation({
+    mutationFn: async (rules: { min_quantity: number; max_quantity: number | null; discount_percent: number }[]) => {
+      if (!distributor?.id) throw new Error('Distribuidor não encontrado');
+
+      // Delete existing and insert new
+      await supabase
+        .from('discount_rules')
+        .delete()
+        .eq('distributor_id', distributor.id);
+
+      if (rules.length === 0) return [];
+
+      const { data, error } = await supabase
+        .from('discount_rules')
+        .insert(rules.map(r => ({ ...r, distributor_id: distributor.id })))
+        .select();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['distributor-discount-rules'] });
+      toast.success('Regras de desconto salvas com sucesso!');
+    },
+    onError: (error) => {
+      toast.error('Erro ao salvar regras', { description: error.message });
+    },
+  });
+}
+
+// Loyalty Program hooks
+export function useDistributorLoyaltyProgram() {
+  const { data: distributor } = useDistributor();
+
+  return useQuery({
+    queryKey: ['distributor-loyalty-program', distributor?.id],
+    queryFn: async () => {
+      if (!distributor?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('loyalty_programs')
+        .select('*')
+        .eq('distributor_id', distributor.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!distributor?.id,
+  });
+}
+
+export function useSaveLoyaltyProgram() {
+  const queryClient = useQueryClient();
+  const { data: distributor } = useDistributor();
+
+  return useMutation({
+    mutationFn: async (program: {
+      is_enabled: boolean;
+      program_name?: string;
+      description?: string;
+      points_per_order: number;
+      min_order_value?: number;
+      reward_threshold: number;
+      reward_description?: string;
+    }) => {
+      if (!distributor?.id) throw new Error('Distribuidor não encontrado');
+
+      // Check if exists
+      const { data: existing } = await supabase
+        .from('loyalty_programs')
+        .select('id')
+        .eq('distributor_id', distributor.id)
+        .maybeSingle();
+
+      if (existing) {
+        const { data, error } = await supabase
+          .from('loyalty_programs')
+          .update(program)
+          .eq('distributor_id', distributor.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      } else {
+        const { data, error } = await supabase
+          .from('loyalty_programs')
+          .insert({ ...program, distributor_id: distributor.id })
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['distributor-loyalty-program'] });
+      toast.success('Programa de fidelidade salvo com sucesso!');
+    },
+    onError: (error) => {
+      toast.error('Erro ao salvar programa', { description: error.message });
+    },
+  });
+}
+
+// Subscription hooks
+export function useDistributorSubscription() {
+  const { data: distributor } = useDistributor();
+
+  return useQuery({
+    queryKey: ['distributor-subscription', distributor?.id],
+    queryFn: async () => {
+      if (!distributor?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('distributor_id', distributor.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!distributor?.id,
+  });
+}
+
+export function useSubscriptionPayments() {
+  const { data: subscription } = useDistributorSubscription();
+
+  return useQuery({
+    queryKey: ['subscription-payments', subscription?.id],
+    queryFn: async () => {
+      if (!subscription?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('subscription_id', subscription.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!subscription?.id,
+  });
+}
+
+// Product hooks
 export function useCreateProduct() {
   const queryClient = useQueryClient();
   const { data: distributor } = useDistributor();

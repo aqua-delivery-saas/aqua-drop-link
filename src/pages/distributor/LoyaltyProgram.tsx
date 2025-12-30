@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,21 +6,73 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Info } from "lucide-react";
-import { toast } from "sonner";
+import { useDistributorLoyaltyProgram, useSaveLoyaltyProgram } from "@/hooks/useDistributor";
 
 const LoyaltyProgram = () => {
-  const [enabled, setEnabled] = useState(true);
-  const [programName, setProgramName] = useState("Clube Água Pura");
-  const [description, setDescription] = useState(
-    "Acumule pontos a cada compra e ganhe recompensas exclusivas!"
-  );
-  const [pointsPerOrder, setPointsPerOrder] = useState(10);
-  const [minValue, setMinValue] = useState(50);
+  const { data: loyaltyProgram, isLoading } = useDistributorLoyaltyProgram();
+  const saveLoyaltyProgram = useSaveLoyaltyProgram();
 
-  const handleSave = () => {
-    toast.success("Programa de fidelização salvo com sucesso!");
+  const [enabled, setEnabled] = useState(false);
+  const [programName, setProgramName] = useState("Programa de Fidelidade");
+  const [description, setDescription] = useState("");
+  const [pointsPerOrder, setPointsPerOrder] = useState(1);
+  const [minValue, setMinValue] = useState(0);
+  const [rewardThreshold, setRewardThreshold] = useState(10);
+  const [rewardDescription, setRewardDescription] = useState("Galão grátis");
+
+  useEffect(() => {
+    if (loyaltyProgram) {
+      setEnabled(loyaltyProgram.is_enabled);
+      setProgramName(loyaltyProgram.program_name || "Programa de Fidelidade");
+      setDescription(loyaltyProgram.description || "");
+      setPointsPerOrder(loyaltyProgram.points_per_order);
+      setMinValue(Number(loyaltyProgram.min_order_value) || 0);
+      setRewardThreshold(loyaltyProgram.reward_threshold);
+      setRewardDescription(loyaltyProgram.reward_description || "Galão grátis");
+    }
+  }, [loyaltyProgram]);
+
+  const handleSave = async () => {
+    await saveLoyaltyProgram.mutateAsync({
+      is_enabled: enabled,
+      program_name: programName,
+      description,
+      points_per_order: pointsPerOrder,
+      min_order_value: minValue,
+      reward_threshold: rewardThreshold,
+      reward_description: rewardDescription,
+    });
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <main className="container mx-auto px-4 py-8 max-w-2xl">
+          <div className="mb-8">
+            <Skeleton className="h-9 w-64 mb-2" />
+            <Skeleton className="h-5 w-80" />
+          </div>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-64" />
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <Skeleton className="h-10 w-full" />
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -105,6 +157,29 @@ const LoyaltyProgram = () => {
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reward-threshold">Pontos para Resgatar</Label>
+                      <Input
+                        id="reward-threshold"
+                        type="number"
+                        min="1"
+                        value={rewardThreshold}
+                        onChange={(e) => setRewardThreshold(Number(e.target.value))}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="reward-description">Recompensa</Label>
+                      <Input
+                        id="reward-description"
+                        value={rewardDescription}
+                        onChange={(e) => setRewardDescription(e.target.value)}
+                        placeholder="Ex: Galão grátis"
+                      />
+                    </div>
+                  </div>
+
                   <Alert>
                     <Info className="h-4 w-4" />
                     <AlertDescription>
@@ -117,8 +192,13 @@ const LoyaltyProgram = () => {
             </CardContent>
           </Card>
 
-          <Button onClick={handleSave} size="lg" className="w-full">
-            Salvar Programa
+          <Button 
+            onClick={handleSave} 
+            size="lg" 
+            className="w-full"
+            disabled={saveLoyaltyProgram.isPending}
+          >
+            {saveLoyaltyProgram.isPending ? "Salvando..." : "Salvar Programa"}
           </Button>
         </div>
       </main>
