@@ -188,21 +188,13 @@ const CityDistributors = () => {
                           </div>
                         )}
                         
-                        {/* Contact */}
-                        <div className="flex flex-wrap gap-4">
-                          {dist.phone && (
-                            <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{dist.phone}</span>
-                            </div>
-                          )}
-                          {dist.email && (
-                            <div className="flex items-center gap-2">
-                              <Mail className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{dist.email}</span>
-                            </div>
-                          )}
-                        </div>
+                        {/* Contact - Only phone is displayed publicly */}
+                        {dist.phone && (
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">{dist.phone}</span>
+                          </div>
+                        )}
                         
                         {/* Actions */}
                         <div className="flex gap-3 pt-2">

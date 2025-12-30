@@ -44,10 +44,31 @@ export function useDistributorsByCity(cityId: string | undefined) {
     queryFn: async () => {
       if (!cityId) return [];
 
+      // Only select non-sensitive fields for public display (phone is kept for contact purposes)
       const { data, error } = await supabase
         .from('distributors')
         .select(`
-          *,
+          id,
+          name,
+          slug,
+          city_id,
+          phone,
+          whatsapp,
+          street,
+          number,
+          neighborhood,
+          zip_code,
+          complement,
+          delivery_fee,
+          min_order_value,
+          accepts_pix,
+          accepts_card,
+          accepts_cash,
+          is_active,
+          is_verified,
+          logo_url,
+          meta_title,
+          meta_description,
           business_hours (*),
           products (*)
         `)
@@ -67,10 +88,31 @@ export function useDistributorBySlug(slug: string) {
     queryFn: async () => {
       if (!slug) return null;
 
+      // Only select non-sensitive fields for public display (phone is kept for contact purposes)
       const { data, error } = await supabase
         .from('distributors')
         .select(`
-          *,
+          id,
+          name,
+          slug,
+          city_id,
+          phone,
+          whatsapp,
+          street,
+          number,
+          neighborhood,
+          zip_code,
+          complement,
+          delivery_fee,
+          min_order_value,
+          accepts_pix,
+          accepts_card,
+          accepts_cash,
+          is_active,
+          is_verified,
+          logo_url,
+          meta_title,
+          meta_description,
           business_hours (*),
           products (*),
           discount_rules (*),
