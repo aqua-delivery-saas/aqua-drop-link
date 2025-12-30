@@ -1,21 +1,66 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { useDistributor, useUpdateDistributor } from "@/hooks/useDistributor";
 
 const SeoSettings = () => {
-  const [title, setTitle] = useState("Distribuidora Água Pura - Rio de Janeiro");
-  const [description, setDescription] = useState(
-    "Distribuidora de água mineral em Copacabana com entrega rápida e preços competitivos."
-  );
-  const [keywords, setKeywords] = useState("água mineral, galão de água, entrega de água, copacabana");
+  const { data: distributor, isLoading } = useDistributor();
+  const updateDistributor = useUpdateDistributor();
 
-  const handleSave = () => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [keywords, setKeywords] = useState("");
+
+  useEffect(() => {
+    if (distributor) {
+      setTitle(distributor.meta_title || "");
+      setDescription(distributor.meta_description || "");
+      setKeywords(distributor.meta_keywords || "");
+    }
+  }, [distributor]);
+
+  const handleSave = async () => {
+    await updateDistributor.mutateAsync({
+      meta_title: title,
+      meta_description: description,
+      meta_keywords: keywords,
+    });
     toast.success("Informações de SEO atualizadas com sucesso!");
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <main className="container mx-auto px-4 py-8 max-w-2xl">
+          <div className="mb-8">
+            <Skeleton className="h-9 w-48 mb-2" />
+            <Skeleton className="h-5 w-80" />
+          </div>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="h-4 w-72" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -91,7 +136,7 @@ const SeoSettings = () => {
                   {title || "Título da página"}
                 </h3>
                 <p className="text-sm text-green-700 mb-2">
-                  www.aguadelivery.com/distribuidoras/{title.toLowerCase().replace(/\s+/g, "-")}
+                  www.aguadelivery.com/distribuidoras/{distributor?.slug || "sua-distribuidora"}
                 </p>
                 <p className="text-sm text-gray-600">
                   {description || "Descrição da sua empresa aparecerá aqui..."}
@@ -100,8 +145,13 @@ const SeoSettings = () => {
             </CardContent>
           </Card>
 
-          <Button onClick={handleSave} size="lg" className="w-full">
-            Salvar Alterações
+          <Button 
+            onClick={handleSave} 
+            size="lg" 
+            className="w-full"
+            disabled={updateDistributor.isPending}
+          >
+            {updateDistributor.isPending ? "Salvando..." : "Salvar Alterações"}
           </Button>
         </div>
       </main>

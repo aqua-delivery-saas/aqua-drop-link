@@ -145,6 +145,7 @@ export type Database = {
           is_verified: boolean
           logo_url: string | null
           meta_description: string | null
+          meta_keywords: string | null
           meta_title: string | null
           min_order_value: number | null
           name: string
@@ -173,6 +174,7 @@ export type Database = {
           is_verified?: boolean
           logo_url?: string | null
           meta_description?: string | null
+          meta_keywords?: string | null
           meta_title?: string | null
           min_order_value?: number | null
           name: string
@@ -201,6 +203,7 @@ export type Database = {
           is_verified?: boolean
           logo_url?: string | null
           meta_description?: string | null
+          meta_keywords?: string | null
           meta_title?: string | null
           min_order_value?: number | null
           name?: string
@@ -227,30 +230,39 @@ export type Database = {
       loyalty_programs: {
         Row: {
           created_at: string
+          description: string | null
           distributor_id: string
           id: string
           is_enabled: boolean
+          min_order_value: number | null
           points_per_order: number
+          program_name: string | null
           reward_description: string | null
           reward_threshold: number
           updated_at: string
         }
         Insert: {
           created_at?: string
+          description?: string | null
           distributor_id: string
           id?: string
           is_enabled?: boolean
+          min_order_value?: number | null
           points_per_order?: number
+          program_name?: string | null
           reward_description?: string | null
           reward_threshold?: number
           updated_at?: string
         }
         Update: {
           created_at?: string
+          description?: string | null
           distributor_id?: string
           id?: string
           is_enabled?: boolean
+          min_order_value?: number | null
           points_per_order?: number
+          program_name?: string | null
           reward_description?: string | null
           reward_threshold?: number
           updated_at?: string

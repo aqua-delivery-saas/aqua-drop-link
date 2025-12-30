@@ -1,37 +1,51 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { useDistributorDiscountRules, useSaveDiscountRules } from "@/hooks/useDistributor";
 
-interface DiscountRule {
-  id: number;
+interface LocalDiscountRule {
+  id: string;
   min: number;
-  max: number;
+  max: number | null;
   discount: number;
 }
 
 const DiscountSettings = () => {
-  const [rules, setRules] = useState<DiscountRule[]>([
-    { id: 1, min: 5, max: 10, discount: 5 },
-    { id: 2, min: 11, max: 999, discount: 10 },
+  const { data: discountRules, isLoading } = useDistributorDiscountRules();
+  const saveDiscountRules = useSaveDiscountRules();
+
+  const [rules, setRules] = useState<LocalDiscountRule[]>([
+    { id: crypto.randomUUID(), min: 5, max: 10, discount: 5 },
   ]);
 
-  const handleChange = (id: number, field: keyof Omit<DiscountRule, "id">, value: number) => {
+  useEffect(() => {
+    if (discountRules && discountRules.length > 0) {
+      setRules(discountRules.map(r => ({
+        id: r.id,
+        min: r.min_quantity,
+        max: r.max_quantity,
+        discount: Number(r.discount_percent),
+      })));
+    }
+  }, [discountRules]);
+
+  const handleChange = (id: string, field: keyof Omit<LocalDiscountRule, "id">, value: number | null) => {
     setRules(rules.map(rule => 
       rule.id === id ? { ...rule, [field]: value } : rule
     ));
   };
 
   const handleAdd = () => {
-    const maxId = Math.max(...rules.map(r => r.id), 0);
-    setRules([...rules, { id: maxId + 1, min: 1, max: 5, discount: 0 }]);
+    setRules([...rules, { id: crypto.randomUUID(), min: 1, max: 5, discount: 0 }]);
   };
 
-  const handleRemove = (id: number) => {
+  const handleRemove = (id: string) => {
     if (rules.length > 1) {
       setRules(rules.filter(rule => rule.id !== id));
     } else {
@@ -39,9 +53,39 @@ const DiscountSettings = () => {
     }
   };
 
-  const handleSave = () => {
-    toast.success("Regras de desconto salvas com sucesso!");
+  const handleSave = async () => {
+    await saveDiscountRules.mutateAsync(
+      rules.map(r => ({
+        min_quantity: r.min,
+        max_quantity: r.max,
+        discount_percent: r.discount,
+      }))
+    );
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <main className="container mx-auto px-4 py-8 max-w-2xl">
+          <div className="mb-8">
+            <Skeleton className="h-9 w-64 mb-2" />
+            <Skeleton className="h-5 w-80" />
+          </div>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-64" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[...Array(2)].map((_, i) => (
+                <Skeleton key={i} className="h-32 w-full" />
+              ))}
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -99,8 +143,8 @@ const DiscountSettings = () => {
                         id={`max-${rule.id}`}
                         type="number"
                         min="1"
-                        value={rule.max}
-                        onChange={(e) => handleChange(rule.id, "max", Number(e.target.value))}
+                        value={rule.max ?? ""}
+                        onChange={(e) => handleChange(rule.id, "max", e.target.value ? Number(e.target.value) : null)}
                       />
                     </div>
                     
@@ -126,8 +170,13 @@ const DiscountSettings = () => {
             </CardContent>
           </Card>
 
-          <Button onClick={handleSave} size="lg" className="w-full">
-            Salvar Regras
+          <Button 
+            onClick={handleSave} 
+            size="lg" 
+            className="w-full"
+            disabled={saveDiscountRules.isPending}
+          >
+            {saveDiscountRules.isPending ? "Salvando..." : "Salvar Regras"}
           </Button>
         </div>
       </main>
