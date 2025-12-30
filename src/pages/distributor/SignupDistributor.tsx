@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
 import { emailSchema, simplePasswordSchema, nameSchema, whatsappSchema, formatPhone } from "@/lib/validators";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   name: nameSchema,
@@ -21,6 +23,7 @@ type FormData = z.infer<typeof formSchema>;
 
 const SignupDistributor = () => {
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -33,12 +36,70 @@ const SignupDistributor = () => {
   });
 
   const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success("Conta criada com sucesso!");
+      // 1. Create user in Supabase Auth
+      const redirectUrl = `${window.location.origin}/distributor/onboarding`;
+      
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: data.name,
+          },
+        },
+      });
+
+      if (authError) {
+        if (authError.message.includes('already registered')) {
+          toast.error("Este e-mail já está cadastrado", {
+            description: "Tente fazer login ou use outro e-mail",
+          });
+        } else {
+          toast.error("Erro ao criar conta", { description: authError.message });
+        }
+        return;
+      }
+
+      if (!authData.user) {
+        toast.error("Erro ao criar conta", { description: "Usuário não foi criado" });
+        return;
+      }
+
+      // 2. Insert distributor role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: authData.user.id,
+          role: 'distributor' as const,
+        });
+
+      if (roleError) {
+        console.error('Error inserting role:', roleError);
+        toast.error("Erro ao configurar conta", { description: roleError.message });
+        return;
+      }
+
+      // 3. Save initial data to sessionStorage for onboarding
+      sessionStorage.setItem('distributorSignup', JSON.stringify({
+        name: data.name,
+        whatsapp: data.whatsapp,
+        email: data.email,
+      }));
+
+      toast.success("Conta criada com sucesso!", {
+        description: "Complete o cadastro da sua distribuidora",
+      });
+      
       navigate("/distributor/onboarding");
     } catch (error) {
+      console.error('Signup error:', error);
       toast.error("Erro ao criar conta. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -129,9 +190,9 @@ const SignupDistributor = () => {
                 type="submit" 
                 size="lg" 
                 className="w-full" 
-                disabled={form.formState.isSubmitting}
+                disabled={isSubmitting}
               >
-                {form.formState.isSubmitting ? "Criando conta..." : "Cadastrar"}
+                {isSubmitting ? "Criando conta..." : "Cadastrar"}
               </Button>
 
               <div className="text-center text-sm">
