@@ -126,9 +126,8 @@ const LoginCustomer = () => {
                 Esqueci minha senha
               </button>
               <div className="text-center space-y-2">
-                <p className="text-sm text-muted-foreground">Ainda não tem conta?</p>
                 <Button type="button" variant="link" onClick={() => navigate("/customer/signup")} className="p-0">
-                  Criar conta grátis
+                  Ainda não tem conta? Criar conta grátis
                 </Button>
               </div>
 
