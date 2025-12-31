@@ -26,7 +26,7 @@ const Index = () => {
               variant="ghost"
               size="sm"
               className="text-xs sm:text-sm px-2 sm:px-4"
-              onClick={() => navigate("/costumer/login")}
+              onClick={() => navigate("/customer/login")}
             >
               Login Cliente
             </Button>
