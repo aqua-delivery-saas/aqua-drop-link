@@ -34,6 +34,7 @@ import OrderPage from "./pages/customer/OrderPage";
 import OrderConfirmation from "./pages/customer/OrderConfirmation";
 import SignupCustomer from "./pages/customer/SignupCustomer";
 import OrderHistory from "./pages/customer/OrderHistory";
+import CustomerProfile from "./pages/customer/Profile";
 import CityDistributors from "./pages/customer/CityDistributors";
 import LoginCustomer from "./pages/customer/LoginCustomer";
 import ResetPassword from "./pages/customer/ResetPassword";
@@ -170,6 +171,7 @@ const App = () => (
             <Route path="/customer/login" element={<LoginCustomer />} />
             <Route path="/customer/reset-password" element={<ResetPassword />} />
             <Route path="/customer/history" element={<OrderHistory />} />
+            <Route path="/customer/profile" element={<CustomerProfile />} />
             <Route 
               path="/schedule/:distributorSlug" 
               element={

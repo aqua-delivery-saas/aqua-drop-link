@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/Logo";
-import { RefreshCw, ArrowLeft, Calendar, X, Plus, Loader2 } from "lucide-react";
+import { RefreshCw, Calendar, X, Plus, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { UserMenu } from "@/components/customer/UserMenu";
 
 const OrderHistory = () => {
   const navigate = useNavigate();
@@ -26,7 +27,8 @@ const OrderHistory = () => {
         .from('orders')
         .select(`
           *,
-          order_items (*)
+          order_items (*),
+          distributors:distributor_id (slug, name)
         `)
         .eq('customer_id', user.id)
         .order('created_at', { ascending: false });
@@ -113,15 +115,32 @@ const OrderHistory = () => {
     );
   }
 
+  const handleRepeatOrder = (order: typeof orders[0]) => {
+    const distributor = order.distributors as { slug: string; name: string } | null;
+    if (!distributor?.slug) {
+      toast.error("Distribuidora não encontrada");
+      return;
+    }
+
+    const repeatData = {
+      repeatItems: order.order_items?.map(item => ({
+        product_id: item.product_id,
+        product_name: item.product_name,
+        quantity: item.quantity,
+      })) || [],
+      repeatAddress: order.delivery_street,
+      repeatPaymentMethod: order.payment_method,
+    };
+
+    navigate(`/order/${distributor.slug}`, { state: repeatData });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Logo size="md" />
-          <Button variant="ghost" onClick={() => navigate(-1)}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
+          <UserMenu />
         </div>
       </header>
 
@@ -190,6 +209,16 @@ const OrderHistory = () => {
                           </span>
                         </div>
                         <div className="flex gap-2 w-full sm:w-auto">
+                          {order.status !== 'cancelado' && (
+                            <Button 
+                              variant="secondary" 
+                              onClick={() => handleRepeatOrder(order)}
+                              className="flex-1 sm:flex-initial touch-input"
+                            >
+                              <RefreshCw className="mr-2 h-4 w-4" />
+                              Repetir
+                            </Button>
+                          )}
                           {order.order_type === 'scheduled' && order.status === 'novo' && (
                             <Button 
                               variant="outline" 
@@ -251,6 +280,14 @@ const OrderHistory = () => {
                           </span>
                         </div>
                         <div className="flex gap-2 w-full sm:w-auto">
+                          <Button 
+                            variant="secondary" 
+                            onClick={() => handleRepeatOrder(order)}
+                            className="flex-1 sm:flex-initial touch-input"
+                          >
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            Repetir
+                          </Button>
                           {order.status === 'novo' && (
                             <Button 
                               variant="outline" 
@@ -303,6 +340,14 @@ const OrderHistory = () => {
                             R$ {Number(order.total).toFixed(2)}
                           </span>
                         </div>
+                        <Button 
+                          variant="secondary" 
+                          onClick={() => handleRepeatOrder(order)}
+                          className="w-full sm:w-auto touch-input"
+                        >
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Repetir
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>

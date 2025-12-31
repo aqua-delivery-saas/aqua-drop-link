@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,11 +10,12 @@ import { Logo } from "@/components/Logo";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Minus, Plus, Clock, CalendarDays, AlertTriangle, MapPin, CreditCard, User, Phone } from "lucide-react";
+import { Minus, Plus, Clock, CalendarDays, AlertTriangle, MapPin, CreditCard, User, Phone, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/hooks/useAuth";
 import { LoginRequiredModal } from "@/components/customer/LoginRequiredModal";
+import { UserMenu } from "@/components/customer/UserMenu";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useDistributorBySlug } from "@/hooks/useCities";
@@ -22,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useCreateOrder } from "@/hooks/useDistributor";
+
 type DeliveryPeriod = "manha" | "tarde" | "noite";
 const periodLabels: Record<DeliveryPeriod, string> = {
   manha: "Manhã (08:00 - 12:00)",
@@ -29,11 +31,21 @@ const periodLabels: Record<DeliveryPeriod, string> = {
   noite: "Noite (18:00 - 21:00)",
 };
 
+interface RepeatOrderState {
+  repeatItems?: { product_id: string | null; product_name: string; quantity: number }[];
+  repeatAddress?: string;
+  repeatPaymentMethod?: string;
+}
+
 const OrderPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { distributorSlug } = useParams();
   const { user, isAuthenticated, isCustomer } = useAuth();
   const { data: distribuidora, isLoading: distributorLoading } = useDistributorBySlug(distributorSlug || "");
+  
+  // Check for repeat order data from navigation state
+  const repeatState = location.state as RepeatOrderState | null;
 
   // Fetch products for this distributor
   const { data: products, isLoading: productsLoading } = useQuery({
@@ -103,8 +115,37 @@ const OrderPage = () => {
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
   const [scheduledPeriod, setScheduledPeriod] = useState<DeliveryPeriod | "">("");
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isRepeatOrder, setIsRepeatOrder] = useState(false);
   
   const createOrder = useCreateOrder();
+
+  // Pre-fill form with repeat order data
+  useEffect(() => {
+    if (repeatState && products && products.length > 0) {
+      // Find matching product from repeat items
+      if (repeatState.repeatItems && repeatState.repeatItems.length > 0) {
+        const firstItem = repeatState.repeatItems[0];
+        const matchingProduct = products.find(p => 
+          p.id === firstItem.product_id || p.name === firstItem.product_name
+        );
+        if (matchingProduct) {
+          setSelectedProduct(matchingProduct.id);
+          setQuantity(firstItem.quantity);
+        }
+      }
+      
+      if (repeatState.repeatAddress) {
+        setAddress(repeatState.repeatAddress);
+      }
+      
+      if (repeatState.repeatPaymentMethod) {
+        setPaymentMethod(repeatState.repeatPaymentMethod);
+      }
+      
+      setIsRepeatOrder(true);
+      toast.info("Pedido repetido - revise os dados antes de confirmar");
+    }
+  }, [repeatState, products]);
 
   // Check if distributor is open
   useEffect(() => {
@@ -302,15 +343,30 @@ const OrderPage = () => {
                 <Logo size="md" />
                 <p className="text-sm text-muted-foreground mt-1">{distribuidora.name}</p>
               </div>
-              <Badge variant={isOpen ? "default" : "destructive"} className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {isOpen ? "Aberta" : "Fechada"}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant={isOpen ? "default" : "destructive"} className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {isOpen ? "Aberta" : "Fechada"}
+                </Badge>
+                <UserMenu />
+              </div>
             </div>
           </div>
         </header>
 
         <main className="container mx-auto px-4 py-8 max-w-2xl space-y-4">
+          {/* Repeat order notice */}
+          {isRepeatOrder && (
+            <Card className="border-primary/30 bg-primary/5">
+              <CardContent className="pt-4 pb-4">
+                <div className="flex items-center gap-2 text-primary">
+                  <RefreshCw className="h-4 w-4" />
+                  <span className="text-sm font-medium">Pedido repetido - revise os dados antes de confirmar</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Closed warning */}
           {!isOpen && (
             <Card className="border-destructive bg-destructive/10">
