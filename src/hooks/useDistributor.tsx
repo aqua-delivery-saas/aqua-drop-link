@@ -487,3 +487,99 @@ export function useUpdateOrderStatus() {
     },
   });
 }
+
+// Create Order hook (for customers)
+export type CreateOrderInput = {
+  distributor_id: string;
+  customer_id?: string | null;
+  customer_name: string;
+  customer_phone: string;
+  order_type: 'immediate' | 'scheduled';
+  scheduled_date?: string | null;
+  delivery_period?: 'manha' | 'tarde' | 'noite' | null;
+  delivery_street: string;
+  delivery_neighborhood?: string | null;
+  delivery_city?: string | null;
+  delivery_state?: string | null;
+  delivery_zip_code?: string | null;
+  delivery_number?: string | null;
+  delivery_complement?: string | null;
+  payment_method: 'dinheiro' | 'pix' | 'cartao';
+  subtotal: number;
+  discount_amount: number;
+  total: number;
+  notes?: string | null;
+};
+
+export type CreateOrderItemInput = {
+  product_id: string;
+  product_name: string;
+  product_liters: number;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+};
+
+export function useCreateOrder() {
+  return useMutation({
+    mutationFn: async ({ 
+      order, 
+      items 
+    }: { 
+      order: CreateOrderInput; 
+      items: CreateOrderItemInput[] 
+    }) => {
+      // Insert order
+      const { data: createdOrder, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          distributor_id: order.distributor_id,
+          customer_id: order.customer_id || null,
+          customer_name: order.customer_name,
+          customer_phone: order.customer_phone,
+          order_type: order.order_type,
+          scheduled_date: order.scheduled_date || null,
+          delivery_period: order.delivery_period || null,
+          delivery_street: order.delivery_street,
+          delivery_neighborhood: order.delivery_neighborhood || null,
+          delivery_city: order.delivery_city || null,
+          delivery_state: order.delivery_state || null,
+          delivery_zip_code: order.delivery_zip_code || null,
+          delivery_number: order.delivery_number || null,
+          delivery_complement: order.delivery_complement || null,
+          payment_method: order.payment_method,
+          subtotal: order.subtotal,
+          discount_amount: order.discount_amount,
+          total: order.total,
+          notes: order.notes || null,
+          status: 'novo',
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Insert order items
+      const orderItems = items.map(item => ({
+        order_id: createdOrder.id,
+        product_id: item.product_id,
+        product_name: item.product_name,
+        product_liters: item.product_liters,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total_price: item.total_price,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      return createdOrder;
+    },
+    onError: (error) => {
+      toast.error('Erro ao criar pedido', { description: error.message });
+    },
+  });
+}
