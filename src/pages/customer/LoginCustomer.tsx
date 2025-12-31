@@ -34,8 +34,7 @@ const LoginCustomer = () => {
     try {
       await login(email, password);
       toast.success("Login realizado com sucesso!");
-      navigate(from, { replace: true });
-      redirectTo: `${window.location.origin}/customer/reset-password`;
+      navigate("/customer/history", { replace: true });
     } catch (error) {
       toast.error("Credenciais inválidas. Verifique seu email e senha.");
     } finally {
