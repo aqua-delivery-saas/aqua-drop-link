@@ -5,11 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
+import { formatPhone } from "@/lib/validators";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MapPin } from "lucide-react";
 import { UserMenu } from "@/components/customer/UserMenu";
 
 const Profile = () => {
@@ -21,6 +22,12 @@ const Profile = () => {
     name: "",
     email: "",
     phone: "",
+    street: "",
+    number: "",
+    neighborhood: "",
+    city: "",
+    state: "",
+    zip_code: "",
     newPassword: "",
     confirmPassword: "",
   });
@@ -32,7 +39,7 @@ const Profile = () => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('full_name, phone')
+          .select('full_name, phone, street, number, neighborhood, city, state, zip_code')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -43,6 +50,12 @@ const Profile = () => {
           name: data?.full_name || "",
           email: user.email || "",
           phone: data?.phone || "",
+          street: data?.street || "",
+          number: data?.number || "",
+          neighborhood: data?.neighborhood || "",
+          city: data?.city || "",
+          state: data?.state || "",
+          zip_code: data?.zip_code || "",
         }));
       } catch (error) {
         console.error('Erro ao buscar perfil:', error);
@@ -56,10 +69,25 @@ const Profile = () => {
   }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.id]: e.target.value,
-    });
+    const { id, value } = e.target;
+    
+    // Apply phone mask
+    if (id === 'phone') {
+      setFormData(prev => ({ ...prev, phone: formatPhone(value) }));
+      return;
+    }
+    
+    // Apply CEP mask (00000-000)
+    if (id === 'zip_code') {
+      const digits = value.replace(/\D/g, '').slice(0, 8);
+      const formatted = digits.length > 5 
+        ? `${digits.slice(0, 5)}-${digits.slice(5)}`
+        : digits;
+      setFormData(prev => ({ ...prev, zip_code: formatted }));
+      return;
+    }
+    
+    setFormData(prev => ({ ...prev, [id]: value }));
   };
 
   const handleSave = async () => {
@@ -81,6 +109,12 @@ const Profile = () => {
         .update({
           full_name: formData.name,
           phone: formData.phone,
+          street: formData.street || null,
+          number: formData.number || null,
+          neighborhood: formData.neighborhood || null,
+          city: formData.city || null,
+          state: formData.state || null,
+          zip_code: formData.zip_code || null,
         })
         .eq('id', user.id);
 
@@ -215,6 +249,83 @@ const Profile = () => {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="21 98765-4321"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Endereço de Entrega
+              </CardTitle>
+              <CardDescription>
+                Salve seu endereço para preencher automaticamente nos pedidos
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="street">Rua</Label>
+                  <Input
+                    id="street"
+                    value={formData.street}
+                    onChange={handleChange}
+                    placeholder="Nome da rua"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="number">Número</Label>
+                  <Input
+                    id="number"
+                    value={formData.number}
+                    onChange={handleChange}
+                    placeholder="123"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="neighborhood">Bairro</Label>
+                <Input
+                  id="neighborhood"
+                  value={formData.neighborhood}
+                  onChange={handleChange}
+                  placeholder="Seu bairro"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">Cidade</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    placeholder="Sua cidade"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state">Estado</Label>
+                  <Input
+                    id="state"
+                    value={formData.state}
+                    onChange={handleChange}
+                    placeholder="RJ"
+                    maxLength={2}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="zip_code">CEP</Label>
+                <Input
+                  id="zip_code"
+                  value={formData.zip_code}
+                  onChange={handleChange}
+                  placeholder="00000-000"
+                  maxLength={9}
                 />
               </div>
             </CardContent>
