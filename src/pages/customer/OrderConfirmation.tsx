@@ -3,7 +3,8 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
-import { CheckCircle2, MessageCircle, Package, MapPin, CreditCard, ArrowRight, Sparkles } from "lucide-react";
+import { CheckCircle2, MessageCircle, Package, MapPin, CreditCard, ArrowRight, Sparkles, CalendarDays } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const OrderConfirmation = () => {
   const location = useLocation();
@@ -21,14 +22,18 @@ const OrderConfirmation = () => {
   }
 
   const handleWhatsApp = () => {
-    const message = encodeURIComponent(
-      `Olá! Acabei de fazer um pedido:\n\n` +
-      `Produto: ${orderData.product} × ${orderData.quantity}\n` +
-      `Endereço: ${orderData.address}\n` +
-      `Pagamento: ${orderData.paymentMethod}\n` +
-      `Total: R$ ${orderData.total.toFixed(2)}`
-    );
-    window.open(`https://wa.me/5511999999999?text=${message}`, "_blank");
+    if (orderData.whatsappUrl) {
+      window.open(orderData.whatsappUrl, "_blank");
+    } else {
+      const message = encodeURIComponent(
+        `Olá! Acabei de fazer um pedido${orderData.orderNumber ? ` #${orderData.orderNumber}` : ''}:\n\n` +
+        `Produto: ${orderData.product} × ${orderData.quantity}\n` +
+        `Endereço: ${orderData.address}\n` +
+        `Pagamento: ${orderData.paymentMethod}\n` +
+        `Total: R$ ${orderData.total.toFixed(2)}`
+      );
+      window.open(`https://wa.me/5511999999999?text=${message}`, "_blank");
+    }
   };
 
   return (
@@ -52,6 +57,11 @@ const OrderConfirmation = () => {
           <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             Pedido Confirmado!
           </h1>
+          {orderData.orderNumber && (
+            <Badge variant="outline" className="text-lg px-4 py-1 mb-3">
+              Pedido #{orderData.orderNumber}
+            </Badge>
+          )}
           <p className="text-lg text-muted-foreground mb-2">
             Seu pedido foi enviado para {orderData.distributor}
           </p>
@@ -82,6 +92,12 @@ const OrderConfirmation = () => {
                     <p className="text-2xl font-bold text-primary">×{orderData.quantity}</p>
                   </div>
                 </div>
+                {orderData.discount > 0 && (
+                  <div className="flex justify-between items-center text-green-600 mb-2">
+                    <span className="font-medium">Desconto aplicado</span>
+                    <span className="font-bold">-R$ {orderData.discount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="pt-3 border-t border-primary/10 flex justify-between items-center">
                   <span className="text-muted-foreground font-medium">Valor Total</span>
                   <span className="text-3xl font-bold text-primary">
@@ -89,6 +105,25 @@ const OrderConfirmation = () => {
                   </span>
                 </div>
               </div>
+
+              {/* Scheduled Info */}
+              {orderData.isScheduled && (
+                <div className="flex gap-4 p-4 bg-accent/10 rounded-lg border border-accent/20">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
+                      <CalendarDays className="h-5 w-5 text-accent" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Agendado para</p>
+                    <p className="font-semibold text-foreground">
+                      {orderData.scheduledDate}
+                      {orderData.scheduledPeriod && ` - ${orderData.scheduledPeriod}`}
+                      {orderData.scheduledTime && ` às ${orderData.scheduledTime}`}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Delivery Address */}
               <div className="flex gap-4 p-4 bg-muted/50 rounded-lg">

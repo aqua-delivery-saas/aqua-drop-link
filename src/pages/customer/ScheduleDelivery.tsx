@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/Logo";
-import { Minus, Plus, MapPin, CreditCard, Calendar } from "lucide-react";
+import { Minus, Plus, MapPin, CreditCard, Calendar, User, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 import { DeliveryScheduler } from "@/components/customer/DeliveryScheduler";
@@ -15,10 +15,14 @@ import { useDistributorBySlug } from "@/hooks/useCities";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
+import { useCreateOrder } from "@/hooks/useDistributor";
+import { format } from "date-fns";
 
 const ScheduleDelivery = () => {
   const navigate = useNavigate();
   const { distributorSlug } = useParams();
+  const { user } = useAuth();
   
   const { data: distribuidora, isLoading: distributorLoading } = useDistributorBySlug(distributorSlug || "");
 
@@ -79,7 +83,10 @@ const ScheduleDelivery = () => {
   const [selectedTime, setSelectedTime] = useState("");
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [customerName, setCustomerName] = useState(user?.user_metadata?.full_name || "");
+  const [customerPhone, setCustomerPhone] = useState("");
+  
+  const createOrder = useCreateOrder();
 
   // Calculate discount based on quantity
   const calculateDiscount = (qty: number): number => {
@@ -96,42 +103,76 @@ const ScheduleDelivery = () => {
     setQuantity(Math.max(1, quantity + delta));
   };
 
-  const handleSchedule = (e: React.FormEvent) => {
+  const handleSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedProduct || !selectedDate || !selectedTime || !address || !paymentMethod) {
+    if (!selectedProduct || !selectedDate || !selectedTime || !address || !paymentMethod || !customerName || !customerPhone) {
       toast.error("Preencha todos os campos obrigatórios");
       return;
     }
 
-    setLoading(true);
+    const product = (products || []).find(p => p.id === selectedProduct);
+    if (!product || !distribuidora) return;
+    
+    const subtotalValue = Number(product.price) * quantity;
+    const discountPercentage = calculateDiscount(quantity);
+    const discountAmountValue = subtotalValue * (discountPercentage / 100);
+    const totalValue = subtotalValue - discountAmountValue;
 
-    setTimeout(() => {
-      const product = (products || []).find(p => p.id === selectedProduct);
-      const subtotal = (Number(product?.price) || 0) * quantity;
-      const discountPercentage = calculateDiscount(quantity);
-      const discountAmount = subtotal * (discountPercentage / 100);
-      const total = subtotal - discountAmount;
+    // Determine delivery period from time
+    const hour = parseInt(selectedTime.split(':')[0]);
+    let deliveryPeriod: 'manha' | 'tarde' | 'noite' = 'manha';
+    if (hour >= 12 && hour < 18) deliveryPeriod = 'tarde';
+    else if (hour >= 18) deliveryPeriod = 'noite';
+
+    try {
+      const createdOrder = await createOrder.mutateAsync({
+        order: {
+          distributor_id: distribuidora.id,
+          customer_id: user?.id || null,
+          customer_name: customerName,
+          customer_phone: customerPhone,
+          order_type: 'scheduled',
+          scheduled_date: format(selectedDate, "yyyy-MM-dd"),
+          delivery_period: deliveryPeriod,
+          delivery_street: address,
+          payment_method: paymentMethod as 'dinheiro' | 'pix' | 'cartao',
+          subtotal: subtotalValue,
+          discount_amount: discountAmountValue,
+          total: totalValue,
+        },
+        items: [{
+          product_id: product.id,
+          product_name: product.name,
+          product_liters: Number(product.liters),
+          quantity,
+          unit_price: Number(product.price),
+          total_price: subtotalValue,
+        }],
+      });
 
       navigate("/schedule/confirmation", {
         state: {
-          product: product?.name,
+          orderId: createdOrder.id,
+          orderNumber: createdOrder.order_number,
+          product: product.name,
           quantity,
           address,
           paymentMethod,
-          subtotal,
-          discount: discountAmount,
-          total,
-          distributor: distribuidora?.name,
+          subtotal: subtotalValue,
+          discount: discountAmountValue,
+          total: totalValue,
+          distributor: distribuidora.name,
           scheduledDate: selectedDate.toLocaleDateString('pt-BR'),
           scheduledTime: selectedTime,
-          whatsappUrl: distribuidora?.whatsapp ? `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(
-            `Olá! Agendamento de Entrega:\n\nProduto: ${product?.name}\nQtd: ${quantity}\nData: ${selectedDate.toLocaleDateString('pt-BR')}\nHorário: ${selectedTime}\nTotal: R$ ${total.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}`
+          whatsappUrl: distribuidora.whatsapp ? `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(
+            `Olá! Agendamento #${createdOrder.order_number}:\n\nProduto: ${product.name}\nQtd: ${quantity}\nData: ${selectedDate.toLocaleDateString('pt-BR')}\nHorário: ${selectedTime}\nTotal: R$ ${totalValue.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}`
           )}` : null,
         },
       });
-      setLoading(false);
-    }, 1000);
+    } catch (error) {
+      // Error already handled by mutation
+    }
   };
 
   const selectedProductData = (products || []).find(p => p.id === selectedProduct);
@@ -298,12 +339,44 @@ const ScheduleDelivery = () => {
               />
             </div>
 
+            {/* Customer Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  3. Seus Dados
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="customerName">Seu Nome</Label>
+                  <Input
+                    id="customerName"
+                    placeholder="Nome completo"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="customerPhone">Telefone / WhatsApp</Label>
+                  <Input
+                    id="customerPhone"
+                    placeholder="(11) 99999-9999"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    required
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Address */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="h-5 w-5" />
-                  3. Endereço de Entrega
+                  4. Endereço de Entrega
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -325,7 +398,7 @@ const ScheduleDelivery = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="h-5 w-5" />
-                  4. Forma de Pagamento
+                  5. Forma de Pagamento
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -393,9 +466,9 @@ const ScheduleDelivery = () => {
               type="submit" 
               size="lg" 
               className="w-full" 
-              disabled={loading || !selectedProduct || !selectedDate || !selectedTime || !address || !paymentMethod}
+              disabled={createOrder.isPending || !selectedProduct || !selectedDate || !selectedTime || !address || !paymentMethod || !customerName || !customerPhone}
             >
-              {loading ? "Processando..." : "Confirmar Agendamento"}
+              {createOrder.isPending ? "Processando..." : "Confirmar Agendamento"}
             </Button>
 
             <div className="text-center">

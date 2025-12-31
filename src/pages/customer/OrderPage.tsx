@@ -10,19 +10,18 @@ import { Logo } from "@/components/Logo";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Minus, Plus, Clock, Gift, CalendarDays, AlertTriangle, MapPin, CreditCard } from "lucide-react";
+import { Minus, Plus, Clock, CalendarDays, AlertTriangle, MapPin, CreditCard, User, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/hooks/useAuth";
 import { LoginRequiredModal } from "@/components/customer/LoginRequiredModal";
-import { format, addDays, setHours, setMinutes } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 import { useDistributorBySlug } from "@/hooks/useCities";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-
+import { useCreateOrder } from "@/hooks/useDistributor";
 type DeliveryPeriod = "manha" | "tarde" | "noite";
 const periodLabels: Record<DeliveryPeriod, string> = {
   manha: "Manhã (08:00 - 12:00)",
@@ -97,12 +96,15 @@ const OrderPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [customerName, setCustomerName] = useState(user?.user_metadata?.full_name || "");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [isOpen, setIsOpen] = useState(true);
   const [wantsToSchedule, setWantsToSchedule] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
   const [scheduledPeriod, setScheduledPeriod] = useState<DeliveryPeriod | "">("");
   const [showLoginModal, setShowLoginModal] = useState(false);
+  
+  const createOrder = useCreateOrder();
 
   // Check if distributor is open
   useEffect(() => {
@@ -154,12 +156,12 @@ const OrderPage = () => {
   const isSchedulingRequired = !isOpen;
 
   const canSubmit = useMemo(() => {
-    const baseFieldsValid = selectedProduct && address && paymentMethod;
+    const baseFieldsValid = selectedProduct && address && paymentMethod && customerName && customerPhone;
     if (isSchedulingRequired || wantsToSchedule) {
       return baseFieldsValid && scheduledDate && scheduledPeriod && mockCustomer.isLoggedIn;
     }
     return baseFieldsValid;
-  }, [selectedProduct, address, paymentMethod, isSchedulingRequired, wantsToSchedule, scheduledDate, scheduledPeriod, mockCustomer.isLoggedIn]);
+  }, [selectedProduct, address, paymentMethod, customerName, customerPhone, isSchedulingRequired, wantsToSchedule, scheduledDate, scheduledPeriod, mockCustomer.isLoggedIn]);
 
   const handleScheduleToggle = (checked: boolean) => {
     if (checked && !mockCustomer.isLoggedIn) {
@@ -171,7 +173,7 @@ const OrderPage = () => {
 
   const handleOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedProduct || !address || !paymentMethod) {
+    if (!selectedProduct || !address || !paymentMethod || !customerName || !customerPhone) {
       toast.error("Preencha todos os campos obrigatórios");
       return;
     }
@@ -184,30 +186,61 @@ const OrderPage = () => {
       return;
     }
 
-    setLoading(true);
     const product = (products || []).find((p) => p.id === selectedProduct);
-    const subtotal = (product?.price || 0) * quantity;
+    if (!product || !distribuidora) return;
+    
+    const subtotalValue = Number(product.price) * quantity;
     const discountPercentage = calculateDiscount(quantity);
-    const discountAmount = subtotal * (discountPercentage / 100);
-    const total = subtotal - discountAmount;
+    const discountAmountValue = subtotalValue * (discountPercentage / 100);
+    const totalValue = subtotalValue - discountAmountValue;
 
-    navigate("/order/confirmation", {
-      state: {
-        product: product?.name,
-        quantity,
-        address,
-        paymentMethod,
-        subtotal,
-        discount: discountAmount,
-        total,
-        distributor: distribuidora?.name,
-        isScheduled: wantsToSchedule || isSchedulingRequired,
-        scheduledDate: scheduledDate ? format(scheduledDate, "dd/MM/yyyy") : null,
-        scheduledPeriod: scheduledPeriod ? periodLabels[scheduledPeriod] : null,
-        whatsappUrl: distribuidora?.whatsapp ? `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(`Olá! Pedido:\n\nProduto: ${product?.name}\nQtd: ${quantity}\nTotal: R$ ${total.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}`)}` : null,
-      },
-    });
-    setLoading(false);
+    try {
+      const createdOrder = await createOrder.mutateAsync({
+        order: {
+          distributor_id: distribuidora.id,
+          customer_id: user?.id || null,
+          customer_name: customerName,
+          customer_phone: customerPhone,
+          order_type: (wantsToSchedule || isSchedulingRequired) ? 'scheduled' : 'immediate',
+          scheduled_date: scheduledDate ? format(scheduledDate, "yyyy-MM-dd") : null,
+          delivery_period: scheduledPeriod || null,
+          delivery_street: address,
+          payment_method: paymentMethod as 'dinheiro' | 'pix' | 'cartao',
+          subtotal: subtotalValue,
+          discount_amount: discountAmountValue,
+          total: totalValue,
+        },
+        items: [{
+          product_id: product.id,
+          product_name: product.name,
+          product_liters: Number(product.liters),
+          quantity,
+          unit_price: Number(product.price),
+          total_price: subtotalValue,
+        }],
+      });
+
+      navigate("/order/confirmation", {
+        state: {
+          orderId: createdOrder.id,
+          orderNumber: createdOrder.order_number,
+          product: product.name,
+          quantity,
+          address,
+          paymentMethod,
+          subtotal: subtotalValue,
+          discount: discountAmountValue,
+          total: totalValue,
+          distributor: distribuidora.name,
+          isScheduled: wantsToSchedule || isSchedulingRequired,
+          scheduledDate: scheduledDate ? format(scheduledDate, "dd/MM/yyyy") : null,
+          scheduledPeriod: scheduledPeriod ? periodLabels[scheduledPeriod] : null,
+          whatsappUrl: distribuidora.whatsapp ? `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(`Olá! Pedido #${createdOrder.order_number}:\n\nProduto: ${product.name}\nQtd: ${quantity}\nTotal: R$ ${totalValue.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}`)}` : null,
+        },
+      });
+    } catch (error) {
+      // Error already handled by mutation
+    }
   };
 
   const selectedProductData = (products || []).find((p) => p.id === selectedProduct);
@@ -410,6 +443,34 @@ const OrderPage = () => {
                   </Card>
                 )}
 
+                {/* Customer Info */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-base flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Seu Nome
+                    </Label>
+                    <Input
+                      placeholder="Nome completo"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-base flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      Telefone / WhatsApp
+                    </Label>
+                    <Input
+                      placeholder="(11) 99999-9999"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
                 {/* Address */}
                 <div className="space-y-2">
                   <Label className="text-base flex items-center gap-2">
@@ -452,8 +513,8 @@ const OrderPage = () => {
                   </RadioGroup>
                 </div>
 
-                <Button type="submit" size="lg" className="w-full" disabled={loading || !canSubmit}>
-                  {loading ? "Processando..." : isSchedulingRequired ? "Agendar Pedido" : "Finalizar Pedido"}
+                <Button type="submit" size="lg" className="w-full" disabled={createOrder.isPending || !canSubmit}>
+                  {createOrder.isPending ? "Processando..." : isSchedulingRequired ? "Agendar Pedido" : "Finalizar Pedido"}
                 </Button>
 
                 <div className="text-center">
