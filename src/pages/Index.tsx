@@ -14,10 +14,27 @@ const Index = () => {
         <div className="container mx-auto px-4 py-3 sm:py-4 flex justify-between items-center">
           <Logo size="md" />
           <div className="flex gap-1 sm:gap-2">
-            <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4" onClick={() => navigate("/distributor/login")}>
-              Entrar
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs sm:text-sm px-2 sm:px-4"
+              onClick={() => navigate("/distributor/login")}
+            >
+              Login Distribuidora
             </Button>
-            <Button size="sm" className="text-xs sm:text-sm px-2 sm:px-4" onClick={() => navigate("/distributor/signup")}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs sm:text-sm px-2 sm:px-4"
+              onClick={() => navigate("/costumer/login")}
+            >
+              Login Cliente
+            </Button>
+            <Button
+              size="sm"
+              className="text-xs sm:text-sm px-2 sm:px-4"
+              onClick={() => navigate("/distributor/signup")}
+            >
               Criar Conta
             </Button>
           </div>
@@ -34,16 +51,16 @@ const Index = () => {
               Simplifique a entrega de água
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Plataforma completa para distribuidoras gerenciarem pedidos online. 
-              Elimine o WhatsApp manual e organize sua operação.
+              Plataforma completa para distribuidoras gerenciarem pedidos online. Elimine o WhatsApp manual e organize
+              sua operação.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" onClick={() => navigate("/distributor/signup")} className="text-lg">
                 Começar Grátis
               </Button>
-              <Button 
-                size="lg" 
-                variant="secondary" 
+              <Button
+                size="lg"
+                variant="secondary"
                 onClick={() => navigate("/order/distribuidora-agua-pura")}
                 className="text-lg"
               >
@@ -55,19 +72,11 @@ const Index = () => {
 
         <section className="py-16">
           <div className="relative rounded-2xl overflow-hidden shadow-2xl max-w-5xl mx-auto">
-            <img 
-              src={heroWater} 
-              alt="Entrega de água profissional" 
-              className="w-full h-[400px] object-cover"
-            />
+            <img src={heroWater} alt="Entrega de água profissional" className="w-full h-[400px] object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent flex items-end">
               <div className="p-8">
-                <h3 className="text-2xl font-bold text-foreground mb-2">
-                  Tecnologia para o seu negócio
-                </h3>
-                <p className="text-foreground/80">
-                  Transforme a experiência de compra dos seus clientes
-                </p>
+                <h3 className="text-2xl font-bold text-foreground mb-2">Tecnologia para o seu negócio</h3>
+                <p className="text-foreground/80">Transforme a experiência de compra dos seus clientes</p>
               </div>
             </div>
           </div>
