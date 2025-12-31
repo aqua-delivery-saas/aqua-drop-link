@@ -530,27 +530,45 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          city: string | null
           created_at: string
           full_name: string | null
           id: string
+          neighborhood: string | null
+          number: string | null
           phone: string | null
+          state: string | null
+          street: string | null
           updated_at: string
+          zip_code: string | null
         }
         Insert: {
           avatar_url?: string | null
+          city?: string | null
           created_at?: string
           full_name?: string | null
           id: string
+          neighborhood?: string | null
+          number?: string | null
           phone?: string | null
+          state?: string | null
+          street?: string | null
           updated_at?: string
+          zip_code?: string | null
         }
         Update: {
           avatar_url?: string | null
+          city?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
+          neighborhood?: string | null
+          number?: string | null
           phone?: string | null
+          state?: string | null
+          street?: string | null
           updated_at?: string
+          zip_code?: string | null
         }
         Relationships: []
       }

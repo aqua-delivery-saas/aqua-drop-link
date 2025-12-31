@@ -119,6 +119,41 @@ const OrderPage = () => {
   
   const createOrder = useCreateOrder();
 
+  // Fetch customer profile for auto-fill
+  useEffect(() => {
+    async function fetchCustomerProfile() {
+      if (!user?.id) return;
+      
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name, phone, street, number, neighborhood, city, state')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      if (data) {
+        if (data.full_name) setCustomerName(data.full_name);
+        if (data.phone) setCustomerPhone(data.phone);
+        
+        // Build address string from profile fields
+        if (data.street && !address) {
+          const addressParts = [
+            data.street,
+            data.number,
+            data.neighborhood,
+            data.city,
+            data.state
+          ].filter(Boolean);
+          
+          if (addressParts.length > 0) {
+            setAddress(addressParts.join(', '));
+          }
+        }
+      }
+    }
+    
+    fetchCustomerProfile();
+  }, [user?.id]);
+
   // Pre-fill form with repeat order data
   useEffect(() => {
     if (repeatState && products && products.length > 0) {
