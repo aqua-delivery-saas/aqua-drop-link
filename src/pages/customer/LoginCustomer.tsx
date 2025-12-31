@@ -9,13 +9,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 
 const LoginCustomer = () => {
@@ -25,7 +19,7 @@ const LoginCustomer = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   // Forgot password state
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
@@ -50,7 +44,7 @@ const LoginCustomer = () => {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!resetEmail) {
       toast.error("Digite seu email.");
       return;
@@ -83,7 +77,7 @@ const LoginCustomer = () => {
         <title>Login Cliente - AquaDelivery</title>
         <meta name="description" content="Faça login para agendar suas entregas de água" />
       </Helmet>
-      
+
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
@@ -91,9 +85,7 @@ const LoginCustomer = () => {
               <Logo size="lg" />
             </div>
             <CardTitle className="text-2xl">Login Cliente</CardTitle>
-            <CardDescription>
-              Entre com sua conta para agendar entregas
-            </CardDescription>
+            <CardDescription>Entre com sua conta para agendar entregas</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -112,13 +104,6 @@ const LoginCustomer = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Senha</Label>
-                  <button
-                    type="button"
-                    onClick={() => setForgotPasswordOpen(true)}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Esqueci minha senha
-                  </button>
                 </div>
                 <Input
                   id="password"
@@ -129,31 +114,26 @@ const LoginCustomer = () => {
                   required
                 />
               </div>
-
+              <button
+                type="button"
+                onClick={() => setForgotPasswordOpen(true)}
+                className="text-sm text-primary hover:underline"
+              >
+                Esqueci minha senha
+              </button>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Entrando..." : "Entrar"}
               </Button>
 
               <div className="text-center space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Ainda não tem conta?
-                </p>
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={() => navigate("/customer/signup")}
-                  className="p-0"
-                >
+                <p className="text-sm text-muted-foreground">Ainda não tem conta?</p>
+                <Button type="button" variant="link" onClick={() => navigate("/customer/signup")} className="p-0">
                   Criar conta grátis
                 </Button>
               </div>
 
               <div className="pt-4 text-center">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => navigate("/")}
-                >
+                <Button type="button" variant="ghost" onClick={() => navigate("/")}>
                   Voltar para Home
                 </Button>
               </div>
@@ -167,9 +147,7 @@ const LoginCustomer = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Recuperar Senha</DialogTitle>
-            <DialogDescription>
-              Digite seu email para receber um link de recuperação de senha.
-            </DialogDescription>
+            <DialogDescription>Digite seu email para receber um link de recuperação de senha.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleForgotPassword} className="space-y-4">
             <div className="space-y-2">
@@ -184,11 +162,7 @@ const LoginCustomer = () => {
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setForgotPasswordOpen(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => setForgotPasswordOpen(false)}>
                 Cancelar
               </Button>
               <Button type="submit" disabled={resetLoading}>
