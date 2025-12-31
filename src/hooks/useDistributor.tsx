@@ -522,19 +522,27 @@ export type CreateOrderItemInput = {
 
 export function useCreateOrder() {
   return useMutation({
-    mutationFn: async ({ 
-      order, 
-      items 
-    }: { 
-      order: CreateOrderInput; 
-      items: CreateOrderItemInput[] 
+    mutationFn: async ({
+      order,
+      items,
+    }: {
+      order: CreateOrderInput;
+      items: CreateOrderItemInput[];
     }) => {
+      // Ensure customer_id matches the *current* authenticated session (RLS requirement)
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const sessionUserId = session?.user?.id ?? null;
+      const effectiveCustomerId = sessionUserId;
+
       // Insert order
       const { data: createdOrder, error: orderError } = await supabase
         .from('orders')
         .insert({
           distributor_id: order.distributor_id,
-          customer_id: order.customer_id || null,
+          customer_id: effectiveCustomerId,
           customer_name: order.customer_name,
           customer_phone: order.customer_phone,
           order_type: order.order_type,
