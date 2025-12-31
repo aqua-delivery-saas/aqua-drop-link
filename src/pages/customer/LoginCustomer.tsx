@@ -114,6 +114,10 @@ const LoginCustomer = () => {
                   required
                 />
               </div>
+
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Entrando..." : "Entrar"}
+              </Button>
               <button
                 type="button"
                 onClick={() => setForgotPasswordOpen(true)}
@@ -121,10 +125,6 @@ const LoginCustomer = () => {
               >
                 Esqueci minha senha
               </button>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Entrando..." : "Entrar"}
-              </Button>
-
               <div className="text-center space-y-2">
                 <p className="text-sm text-muted-foreground">Ainda não tem conta?</p>
                 <Button type="button" variant="link" onClick={() => navigate("/customer/signup")} className="p-0">
