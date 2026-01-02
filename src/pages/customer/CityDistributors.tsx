@@ -188,11 +188,11 @@ const CityDistributors = () => {
                           </div>
                         )}
                         
-                        {/* Contact - Only phone is displayed publicly */}
-                        {dist.phone && (
+                        {/* Contact - WhatsApp is displayed publicly */}
+                        {dist.whatsapp && (
                           <div className="flex items-center gap-2">
                             <Phone className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{dist.phone}</span>
+                            <span className="text-sm">{dist.whatsapp}</span>
                           </div>
                         )}
                         
