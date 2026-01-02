@@ -57,6 +57,15 @@ const generateCitySlug = (cityName: string, state: string): string => {
 };
 
 const dayNameToNumber: { [key: string]: number } = {
+  // English keys (from OnboardingStep2)
+  'sunday': 0,
+  'monday': 1,
+  'tuesday': 2,
+  'wednesday': 3,
+  'thursday': 4,
+  'friday': 5,
+  'saturday': 6,
+  // Portuguese keys (fallback)
   'domingo': 0,
   'segunda': 1,
   'terca': 2,

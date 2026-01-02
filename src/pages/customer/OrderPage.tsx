@@ -182,19 +182,30 @@ const OrderPage = () => {
     }
   }, [repeatState, products]);
 
+  // Default business hours fallback (08:00-18:00 Mon-Fri, 08:00-12:00 Sat, Sunday closed)
+  const DEFAULT_BUSINESS_HOURS = [
+    { day_of_week: 0, is_open: false, open_time: null, close_time: null },      // Domingo
+    { day_of_week: 1, is_open: true, open_time: '08:00', close_time: '18:00' }, // Segunda
+    { day_of_week: 2, is_open: true, open_time: '08:00', close_time: '18:00' }, // Terça
+    { day_of_week: 3, is_open: true, open_time: '08:00', close_time: '18:00' }, // Quarta
+    { day_of_week: 4, is_open: true, open_time: '08:00', close_time: '18:00' }, // Quinta
+    { day_of_week: 5, is_open: true, open_time: '08:00', close_time: '18:00' }, // Sexta
+    { day_of_week: 6, is_open: true, open_time: '08:00', close_time: '12:00' }, // Sábado
+  ];
+
   // Check if distributor is open
   useEffect(() => {
-    if (!businessHours || businessHours.length === 0) {
-      setIsOpen(true);
-      return;
-    }
+    // Use default business hours if none are configured
+    const hoursToCheck = (!businessHours || businessHours.length === 0) 
+      ? DEFAULT_BUSINESS_HOURS 
+      : businessHours;
 
     const checkIfOpen = () => {
       const now = new Date();
       const dayOfWeek = now.getDay();
       const currentTime = now.toTimeString().slice(0, 5);
       
-      const todaySchedule = businessHours.find(h => h.day_of_week === dayOfWeek);
+      const todaySchedule = hoursToCheck.find(h => h.day_of_week === dayOfWeek);
       
       if (!todaySchedule || !todaySchedule.is_open) {
         setIsOpen(false);
