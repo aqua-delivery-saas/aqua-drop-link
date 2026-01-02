@@ -44,7 +44,7 @@ export function useDistributorsByCity(cityId: string | undefined) {
     queryFn: async () => {
       if (!cityId) return [];
 
-      // Only select non-sensitive fields for public display (phone is kept for contact purposes)
+      // Only select public commercial fields (whatsapp and cnpj are intentionally public)
       const { data, error } = await supabase
         .from('distributors')
         .select(`
@@ -52,8 +52,8 @@ export function useDistributorsByCity(cityId: string | undefined) {
           name,
           slug,
           city_id,
-          phone,
           whatsapp,
+          cnpj,
           street,
           number,
           neighborhood,
@@ -88,7 +88,7 @@ export function useDistributorBySlug(slug: string) {
     queryFn: async () => {
       if (!slug) return null;
 
-      // Only select non-sensitive fields for public display (phone is kept for contact purposes)
+      // Only select public commercial fields (whatsapp and cnpj are intentionally public)
       const { data, error } = await supabase
         .from('distributors')
         .select(`
@@ -96,8 +96,8 @@ export function useDistributorBySlug(slug: string) {
           name,
           slug,
           city_id,
-          phone,
           whatsapp,
+          cnpj,
           street,
           number,
           neighborhood,
