@@ -1,3 +1,4 @@
+// OrderPage - handles immediate orders when distributor is open
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
