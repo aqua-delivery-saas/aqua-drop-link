@@ -7,29 +7,17 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/Logo";
-import { Calendar } from "@/components/ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Minus, Plus, Clock, CalendarDays, AlertTriangle, MapPin, CreditCard, User, Phone, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/hooks/useAuth";
 import { LoginRequiredModal } from "@/components/customer/LoginRequiredModal";
 import { UserMenu } from "@/components/customer/UserMenu";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { useDistributorBySlug } from "@/hooks/useCities";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useCreateOrder } from "@/hooks/useDistributor";
-
-type DeliveryPeriod = "manha" | "tarde" | "noite";
-const periodLabels: Record<DeliveryPeriod, string> = {
-  manha: "Manhã (08:00 - 12:00)",
-  tarde: "Tarde (12:00 - 18:00)",
-  noite: "Noite (18:00 - 21:00)",
-};
 
 interface RepeatOrderState {
   repeatItems?: { product_id: string | null; product_name: string; quantity: number }[];
@@ -111,9 +99,6 @@ const OrderPage = () => {
   const [customerName, setCustomerName] = useState(user?.user_metadata?.full_name || "");
   const [customerPhone, setCustomerPhone] = useState("");
   const [isOpen, setIsOpen] = useState(true);
-  const [wantsToSchedule, setWantsToSchedule] = useState(false);
-  const [scheduledDate, setScheduledDate] = useState<Date | undefined>(undefined);
-  const [scheduledPeriod, setScheduledPeriod] = useState<DeliveryPeriod | "">("");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isRepeatOrder, setIsRepeatOrder] = useState(false);
   
@@ -209,15 +194,17 @@ const OrderPage = () => {
       
       if (!todaySchedule || !todaySchedule.is_open) {
         setIsOpen(false);
-        setWantsToSchedule(true);
         return;
       }
       
-      const open = todaySchedule.open_time && todaySchedule.close_time && 
-                   currentTime >= todaySchedule.open_time && 
-                   currentTime <= todaySchedule.close_time;
+      // Normalize time format to HH:MM for comparison
+      const openTime = todaySchedule.open_time?.slice(0, 5);
+      const closeTime = todaySchedule.close_time?.slice(0, 5);
+      
+      const open = openTime && closeTime && 
+                   currentTime >= openTime && 
+                   currentTime <= closeTime;
       setIsOpen(!!open);
-      if (!open) setWantsToSchedule(true);
     };
 
     checkIfOpen();
@@ -240,36 +227,14 @@ const OrderPage = () => {
     setQuantity(Math.max(1, quantity + delta));
   };
 
-  const isSchedulingRequired = !isOpen;
-
   const canSubmit = useMemo(() => {
-    const baseFieldsValid = selectedProduct && address && paymentMethod && customerName && customerPhone;
-    if (isSchedulingRequired || wantsToSchedule) {
-      return baseFieldsValid && scheduledDate && scheduledPeriod && mockCustomer.isLoggedIn;
-    }
-    return baseFieldsValid;
-  }, [selectedProduct, address, paymentMethod, customerName, customerPhone, isSchedulingRequired, wantsToSchedule, scheduledDate, scheduledPeriod, mockCustomer.isLoggedIn]);
-
-  const handleScheduleToggle = (checked: boolean) => {
-    if (checked && !mockCustomer.isLoggedIn) {
-      setShowLoginModal(true);
-      return;
-    }
-    setWantsToSchedule(checked);
-  };
+    return selectedProduct && address && paymentMethod && customerName && customerPhone;
+  }, [selectedProduct, address, paymentMethod, customerName, customerPhone]);
 
   const handleOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProduct || !address || !paymentMethod || !customerName || !customerPhone) {
       toast.error("Preencha todos os campos obrigatórios");
-      return;
-    }
-    if ((isSchedulingRequired || wantsToSchedule) && (!scheduledDate || !scheduledPeriod)) {
-      toast.error("Para agendar, selecione a data e o período de entrega");
-      return;
-    }
-    if ((isSchedulingRequired || wantsToSchedule) && !mockCustomer.isLoggedIn) {
-      setShowLoginModal(true);
       return;
     }
 
@@ -287,9 +252,9 @@ const OrderPage = () => {
           distributor_id: distribuidora.id,
           customer_name: customerName,
           customer_phone: customerPhone,
-          order_type: (wantsToSchedule || isSchedulingRequired) ? 'scheduled' : 'immediate',
-          scheduled_date: scheduledDate ? format(scheduledDate, "yyyy-MM-dd") : null,
-          delivery_period: scheduledPeriod || null,
+          order_type: 'immediate',
+          scheduled_date: null,
+          delivery_period: null,
           delivery_street: address,
           payment_method: paymentMethod as 'dinheiro' | 'pix' | 'cartao',
           subtotal: subtotalValue,
@@ -318,9 +283,9 @@ const OrderPage = () => {
           discount: discountAmountValue,
           total: totalValue,
           distributor: distribuidora.name,
-          isScheduled: wantsToSchedule || isSchedulingRequired,
-          scheduledDate: scheduledDate ? format(scheduledDate, "dd/MM/yyyy") : null,
-          scheduledPeriod: scheduledPeriod ? periodLabels[scheduledPeriod] : null,
+          isScheduled: false,
+          scheduledDate: null,
+          scheduledPeriod: null,
           whatsappUrl: distribuidora.whatsapp ? `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(`Olá! Pedido #${createdOrder.order_number}:\n\nProduto: ${product.name}\nQtd: ${quantity}\nTotal: R$ ${totalValue.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}`)}` : null,
         },
       });
@@ -412,220 +377,195 @@ const OrderPage = () => {
             </Card>
           )}
 
-          {/* Closed warning */}
-          {!isOpen && (
-            <Card className="border-destructive bg-destructive/10">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-6 w-6 text-destructive flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <p className="font-semibold text-destructive">A distribuidora está fechada no momento</p>
-                    <p className="text-sm text-destructive/80">Para continuar, é necessário agendar seu pedido.</p>
-                  </div>
+          {/* When closed: show only schedule CTA */}
+          {!isOpen ? (
+            <Card className="shadow-xl">
+              <CardHeader className="text-center">
+                <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                  <AlertTriangle className="h-8 w-8 text-destructive" />
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Order Form */}
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-3xl">Fazer Pedido</CardTitle>
-              <CardDescription>Escolha sua água e finalize em menos de 1 minuto</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleOrder} className="space-y-6">
-                {/* Product Selection */}
-                <div className="space-y-3">
-                  <Label className="text-base">Escolha o Produto</Label>
-                  {(products || []).length === 0 ? (
-                    <p className="text-muted-foreground">Nenhum produto disponível</p>
-                  ) : (
-                    <RadioGroup value={selectedProduct} onValueChange={setSelectedProduct}>
-                      {(products || []).map((product) => (
-                        <div
-                          key={product.id}
-                          className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                          onClick={() => setSelectedProduct(product.id)}
-                        >
-                          <RadioGroupItem value={product.id} id={product.id} />
-                          {product.image_url && (
-                            <img src={product.image_url} alt={product.name} className="w-16 h-16 object-cover rounded-md" />
-                          )}
-                          <Label htmlFor={product.id} className="flex-1 cursor-pointer">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <div className="font-medium">{product.name}</div>
-                                <div className="text-sm text-muted-foreground">{product.liters}L</div>
-                              </div>
-                              <span className="text-primary font-bold">R$ {Number(product.price).toFixed(2)}</span>
-                            </div>
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  )}
-                </div>
-
-                {/* Quantity */}
-                <div className="space-y-2">
-                  <Label className="text-base">Quantidade</Label>
-                  <div className="flex items-center justify-center gap-4">
-                    <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(-1)}>
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
-                    <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(1)}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  {selectedProductData && (
-                    <div className="text-center mt-2">
-                      {discountPercentage > 0 ? (
-                        <div className="space-y-1">
-                          <p className="text-sm text-muted-foreground">
-                            Subtotal: <span className="line-through">R$ {subtotal.toFixed(2)}</span>
-                          </p>
-                          <p className="text-sm text-green-600 font-medium">
-                            Desconto ({discountPercentage}%): -R$ {discountAmount.toFixed(2)}
-                          </p>
-                          <p className="text-primary font-bold text-xl">Total: R$ {total.toFixed(2)}</p>
-                        </div>
-                      ) : (
-                        <p className="text-primary font-bold text-xl">Total: R$ {total.toFixed(2)}</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Scheduling */}
-                {(isSchedulingRequired || wantsToSchedule) && (
-                  <Card className="border-primary/20">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <CalendarDays className="h-5 w-5" />
-                        Agendar Entrega
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label>Data</Label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start">
-                              {scheduledDate ? format(scheduledDate, "dd/MM/yyyy") : "Selecione a data"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <Calendar
-                              mode="single"
-                              selected={scheduledDate}
-                              onSelect={setScheduledDate}
-                              disabled={(date) => date < new Date()}
-                              locale={ptBR}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Período</Label>
-                        <Select value={scheduledPeriod} onValueChange={(v) => setScheduledPeriod(v as DeliveryPeriod)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o período" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="manha">{periodLabels.manha}</SelectItem>
-                            <SelectItem value="tarde">{periodLabels.tarde}</SelectItem>
-                            <SelectItem value="noite">{periodLabels.noite}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Customer Info */}
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-base flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      Seu Nome
-                    </Label>
-                    <Input
-                      placeholder="Nome completo"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-base flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
-                      Telefone / WhatsApp
-                    </Label>
-                    <Input
-                      placeholder="(11) 99999-9999"
-                      value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Address */}
-                <div className="space-y-2">
-                  <Label className="text-base flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    Endereço de Entrega
-                  </Label>
-                  <Input
-                    placeholder="Rua, número, complemento, bairro"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    required
-                  />
-                </div>
-
-                {/* Payment Method */}
-                <div className="space-y-3">
-                  <Label className="text-base flex items-center gap-2">
-                    <CreditCard className="h-4 w-4" />
-                    Forma de Pagamento
-                  </Label>
-                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                    {distribuidora.accepts_cash && (
-                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                        <RadioGroupItem value="dinheiro" id="dinheiro" />
-                        <Label htmlFor="dinheiro" className="cursor-pointer flex-1">Dinheiro</Label>
-                      </div>
-                    )}
-                    {distribuidora.accepts_pix && (
-                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                        <RadioGroupItem value="pix" id="pix" />
-                        <Label htmlFor="pix" className="cursor-pointer flex-1">Pix</Label>
-                      </div>
-                    )}
-                    {distribuidora.accepts_card && (
-                      <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                        <RadioGroupItem value="cartao" id="cartao" />
-                        <Label htmlFor="cartao" className="cursor-pointer flex-1">Cartão na Entrega</Label>
-                      </div>
-                    )}
-                  </RadioGroup>
-                </div>
-
-                <Button type="submit" size="lg" className="w-full" disabled={createOrder.isPending || !canSubmit}>
-                  {createOrder.isPending ? "Processando..." : isSchedulingRequired ? "Agendar Pedido" : "Finalizar Pedido"}
+                <CardTitle className="text-2xl">Distribuidora Fechada</CardTitle>
+                <CardDescription className="text-base">
+                  {distribuidora.name} não está atendendo no momento, mas você pode agendar seu pedido para quando estivermos abertos.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button 
+                  size="lg" 
+                  className="w-full" 
+                  onClick={() => {
+                    if (!mockCustomer.isLoggedIn) {
+                      setShowLoginModal(true);
+                    } else {
+                      navigate(`/schedule/${distributorSlug}`);
+                    }
+                  }}
+                >
+                  <CalendarDays className="mr-2 h-5 w-5" />
+                  Agendar Entrega
                 </Button>
-
                 <div className="text-center">
                   <Button type="button" variant="ghost" onClick={() => navigate(-1)}>
                     Voltar
                   </Button>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            /* When open: show full order form */
+            <Card className="shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-3xl">Fazer Pedido</CardTitle>
+                <CardDescription>Escolha sua água e finalize em menos de 1 minuto</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleOrder} className="space-y-6">
+                  {/* Product Selection */}
+                  <div className="space-y-3">
+                    <Label className="text-base">Escolha o Produto</Label>
+                    {(products || []).length === 0 ? (
+                      <p className="text-muted-foreground">Nenhum produto disponível</p>
+                    ) : (
+                      <RadioGroup value={selectedProduct} onValueChange={setSelectedProduct}>
+                        {(products || []).map((product) => (
+                          <div
+                            key={product.id}
+                            className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                            onClick={() => setSelectedProduct(product.id)}
+                          >
+                            <RadioGroupItem value={product.id} id={product.id} />
+                            {product.image_url && (
+                              <img src={product.image_url} alt={product.name} className="w-16 h-16 object-cover rounded-md" />
+                            )}
+                            <Label htmlFor={product.id} className="flex-1 cursor-pointer">
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <div className="font-medium">{product.name}</div>
+                                  <div className="text-sm text-muted-foreground">{product.liters}L</div>
+                                </div>
+                                <span className="text-primary font-bold">R$ {Number(product.price).toFixed(2)}</span>
+                              </div>
+                            </Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    )}
+                  </div>
+
+                  {/* Quantity */}
+                  <div className="space-y-2">
+                    <Label className="text-base">Quantidade</Label>
+                    <div className="flex items-center justify-center gap-4">
+                      <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(-1)}>
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
+                      <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(1)}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {selectedProductData && (
+                      <div className="text-center mt-2">
+                        {discountPercentage > 0 ? (
+                          <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">
+                              Subtotal: <span className="line-through">R$ {subtotal.toFixed(2)}</span>
+                            </p>
+                            <p className="text-sm text-green-600 font-medium">
+                              Desconto ({discountPercentage}%): -R$ {discountAmount.toFixed(2)}
+                            </p>
+                            <p className="text-primary font-bold text-xl">Total: R$ {total.toFixed(2)}</p>
+                          </div>
+                        ) : (
+                          <p className="text-primary font-bold text-xl">Total: R$ {total.toFixed(2)}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Customer Info */}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-base flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Seu Nome
+                      </Label>
+                      <Input
+                        placeholder="Nome completo"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-base flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        Telefone / WhatsApp
+                      </Label>
+                      <Input
+                        placeholder="(11) 99999-9999"
+                        value={customerPhone}
+                        onChange={(e) => setCustomerPhone(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Address */}
+                  <div className="space-y-2">
+                    <Label className="text-base flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      Endereço de Entrega
+                    </Label>
+                    <Input
+                      placeholder="Rua, número, complemento, bairro"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Payment Method */}
+                  <div className="space-y-3">
+                    <Label className="text-base flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      Forma de Pagamento
+                    </Label>
+                    <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                      {distribuidora.accepts_cash && (
+                        <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                          <RadioGroupItem value="dinheiro" id="dinheiro" />
+                          <Label htmlFor="dinheiro" className="cursor-pointer flex-1">Dinheiro</Label>
+                        </div>
+                      )}
+                      {distribuidora.accepts_pix && (
+                        <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                          <RadioGroupItem value="pix" id="pix" />
+                          <Label htmlFor="pix" className="cursor-pointer flex-1">Pix</Label>
+                        </div>
+                      )}
+                      {distribuidora.accepts_card && (
+                        <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                          <RadioGroupItem value="cartao" id="cartao" />
+                          <Label htmlFor="cartao" className="cursor-pointer flex-1">Cartão na Entrega</Label>
+                        </div>
+                      )}
+                    </RadioGroup>
+                  </div>
+
+                  <Button type="submit" size="lg" className="w-full" disabled={createOrder.isPending || !canSubmit}>
+                    {createOrder.isPending ? "Processando..." : "Finalizar Pedido"}
+                  </Button>
+
+                  <div className="text-center">
+                    <Button type="button" variant="ghost" onClick={() => navigate(-1)}>
+                      Voltar
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
         </main>
       </div>
     </>
