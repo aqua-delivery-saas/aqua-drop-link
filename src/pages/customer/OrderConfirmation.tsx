@@ -3,7 +3,16 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
-import { CheckCircle2, MessageCircle, Package, MapPin, CreditCard, ArrowRight, Sparkles, CalendarDays } from "lucide-react";
+import {
+  CheckCircle2,
+  MessageCircle,
+  Package,
+  MapPin,
+  CreditCard,
+  ArrowRight,
+  Sparkles,
+  CalendarDays,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const OrderConfirmation = () => {
@@ -26,11 +35,11 @@ const OrderConfirmation = () => {
       window.open(orderData.whatsappUrl, "_blank");
     } else {
       const message = encodeURIComponent(
-        `Olá! Acabei de fazer um pedido${orderData.orderNumber ? ` #${orderData.orderNumber}` : ''}:\n\n` +
-        `Produto: ${orderData.product} × ${orderData.quantity}\n` +
-        `Endereço: ${orderData.address}\n` +
-        `Pagamento: ${orderData.paymentMethod}\n` +
-        `Total: R$ ${orderData.total.toFixed(2)}`
+        `Olá! Acabei de fazer um pedido${orderData.orderNumber ? ` #${orderData.orderNumber}` : ""}:\n\n` +
+          `Produto: ${orderData.product} × ${orderData.quantity}\n` +
+          `Endereço: ${orderData.address}\n` +
+          `Pagamento: ${orderData.paymentMethod}\n` +
+          `Total: R$ ${orderData.total.toFixed(2)}`,
       );
       window.open(`https://wa.me/5511999999999?text=${message}`, "_blank");
     }
@@ -53,18 +62,11 @@ const OrderConfirmation = () => {
               <CheckCircle2 className="h-20 w-20 text-white" strokeWidth={2.5} />
             </div>
           </div>
-          
+
           <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             Pedido Confirmado!
           </h1>
-          {orderData.orderNumber && (
-            <Badge variant="outline" className="text-lg px-4 py-1 mb-3">
-              Pedido #{orderData.orderNumber}
-            </Badge>
-          )}
-          <p className="text-lg text-muted-foreground mb-2">
-            Seu pedido foi enviado para {orderData.distributor}
-          </p>
+          <p className="text-lg text-muted-foreground mb-2">Seu pedido foi enviado para {orderData.distributor}</p>
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Sparkles className="h-4 w-4 text-accent" />
             <span>A distribuidora entrará em contato em breve</span>
@@ -100,9 +102,7 @@ const OrderConfirmation = () => {
                 )}
                 <div className="pt-3 border-t border-primary/10 flex justify-between items-center">
                   <span className="text-muted-foreground font-medium">Valor Total</span>
-                  <span className="text-3xl font-bold text-primary">
-                    R$ {orderData.total.toFixed(2)}
-                  </span>
+                  <span className="text-3xl font-bold text-primary">R$ {orderData.total.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -156,32 +156,17 @@ const OrderConfirmation = () => {
 
         {/* Action Buttons */}
         <div className="space-y-3 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
-          <Button 
-            onClick={handleWhatsApp} 
-            size="lg" 
-            className="w-full text-base group"
-            variant="secondary"
-          >
+          <Button onClick={handleWhatsApp} size="lg" className="w-full text-base group" variant="secondary">
             <MessageCircle className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
             Enviar confirmação no WhatsApp
             <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Button>
-          
-          <Button 
-            onClick={() => navigate(-2)} 
-            size="lg" 
-            className="w-full text-base"
-            variant="outline"
-          >
+
+          <Button onClick={() => navigate(-2)} size="lg" className="w-full text-base" variant="outline">
             Fazer novo pedido
           </Button>
 
-          <Button 
-            onClick={() => navigate("/customer/signup")} 
-            size="lg" 
-            className="w-full text-base"
-            variant="ghost"
-          >
+          <Button onClick={() => navigate("/customer/signup")} size="lg" className="w-full text-base" variant="ghost">
             Criar conta para salvar endereços
           </Button>
         </div>
@@ -189,7 +174,8 @@ const OrderConfirmation = () => {
         {/* Info Footer */}
         <div className="mt-8 p-6 bg-card/50 backdrop-blur-sm rounded-lg border text-center animate-in fade-in duration-700 delay-500">
           <p className="text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">Próximos passos:</span> A distribuidora receberá seu pedido e entrará em contato para confirmar o horário de entrega.
+            <span className="font-semibold text-foreground">Próximos passos:</span> A distribuidora receberá seu pedido
+            e entrará em contato para confirmar o horário de entrega.
           </p>
         </div>
       </main>
