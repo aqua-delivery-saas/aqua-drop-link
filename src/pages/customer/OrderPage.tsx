@@ -274,7 +274,6 @@ const OrderPage = () => {
       const createdOrder = await createOrder.mutateAsync({
         order: {
           distributor_id: distribuidora.id,
-          customer_id: user?.id || null,
           customer_name: customerName,
           customer_phone: customerPhone,
           order_type: (wantsToSchedule || isSchedulingRequired) ? 'scheduled' : 'immediate',

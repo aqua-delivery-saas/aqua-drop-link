@@ -488,7 +488,7 @@ export function useUpdateOrderStatus() {
   });
 }
 
-// Create Order hook (for customers)
+// Create Order hook (for customers) - Uses Edge Function to bypass RLS
 export type CreateOrderInput = {
   distributor_id: string;
   customer_id?: string | null;
@@ -504,7 +504,7 @@ export type CreateOrderInput = {
   delivery_zip_code?: string | null;
   delivery_number?: string | null;
   delivery_complement?: string | null;
-  payment_method: 'dinheiro' | 'pix' | 'cartao';
+  payment_method: 'dinheiro' | 'pix' | 'cartao' | 'cartao_entrega';
   subtotal: number;
   discount_amount: number;
   total: number;
@@ -528,21 +528,11 @@ export function useCreateOrder() {
     }: {
       order: CreateOrderInput;
       items: CreateOrderItemInput[];
-    }) => {
-      // Ensure customer_id matches the *current* authenticated session (RLS requirement)
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      const sessionUserId = session?.user?.id ?? null;
-      const effectiveCustomerId = sessionUserId;
-
-      // Insert order
-      const { data: createdOrder, error: orderError } = await supabase
-        .from('orders')
-        .insert({
+    }): Promise<{ id: string; order_number: number }> => {
+      // Call the Edge Function that uses Service Role to bypass RLS
+      const { data, error } = await supabase.functions.invoke('create-order', {
+        body: {
           distributor_id: order.distributor_id,
-          customer_id: effectiveCustomerId,
           customer_name: order.customer_name,
           customer_phone: order.customer_phone,
           order_type: order.order_type,
@@ -560,31 +550,23 @@ export function useCreateOrder() {
           discount_amount: order.discount_amount,
           total: order.total,
           notes: order.notes || null,
-          status: 'novo',
-        })
-        .select()
-        .single();
+          items: items,
+        },
+      });
 
-      if (orderError) throw orderError;
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Erro ao criar pedido');
+      }
 
-      // Insert order items
-      const orderItems = items.map(item => ({
-        order_id: createdOrder.id,
-        product_id: item.product_id,
-        product_name: item.product_name,
-        product_liters: item.product_liters,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        total_price: item.total_price,
-      }));
+      if (!data?.success) {
+        throw new Error(data?.error || 'Erro ao criar pedido');
+      }
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      return createdOrder;
+      return {
+        id: data.order.id,
+        order_number: data.order.order_number,
+      };
     },
     onError: (error) => {
       toast.error('Erro ao criar pedido', { description: error.message });
