@@ -14,6 +14,7 @@ interface DistributorData {
   complement?: string;
   neighborhood?: string;
   city?: string;
+  city_id?: string | null;
   state?: string;
   zip_code?: string;
 }
@@ -45,6 +46,16 @@ const generateSlug = (name: string): string => {
     .trim();
 };
 
+const generateCitySlug = (cityName: string, state: string): string => {
+  return `${cityName}-${state}`
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+};
+
 const dayNameToNumber: { [key: string]: number } = {
   'domingo': 0,
   'segunda': 1,
@@ -63,7 +74,44 @@ export function useCreateDistributor() {
     mutationFn: async (data: CreateDistributorInput) => {
       if (!user?.id) throw new Error('Usuário não autenticado');
 
-      // 1. Create distributor
+      // 1. Resolve city_id
+      let cityId = data.distributor.city_id || null;
+      
+      if (!cityId && data.distributor.city && data.distributor.state) {
+        // Try to find existing city by name and state (case insensitive)
+        const { data: existingCity } = await supabase
+          .from('cities')
+          .select('id')
+          .ilike('name', data.distributor.city)
+          .eq('state', data.distributor.state)
+          .maybeSingle();
+        
+        if (existingCity) {
+          cityId = existingCity.id;
+        } else {
+          // Create new city
+          const citySlug = generateCitySlug(data.distributor.city, data.distributor.state);
+          const { data: newCity, error: cityError } = await supabase
+            .from('cities')
+            .insert({
+              name: data.distributor.city,
+              state: data.distributor.state,
+              slug: citySlug,
+              is_active: true,
+            })
+            .select('id')
+            .single();
+          
+          if (cityError) {
+            console.error('Error creating city:', cityError);
+            // Continue without city_id if creation fails
+          } else {
+            cityId = newCity.id;
+          }
+        }
+      }
+
+      // 2. Create distributor
       const slug = generateSlug(data.distributor.name);
       
       const { data: distributor, error: distributorError } = await supabase
@@ -81,6 +129,7 @@ export function useCreateDistributor() {
           complement: data.distributor.complement || null,
           neighborhood: data.distributor.neighborhood || null,
           zip_code: data.distributor.zip_code || null,
+          city_id: cityId,
           is_active: true,
           is_verified: false,
         })

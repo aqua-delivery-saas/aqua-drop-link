@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload } from "lucide-react";
 import { cnpjSchema, phoneSchema, nameSchema, formatCNPJ, formatPhone } from "@/lib/validators";
+import { CityCombobox } from "./CityCombobox";
 
 const brazilianStates = [
   { value: "AC", label: "Acre" },
@@ -48,6 +49,7 @@ const formSchema = z.object({
   neighborhood: z.string().min(2, "Bairro deve ter pelo menos 2 caracteres").max(100, "Bairro muito longo"),
   zip_code: z.string().regex(/^\d{5}-?\d{3}$/, "CEP inválido (formato: 00000-000)"),
   city: z.string().min(2, "Cidade deve ter pelo menos 2 caracteres").max(100, "Cidade muito longa"),
+  city_id: z.string().nullable().optional(),
   state: z.string().length(2, "Selecione um estado"),
 });
 
@@ -69,9 +71,12 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
       neighborhood: "",
       zip_code: "",
       city: "",
+      city_id: null,
       state: "",
     },
   });
+
+  const selectedState = form.watch("state");
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     onNext({ distributor: values });
@@ -233,25 +238,19 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
-            name="city"
-            render={({ field }) => (
-              <FormItem className="md:col-span-2">
-                <FormLabel>Cidade *</FormLabel>
-                <FormControl>
-                  <Input placeholder="São Paulo" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
             name="state"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Estado *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select 
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    // Reset city when state changes
+                    form.setValue("city", "");
+                    form.setValue("city_id", null);
+                  }} 
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="UF" />
@@ -265,6 +264,28 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
                     ))}
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="city"
+            render={({ field }) => (
+              <FormItem className="md:col-span-2">
+                <FormLabel>Cidade *</FormLabel>
+                <FormControl>
+                  <CityCombobox
+                    state={selectedState}
+                    value={field.value}
+                    cityId={form.watch("city_id") || null}
+                    onChange={(cityName, cityId) => {
+                      form.setValue("city", cityName);
+                      form.setValue("city_id", cityId);
+                    }}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

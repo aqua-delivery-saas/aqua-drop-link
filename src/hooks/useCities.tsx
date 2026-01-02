@@ -20,6 +20,24 @@ export function useCities() {
   });
 }
 
+export function useCitiesByState(state: string) {
+  return useQuery({
+    queryKey: ['cities', 'by-state', state],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('cities')
+        .select('id, name, slug')
+        .eq('state', state)
+        .eq('is_active', true)
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!state,
+  });
+}
+
 export function useCityBySlug(slug: string) {
   return useQuery({
     queryKey: ['city', slug],
