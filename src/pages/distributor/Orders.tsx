@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useDistributorOrders, useUpdateOrderStatus } from "@/hooks/useDistributor";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useNotifications } from "@/hooks/useNotifications";
 
 type DeliveryPeriod = "manha" | "tarde" | "noite";
 
@@ -29,7 +30,13 @@ const statusLabels: Record<string, { label: string; variant: 'default' | 'second
 const Orders = () => {
   const { data: orders = [], isLoading } = useDistributorOrders();
   const updateOrderStatus = useUpdateOrderStatus();
+  const { markOrderNotificationsAsRead, markNotificationByOrderId } = useNotifications();
   const [sortBy, setSortBy] = useState<string>("date-desc");
+
+  // Mark all order notifications as read when page is viewed
+  useEffect(() => {
+    markOrderNotificationsAsRead();
+  }, [markOrderNotificationsAsRead]);
 
   const immediateOrders = useMemo(() => orders.filter(o => o.order_type === "immediate"), [orders]);
   const scheduledOrders = useMemo(() => orders.filter(o => o.order_type === "scheduled"), [orders]);
@@ -42,6 +49,7 @@ const Orders = () => {
 
   const markAsDelivered = async (id: string) => {
     await updateOrderStatus.mutateAsync({ id, status: "concluido" });
+    await markNotificationByOrderId(id);
     toast.success("Pedido marcado como entregue!");
   };
 

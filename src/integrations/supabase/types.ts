@@ -277,6 +277,60 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          link: string | null
+          message: string
+          order_id: string | null
+          read: boolean | null
+          subscription_id: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          link?: string | null
+          message: string
+          order_id?: string | null
+          read?: boolean | null
+          subscription_id?: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          link?: string | null
+          message?: string
+          order_id?: string | null
+          read?: boolean | null
+          subscription_id?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -656,6 +710,16 @@ export type Database = {
     Enums: {
       app_role: "admin" | "distributor" | "customer"
       delivery_period: "manha" | "tarde" | "noite"
+      notification_type:
+        | "new_order"
+        | "new_scheduled_order"
+        | "subscription_expiring"
+        | "subscription_expired"
+        | "payment_failed"
+        | "low_stock"
+        | "customer_review"
+        | "system_update"
+        | "scheduled_reminder"
       order_status: "novo" | "em_entrega" | "concluido" | "cancelado"
       order_type: "immediate" | "scheduled"
       payment_method: "dinheiro" | "pix" | "cartao" | "cartao_entrega"
@@ -790,6 +854,17 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "distributor", "customer"],
       delivery_period: ["manha", "tarde", "noite"],
+      notification_type: [
+        "new_order",
+        "new_scheduled_order",
+        "subscription_expiring",
+        "subscription_expired",
+        "payment_failed",
+        "low_stock",
+        "customer_review",
+        "system_update",
+        "scheduled_reminder",
+      ],
       order_status: ["novo", "em_entrega", "concluido", "cancelado"],
       order_type: ["immediate", "scheduled"],
       payment_method: ["dinheiro", "pix", "cartao", "cartao_entrega"],
