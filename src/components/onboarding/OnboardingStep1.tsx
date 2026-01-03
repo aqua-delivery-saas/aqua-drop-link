@@ -1,56 +1,28 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
 import { cnpjSchema, phoneSchema, nameSchema, formatCNPJ, formatPhone } from "@/lib/validators";
-import { CityCombobox } from "./CityCombobox";
-
-const brazilianStates = [
-  { value: "AC", label: "Acre" },
-  { value: "AL", label: "Alagoas" },
-  { value: "AP", label: "Amapá" },
-  { value: "AM", label: "Amazonas" },
-  { value: "BA", label: "Bahia" },
-  { value: "CE", label: "Ceará" },
-  { value: "DF", label: "Distrito Federal" },
-  { value: "ES", label: "Espírito Santo" },
-  { value: "GO", label: "Goiás" },
-  { value: "MA", label: "Maranhão" },
-  { value: "MT", label: "Mato Grosso" },
-  { value: "MS", label: "Mato Grosso do Sul" },
-  { value: "MG", label: "Minas Gerais" },
-  { value: "PA", label: "Pará" },
-  { value: "PB", label: "Paraíba" },
-  { value: "PR", label: "Paraná" },
-  { value: "PE", label: "Pernambuco" },
-  { value: "PI", label: "Piauí" },
-  { value: "RJ", label: "Rio de Janeiro" },
-  { value: "RN", label: "Rio Grande do Norte" },
-  { value: "RS", label: "Rio Grande do Sul" },
-  { value: "RO", label: "Rondônia" },
-  { value: "RR", label: "Roraima" },
-  { value: "SC", label: "Santa Catarina" },
-  { value: "SP", label: "São Paulo" },
-  { value: "SE", label: "Sergipe" },
-  { value: "TO", label: "Tocantins" },
-];
+import { useCepLookup } from "@/hooks/useCepLookup";
+import { findCityByNameAndState } from "@/hooks/useCities";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   name: nameSchema,
   cnpj: cnpjSchema,
   phone: phoneSchema,
+  zip_code: z.string().regex(/^\d{5}-?\d{3}$/, "CEP inválido (formato: 00000-000)"),
   street: z.string().min(3, "Rua deve ter pelo menos 3 caracteres").max(200, "Rua muito longa"),
   number: z.string().min(1, "Número é obrigatório").max(20, "Número muito longo"),
   complement: z.string().max(100, "Complemento muito longo").optional(),
   neighborhood: z.string().min(2, "Bairro deve ter pelo menos 2 caracteres").max(100, "Bairro muito longo"),
-  zip_code: z.string().regex(/^\d{5}-?\d{3}$/, "CEP inválido (formato: 00000-000)"),
   city: z.string().min(2, "Cidade deve ter pelo menos 2 caracteres").max(100, "Cidade muito longa"),
   city_id: z.string().nullable().optional(),
-  state: z.string().length(2, "Selecione um estado"),
+  state: z.string().length(2, "Estado é obrigatório"),
 });
 
 interface OnboardingStep1Props {
@@ -59,24 +31,70 @@ interface OnboardingStep1Props {
 }
 
 export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) => {
+  const { toast } = useToast();
+  const { fetchAddress, isLoading: isCepLoading, error: cepError, clearError } = useCepLookup();
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       name: "",
       cnpj: "",
       phone: "",
+      zip_code: "",
       street: "",
       number: "",
       complement: "",
       neighborhood: "",
-      zip_code: "",
       city: "",
       city_id: null,
       state: "",
     },
   });
 
-  const selectedState = form.watch("state");
+  const formatCep = (value: string) => {
+    let cleaned = value.replace(/\D/g, '');
+    if (cleaned.length > 5) {
+      cleaned = cleaned.slice(0, 5) + '-' + cleaned.slice(5, 8);
+    }
+    return cleaned;
+  };
+
+  const handleCepChange = useCallback(async (cepValue: string) => {
+    const cleanCep = cepValue.replace(/\D/g, '');
+    
+    if (cleanCep.length === 8) {
+      const address = await fetchAddress(cleanCep);
+      
+      if (address) {
+        form.setValue("street", address.street);
+        form.setValue("neighborhood", address.neighborhood);
+        form.setValue("city", address.city);
+        form.setValue("state", address.state);
+        
+        // Check if city exists in database
+        try {
+          const existingCity = await findCityByNameAndState(address.city, address.state);
+          form.setValue("city_id", existingCity?.id || null);
+        } catch {
+          form.setValue("city_id", null);
+        }
+        
+        // Clear validation errors for auto-filled fields
+        form.clearErrors(["street", "neighborhood", "city", "state"]);
+      }
+    }
+  }, [fetchAddress, form]);
+
+  useEffect(() => {
+    if (cepError) {
+      toast({
+        title: "CEP não encontrado",
+        description: "Verifique o CEP digitado e tente novamente.",
+        variant: "destructive",
+      });
+      clearError();
+    }
+  }, [cepError, toast, clearError]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     onNext({ distributor: values });
@@ -153,6 +171,36 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
 
         <FormField
           control={form.control}
+          name="zip_code"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>CEP *</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Input 
+                    placeholder="00000-000" 
+                    {...field}
+                    onChange={(e) => {
+                      const formatted = formatCep(e.target.value);
+                      field.onChange(formatted);
+                      handleCepChange(formatted);
+                    }}
+                  />
+                  {isCepLoading && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+              </FormControl>
+              <FormDescription>Digite o CEP para preencher o endereço automaticamente</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="street"
           render={({ field }) => (
             <FormItem>
@@ -195,45 +243,19 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="neighborhood"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Bairro *</FormLabel>
-                <FormControl>
-                  <Input placeholder="Centro" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="zip_code"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>CEP *</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="00000-000" 
-                    {...field}
-                    onChange={(e) => {
-                      let value = e.target.value.replace(/\D/g, '');
-                      if (value.length > 5) {
-                        value = value.slice(0, 5) + '-' + value.slice(5, 8);
-                      }
-                      field.onChange(value);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="neighborhood"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Bairro *</FormLabel>
+              <FormControl>
+                <Input placeholder="Centro" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
@@ -242,28 +264,14 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Estado *</FormLabel>
-                <Select 
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    // Reset city when state changes
-                    form.setValue("city", "");
-                    form.setValue("city_id", null);
-                  }} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="UF" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {brazilianStates.map((state) => (
-                      <SelectItem key={state.value} value={state.value}>
-                        {state.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    disabled 
+                    placeholder="UF"
+                    className="bg-muted"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -276,14 +284,11 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
               <FormItem className="md:col-span-2">
                 <FormLabel>Cidade *</FormLabel>
                 <FormControl>
-                  <CityCombobox
-                    state={selectedState}
-                    value={field.value}
-                    cityId={form.watch("city_id") || null}
-                    onChange={(cityName, cityId) => {
-                      form.setValue("city", cityName);
-                      form.setValue("city_id", cityId);
-                    }}
+                  <Input 
+                    {...field} 
+                    disabled 
+                    placeholder="Preenchido pelo CEP"
+                    className="bg-muted"
                   />
                 </FormControl>
                 <FormMessage />
