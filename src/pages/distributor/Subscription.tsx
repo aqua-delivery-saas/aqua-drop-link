@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,22 +7,35 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle, AlertCircle, XCircle, Calendar, CreditCard, Check, Sparkles } from "lucide-react";
+import { CheckCircle, AlertCircle, XCircle, Calendar, CreditCard, Check, Sparkles, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useDistributorSubscription, useSubscriptionPayments } from "@/hooks/useDistributor";
+import { useSubscriptionPayments } from "@/hooks/useDistributor";
+import { useStripeSubscription } from "@/hooks/useStripeSubscription";
 
 export default function Subscription() {
-  const { data: subscription, isLoading: isLoadingSubscription } = useDistributorSubscription();
+  const [searchParams] = useSearchParams();
+  const { subscription: stripeSubscription, isLoading: isLoadingStripe, createCheckout, openCustomerPortal, checkSubscription } = useStripeSubscription();
   const { data: payments = [], isLoading: isLoadingPayments } = useSubscriptionPayments();
 
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annual" | null>(null);
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [isPortalLoading, setIsPortalLoading] = useState(false);
 
-  const subscriptionStatus = subscription?.status || "pending";
-  const currentPlan = subscription?.plan || "monthly";
+  // Handle success/cancel redirects
+  useEffect(() => {
+    if (searchParams.get("success") === "true") {
+      toast.success("Pagamento realizado com sucesso! Sua assinatura está ativa.");
+      checkSubscription();
+    } else if (searchParams.get("canceled") === "true") {
+      toast.info("O pagamento foi cancelado.");
+    }
+  }, [searchParams, checkSubscription]);
+
+  const subscriptionStatus = stripeSubscription?.status || "none";
+  const currentPlan = stripeSubscription?.plan || null;
+  const isSubscribed = stripeSubscription?.subscribed || false;
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "—";
@@ -32,14 +46,14 @@ export default function Subscription() {
     switch (subscriptionStatus) {
       case "active":
         return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" /> Ativo</Badge>;
-      case "pending":
-        return <Badge className="bg-yellow-500"><AlertCircle className="w-3 h-3 mr-1" /> Pendente</Badge>;
-      case "expired":
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Expirado</Badge>;
+      case "past_due":
+        return <Badge className="bg-yellow-500"><AlertCircle className="w-3 h-3 mr-1" /> Pagamento Pendente</Badge>;
       case "canceled":
         return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Cancelado</Badge>;
+      case "none":
+        return <Badge variant="secondary"><AlertCircle className="w-3 h-3 mr-1" /> Sem Assinatura</Badge>;
       default:
-        return <Badge variant="secondary">Desconhecido</Badge>;
+        return <Badge variant="secondary">{subscriptionStatus}</Badge>;
     }
   };
 
@@ -54,22 +68,30 @@ export default function Subscription() {
             </AlertDescription>
           </Alert>
         );
-      case "pending":
+      case "past_due":
         return (
           <Alert className="bg-yellow-50 border-yellow-200">
             <AlertCircle className="h-4 w-4 text-yellow-600" />
             <AlertDescription className="text-yellow-800">
-              Pagamento pendente. Efetue o pagamento para manter o acesso.
+              Pagamento pendente. Atualize seu método de pagamento para manter o acesso.
             </AlertDescription>
           </Alert>
         );
-      case "expired":
       case "canceled":
         return (
           <Alert variant="destructive" className="bg-red-50 border-red-200">
             <XCircle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
-              Assinatura expirada. Renove para continuar usando o sistema.
+              Assinatura cancelada. Assine novamente para continuar usando o sistema.
+            </AlertDescription>
+          </Alert>
+        );
+      case "none":
+        return (
+          <Alert className="bg-blue-50 border-blue-200">
+            <AlertCircle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800">
+              Você ainda não possui uma assinatura. Escolha um plano abaixo para começar!
             </AlertDescription>
           </Alert>
         );
@@ -78,23 +100,26 @@ export default function Subscription() {
     }
   };
 
-  const handleRenewNow = () => {
-    setSelectedPlan(currentPlan);
-    setShowPaymentModal(true);
+  const handleSubscribe = async (plan: "monthly" | "annual") => {
+    try {
+      setIsCheckoutLoading(true);
+      await createCheckout(plan);
+    } catch (error) {
+      toast.error("Erro ao iniciar o checkout. Tente novamente.");
+    } finally {
+      setIsCheckoutLoading(false);
+    }
   };
 
-  const handleMigratePlan = (plan: "monthly" | "annual") => {
-    setSelectedPlan(plan);
-    setShowPaymentModal(true);
-  };
-
-  const handlePaymentConfirmed = () => {
-    setShowPaymentModal(false);
-    toast.success("Pagamento registrado! Sua assinatura será confirmada em até 24h úteis.");
-  };
-
-  const getPaymentValue = () => {
-    return selectedPlan === "monthly" ? "R$ 30,00" : "R$ 300,00";
+  const handleManageSubscription = async () => {
+    try {
+      setIsPortalLoading(true);
+      await openCustomerPortal();
+    } catch (error) {
+      toast.error("Erro ao abrir o portal de gerenciamento. Tente novamente.");
+    } finally {
+      setIsPortalLoading(false);
+    }
   };
 
   const getPaymentStatusBadge = (status: string) => {
@@ -108,7 +133,7 @@ export default function Subscription() {
     }
   };
 
-  if (isLoadingSubscription) {
+  if (isLoadingStripe) {
     return (
       <div className="p-6 max-w-7xl mx-auto space-y-6">
         <div>
@@ -136,24 +161,6 @@ export default function Subscription() {
     );
   }
 
-  if (!subscription) {
-    return (
-      <div className="p-6 max-w-7xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Minha Assinatura</h1>
-          <p className="text-muted-foreground mt-1">Gerencie seu plano e pagamentos</p>
-        </div>
-
-        <Alert className="bg-yellow-50 border-yellow-200">
-          <AlertCircle className="h-4 w-4 text-yellow-600" />
-          <AlertDescription className="text-yellow-800">
-            Você ainda não possui uma assinatura ativa. Entre em contato com o suporte para ativar seu plano.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div>
@@ -161,10 +168,11 @@ export default function Subscription() {
         <p className="text-muted-foreground mt-1">Gerencie seu plano e pagamentos</p>
       </div>
 
-      {/* Seção 1 - Assinatura Atual */}
-      <div className="space-y-4">
-        {getStatusMessage()}
+      {/* Status Message */}
+      {getStatusMessage()}
 
+      {/* Seção 1 - Assinatura Atual (só mostra se tem assinatura) */}
+      {isSubscribed && (
         <Card>
           <CardHeader>
             <CardTitle>Assinatura Atual</CardTitle>
@@ -181,7 +189,7 @@ export default function Subscription() {
               <div>
                 <p className="text-sm text-muted-foreground">Valor</p>
                 <p className="text-lg font-semibold">
-                  {currentPlan === "monthly" ? "R$ 30/mês" : "R$ 300/ano"}
+                  {currentPlan === "monthly" ? "R$ 34,99/mês" : "R$ 349/ano"}
                 </p>
               </div>
               <div>
@@ -193,18 +201,18 @@ export default function Subscription() {
                   <Calendar className="w-4 h-4 inline mr-1" />
                   Próxima renovação
                 </p>
-                <p className="text-lg font-semibold">{formatDate(subscription.expires_at)}</p>
-              </div>
-              <div className="md:col-span-2">
-                <p className="text-sm text-muted-foreground">Data de início</p>
-                <p className="text-base">{formatDate(subscription.started_at)}</p>
+                <p className="text-lg font-semibold">{formatDate(stripeSubscription?.subscription_end || null)}</p>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-3 pt-4">
-              <Button onClick={handleRenewNow} className="gap-2">
-                <CreditCard className="w-4 h-4" />
-                Renovar agora
+              <Button onClick={handleManageSubscription} disabled={isPortalLoading} className="gap-2">
+                {isPortalLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <ExternalLink className="w-4 h-4" />
+                )}
+                Gerenciar assinatura
               </Button>
               <Button variant="outline" onClick={() => setShowHistoryModal(true)}>
                 Ver histórico de pagamentos
@@ -212,14 +220,18 @@ export default function Subscription() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      )}
 
       {/* Seção 2 - Planos Disponíveis */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-2xl font-bold">Escolha seu tipo de assinatura</h2>
+          <h2 className="text-2xl font-bold">
+            {isSubscribed ? "Alterar plano" : "Escolha seu plano"}
+          </h2>
           <p className="text-muted-foreground">
-            Você pode manter o plano atual ou migrar para o pagamento anual e economizar.
+            {isSubscribed 
+              ? "Você pode gerenciar ou trocar seu plano a qualquer momento." 
+              : "Comece agora e tenha acesso a todas as funcionalidades."}
           </p>
         </div>
 
@@ -237,7 +249,7 @@ export default function Subscription() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-3xl font-bold">R$ 30<span className="text-lg text-muted-foreground">/mês</span></p>
+                <p className="text-3xl font-bold">R$ 34,99<span className="text-lg text-muted-foreground">/mês</span></p>
               </div>
 
               <ul className="space-y-2">
@@ -256,12 +268,21 @@ export default function Subscription() {
               </ul>
 
               <Button
-                className="w-full"
+                className="w-full gap-2"
                 variant={currentPlan === "monthly" ? "secondary" : "default"}
-                onClick={() => currentPlan !== "monthly" && handleMigratePlan("monthly")}
-                disabled={currentPlan === "monthly"}
+                onClick={() => handleSubscribe("monthly")}
+                disabled={currentPlan === "monthly" || isCheckoutLoading}
               >
-                {currentPlan === "monthly" ? "Plano Atual" : "Migrar para Mensal"}
+                {isCheckoutLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : currentPlan === "monthly" ? (
+                  "Plano Atual"
+                ) : (
+                  <>
+                    <CreditCard className="w-4 h-4" />
+                    {isSubscribed ? "Mudar para Mensal" : "Assinar Mensal"}
+                  </>
+                )}
               </Button>
             </CardContent>
           </Card>
@@ -271,17 +292,21 @@ export default function Subscription() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 Plano Anual
-                <Badge className="bg-accent text-accent-foreground gap-1">
-                  <Sparkles className="w-3 h-3" />
-                  Mais econômico
-                </Badge>
+                {currentPlan === "annual" ? (
+                  <Badge variant="secondary">Plano Atual</Badge>
+                ) : (
+                  <Badge className="bg-accent text-accent-foreground gap-1">
+                    <Sparkles className="w-3 h-3" />
+                    Mais econômico
+                  </Badge>
+                )}
               </CardTitle>
               <CardDescription>Renove uma vez e use por 12 meses</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-3xl font-bold">R$ 300<span className="text-lg text-muted-foreground">/ano</span></p>
-                <p className="text-sm text-green-600 font-medium">Ganhe 2 meses grátis</p>
+                <p className="text-3xl font-bold">R$ 349<span className="text-lg text-muted-foreground">/ano</span></p>
+                <p className="text-sm text-green-600 font-medium">Economize R$ 70,88 (2 meses grátis)</p>
               </div>
 
               <ul className="space-y-2">
@@ -298,52 +323,26 @@ export default function Subscription() {
               </ul>
 
               <Button
-                className="w-full"
+                className="w-full gap-2"
                 variant={currentPlan === "annual" ? "secondary" : "default"}
-                onClick={() => currentPlan !== "annual" && handleMigratePlan("annual")}
-                disabled={currentPlan === "annual"}
+                onClick={() => handleSubscribe("annual")}
+                disabled={currentPlan === "annual" || isCheckoutLoading}
               >
-                {currentPlan === "annual" ? "Plano Atual" : "Migrar para Anual"}
+                {isCheckoutLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : currentPlan === "annual" ? (
+                  "Plano Atual"
+                ) : (
+                  <>
+                    <CreditCard className="w-4 h-4" />
+                    {isSubscribed ? "Mudar para Anual" : "Assinar Anual"}
+                  </>
+                )}
               </Button>
             </CardContent>
           </Card>
         </div>
       </div>
-
-      {/* Modal de Pagamento */}
-      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Instruções de Pagamento</DialogTitle>
-            <DialogDescription>
-              Para renovar sua assinatura, envie o valor correspondente para o Pix abaixo:
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="bg-muted p-4 rounded-lg space-y-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Chave Pix</p>
-                <p className="text-lg font-mono font-semibold">aqua@delivery.com</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Valor</p>
-                <p className="text-2xl font-bold text-primary">{getPaymentValue()}</p>
-              </div>
-            </div>
-
-            <Alert>
-              <AlertDescription>
-                Sua assinatura será confirmada em até 24h úteis após a confirmação do pagamento.
-              </AlertDescription>
-            </Alert>
-
-            <Button className="w-full" onClick={handlePaymentConfirmed}>
-              Já realizei o pagamento
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Modal de Histórico */}
       <Dialog open={showHistoryModal} onOpenChange={setShowHistoryModal}>
@@ -379,7 +378,7 @@ export default function Subscription() {
                   payments.map((payment) => (
                     <TableRow key={payment.id}>
                       <TableCell>{formatDate(payment.paid_at || payment.created_at)}</TableCell>
-                      <TableCell>{payment.payment_method || "Pix"}</TableCell>
+                      <TableCell>{payment.payment_method || "Stripe"}</TableCell>
                       <TableCell className="font-medium">
                         R$ {Number(payment.amount).toFixed(2).replace(".", ",")}
                       </TableCell>
