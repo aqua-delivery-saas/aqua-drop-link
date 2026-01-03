@@ -17,7 +17,11 @@ const formSchema = z.object({
   name: nameSchema,
   email: emailSchema,
   password: simplePasswordSchema,
+  confirmPassword: z.string().min(1, "Confirme sua senha"),
   whatsapp: whatsappSchema,
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "As senhas não coincidem",
+  path: ["confirmPassword"],
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -32,6 +36,7 @@ const SignupDistributor = () => {
       name: "",
       email: "",
       password: "",
+      confirmPassword: "",
       whatsapp: "",
     },
   });
@@ -56,6 +61,10 @@ const SignupDistributor = () => {
 
       if (authError) {
         if (authError.message.includes('already registered')) {
+          form.setError('email', {
+            type: 'manual',
+            message: 'Este e-mail já está cadastrado'
+          });
           toast.error("Este e-mail já está cadastrado", {
             description: "Tente fazer login ou use outro e-mail",
           });
@@ -144,7 +153,12 @@ const SignupDistributor = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="contato@distribuidora.com" {...field} />
+                      <Input 
+                        type="email" 
+                        placeholder="contato@distribuidora.com" 
+                        className={form.formState.errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -160,9 +174,20 @@ const SignupDistributor = () => {
                     <FormControl>
                       <Input type="password" placeholder="Mínimo 6 caracteres" {...field} />
                     </FormControl>
-                    <FormDescription>
-                      Deve conter ao menos uma letra maiúscula e um número
-                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirmar Senha</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Digite a senha novamente" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
