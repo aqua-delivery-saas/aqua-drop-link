@@ -31,7 +31,7 @@ export const LoginRequiredModal = ({ open, onOpenChange, distributorClosed = fal
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3 py-4">
+        <div className="flex flex-col gap-3 py-4 min-w-[280px]">
           <Button onClick={() => navigate("/customer/login")} className="w-full" size="lg">
             <LogIn className="mr-2 h-4 w-4" />
             Entrar
