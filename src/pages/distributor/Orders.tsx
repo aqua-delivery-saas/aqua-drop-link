@@ -138,61 +138,55 @@ const Orders = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <main className="container mx-auto px-4 py-8">
-          <Skeleton className="h-8 w-48 mb-4" />
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full" />)}
-          </div>
-        </main>
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full" />)}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Pedidos Recebidos</h1>
-              <p className="text-muted-foreground">Gerencie todos os pedidos dos seus clientes</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Ordenar por:</span>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="date-desc">Data (Mais recentes)</SelectItem>
-                  <SelectItem value="date-asc">Data (Mais antigos)</SelectItem>
-                  <SelectItem value="customer-asc">Cliente (A-Z)</SelectItem>
-                  <SelectItem value="status">Status</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Pedidos Recebidos</h1>
+          <p className="text-muted-foreground">Gerencie todos os pedidos dos seus clientes</p>
         </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Ordenar por:</span>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date-desc">Data (Mais recentes)</SelectItem>
+              <SelectItem value="date-asc">Data (Mais antigos)</SelectItem>
+              <SelectItem value="customer-asc">Cliente (A-Z)</SelectItem>
+              <SelectItem value="status">Status</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="w-full max-w-md mb-6">
-            <TabsTrigger value="immediate" className="flex-1">Imediatos<Badge variant="secondary" className="ml-2">{immediateOrders.length}</Badge></TabsTrigger>
-            <TabsTrigger value="scheduled" className="flex-1">Agendados{scheduledCount > 0 && <Badge className="ml-2 bg-primary animate-pulse">{scheduledCount}</Badge>}</TabsTrigger>
-            <TabsTrigger value="all" className="flex-1">Todos<Badge variant="secondary" className="ml-2">{orders.length}</Badge></TabsTrigger>
-          </TabsList>
-          <TabsContent value="immediate" className="space-y-4 pb-mobile-nav">
-            {sortOrders(immediateOrders).map((order, index) => renderOrderCard(order, index))}
-            {immediateOrders.length === 0 && <Card className="text-center py-12"><CardContent><p className="text-muted-foreground">Nenhum pedido imediato.</p></CardContent></Card>}
-          </TabsContent>
-          <TabsContent value="scheduled" className="space-y-4 pb-mobile-nav">
-            {sortOrders(scheduledOrders).map((order, index) => renderOrderCard(order, index))}
-            {scheduledOrders.length === 0 && <Card className="text-center py-12"><CardContent><p className="text-muted-foreground">Nenhum pedido agendado.</p></CardContent></Card>}
-          </TabsContent>
-          <TabsContent value="all" className="space-y-4 pb-mobile-nav">
-            {sortOrders(orders).map((order, index) => renderOrderCard(order, index))}
-            {orders.length === 0 && <Card className="text-center py-12"><CardContent><p className="text-muted-foreground">Nenhum pedido recebido ainda.</p></CardContent></Card>}
-          </TabsContent>
-        </Tabs>
-      </main>
+      <Tabs defaultValue="all" className="w-full">
+        <TabsList className="w-full max-w-md mb-6">
+          <TabsTrigger value="immediate" className="flex-1">Imediatos<Badge variant="secondary" className="ml-2">{immediateOrders.length}</Badge></TabsTrigger>
+          <TabsTrigger value="scheduled" className="flex-1">Agendados{scheduledCount > 0 && <Badge className="ml-2 bg-primary animate-pulse">{scheduledCount}</Badge>}</TabsTrigger>
+          <TabsTrigger value="all" className="flex-1">Todos<Badge variant="secondary" className="ml-2">{orders.length}</Badge></TabsTrigger>
+        </TabsList>
+        <TabsContent value="immediate" className="space-y-4">
+          {sortOrders(immediateOrders).map((order, index) => renderOrderCard(order, index))}
+          {immediateOrders.length === 0 && <Card className="text-center py-12"><CardContent><p className="text-muted-foreground">Nenhum pedido imediato.</p></CardContent></Card>}
+        </TabsContent>
+        <TabsContent value="scheduled" className="space-y-4">
+          {sortOrders(scheduledOrders).map((order, index) => renderOrderCard(order, index))}
+          {scheduledOrders.length === 0 && <Card className="text-center py-12"><CardContent><p className="text-muted-foreground">Nenhum pedido agendado.</p></CardContent></Card>}
+        </TabsContent>
+        <TabsContent value="all" className="space-y-4">
+          {sortOrders(orders).map((order, index) => renderOrderCard(order, index))}
+          {orders.length === 0 && <Card className="text-center py-12"><CardContent><p className="text-muted-foreground">Nenhum pedido recebido ainda.</p></CardContent></Card>}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
