@@ -38,6 +38,7 @@ import CustomerProfile from "./pages/customer/Profile";
 import CityDistributors from "./pages/customer/CityDistributors";
 import LoginCustomer from "./pages/customer/LoginCustomer";
 import ResetPassword from "./pages/customer/ResetPassword";
+import ResetPasswordDistributor from "./pages/distributor/ResetPasswordDistributor";
 import ScheduleDelivery from "./pages/customer/ScheduleDelivery";
 import ScheduleConfirmation from "./pages/customer/ScheduleConfirmation";
 // Admin Pages
@@ -64,6 +65,7 @@ const App = () => (
             {/* Distributor Public Routes */}
             <Route path="/distributor/login" element={<LoginDistributor />} />
             <Route path="/distributor/signup" element={<SignupDistributor />} />
+            <Route path="/distributor/reset-password" element={<ResetPasswordDistributor />} />
             
             {/* Distributor Protected Routes */}
             <Route 
