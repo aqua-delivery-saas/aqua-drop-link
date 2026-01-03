@@ -14,6 +14,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName?: string) => Promise<void>;
   logout: () => Promise<void>;
+  setRole: (role: AppRole) => void;
   hasRole: (role: AppRole) => boolean;
   isAdmin: () => boolean;
   isDistributor: () => boolean;
@@ -154,6 +155,10 @@ export const useAuth = create<AuthState>((set, get) => ({
       isAuthenticated: false,
       isLoading: false,
     });
+  },
+
+  setRole: (role: AppRole) => {
+    set({ role });
   },
 
   hasRole: (role: AppRole) => {

@@ -11,6 +11,7 @@ import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
 import { emailSchema, simplePasswordSchema, nameSchema, whatsappSchema, formatPhone } from "@/lib/validators";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const formSchema = z.object({
   name: nameSchema,
@@ -90,9 +91,15 @@ const SignupDistributor = () => {
         email: data.email,
       }));
 
+      // 4. Update auth state with the new role to prevent 403 redirect
+      useAuth.getState().setRole('distributor');
+
       toast.success("Conta criada com sucesso!", {
         description: "Complete o cadastro da sua distribuidora",
       });
+      
+      // Small delay to ensure state synchronization
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       navigate("/distributor/onboarding");
     } catch (error) {
