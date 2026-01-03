@@ -21,7 +21,7 @@ export const LoginRequiredModal = ({ open, onOpenChange, distributorClosed = fal
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl">Login Necessário</DialogTitle>
           <DialogDescription className="text-base">
