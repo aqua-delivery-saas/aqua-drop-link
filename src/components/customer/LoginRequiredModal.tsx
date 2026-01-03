@@ -16,16 +16,12 @@ interface LoginRequiredModalProps {
   distributorClosed?: boolean;
 }
 
-export const LoginRequiredModal = ({
-  open,
-  onOpenChange,
-  distributorClosed = false,
-}: LoginRequiredModalProps) => {
+export const LoginRequiredModal = ({ open, onOpenChange, distributorClosed = false }: LoginRequiredModalProps) => {
   const navigate = useNavigate();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl">Login Necessário</DialogTitle>
           <DialogDescription className="text-base">
@@ -36,36 +32,20 @@ export const LoginRequiredModal = ({
         </DialogHeader>
 
         <div className="flex flex-col gap-3 py-4">
-          <Button
-            onClick={() => navigate("/customer/login")}
-            className="w-full"
-            size="lg"
-          >
+          <Button onClick={() => navigate("/customer/login")} className="w-full" size="lg">
             <LogIn className="mr-2 h-4 w-4" />
             Entrar
           </Button>
 
-          <Button
-            onClick={() => navigate("/customer/signup")}
-            variant="outline"
-            className="w-full"
-            size="lg"
-          >
+          <Button onClick={() => navigate("/customer/signup")} variant="outline" className="w-full" size="lg">
             <UserPlus className="mr-2 h-4 w-4" />
             Criar conta
           </Button>
         </div>
 
         <DialogFooter>
-          <Button
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            disabled={distributorClosed}
-            className="w-full"
-          >
-            {distributorClosed
-              ? "Agendamento obrigatório (distribuidora fechada)"
-              : "Continuar sem agendar"}
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={distributorClosed} className="w-full">
+            {distributorClosed ? "Agendamento obrigatório (distribuidora fechada)" : "Continuar sem agendar"}
           </Button>
         </DialogFooter>
       </DialogContent>
