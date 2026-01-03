@@ -56,6 +56,19 @@ export function useCityBySlug(slug: string) {
   });
 }
 
+export async function findCityByNameAndState(cityName: string, state: string) {
+  const { data, error } = await supabase
+    .from('cities')
+    .select('id, name, slug')
+    .ilike('name', cityName)
+    .eq('state', state)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
 export function useDistributorsByCity(cityId: string | undefined) {
   return useQuery({
     queryKey: ['distributors-by-city', cityId],
