@@ -31,7 +31,7 @@ export const LoginRequiredModal = ({ open, onOpenChange, distributorClosed = fal
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3 py-4 min-w-[280px]">
+        <div className="flex flex-col gap-3 py-4 w-full">
           <Button onClick={() => navigate("/customer/login")} className="w-full" size="lg">
             <LogIn className="mr-2 h-4 w-4" />
             Entrar
@@ -44,7 +44,7 @@ export const LoginRequiredModal = ({ open, onOpenChange, distributorClosed = fal
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={distributorClosed} className="w-full">
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={distributorClosed} className="w-full whitespace-normal h-auto py-3 text-sm">
             {distributorClosed ? "Agendamento obrigatório (distribuidora fechada)" : "Continuar sem agendar"}
           </Button>
         </DialogFooter>
