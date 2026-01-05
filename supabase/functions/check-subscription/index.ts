@@ -109,8 +109,19 @@ serve(async (req) => {
     }
 
     const subscription = subscriptions.data[0];
-    const subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-    const productId = subscription.items.data[0].price.product as string;
+    logStep("Subscription data", { 
+      id: subscription.id,
+      current_period_end: subscription.current_period_end,
+      items: subscription.items?.data?.length
+    });
+
+    // Safely parse the subscription end date
+    let subscriptionEnd: string | null = null;
+    if (subscription.current_period_end && typeof subscription.current_period_end === 'number') {
+      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+    }
+
+    const productId = subscription.items?.data?.[0]?.price?.product as string;
 
     // Determine plan type based on product ID
     let plan: "monthly" | "annual" = "monthly";
@@ -121,6 +132,7 @@ serve(async (req) => {
     logStep("Active subscription found", { 
       subscriptionId: subscription.id, 
       plan,
+      productId,
       endDate: subscriptionEnd 
     });
 
