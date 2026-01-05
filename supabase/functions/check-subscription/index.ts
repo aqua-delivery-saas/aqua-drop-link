@@ -8,8 +8,8 @@ const corsHeaders = {
 };
 
 const PRODUCTS = {
-  monthly: "prod_Tj6KDxtLwoIsNC",
-  annual: "prod_Tj6L4uk3OIiVFa",
+  monthly: "prod_TjgnJtXohSvZWq",
+  annual: "prod_TjgpJlCgzBvzTw",
 };
 
 const logStep = (step: string, details?: any) => {
