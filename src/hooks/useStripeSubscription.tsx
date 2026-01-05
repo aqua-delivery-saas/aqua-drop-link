@@ -67,8 +67,8 @@ export function useStripeSubscription() {
         throw new Error(fnError.message);
       }
 
-      if (data?.url) {
-        window.open(data.url, "_blank");
+    if (data?.url) {
+        window.location.href = data.url;
       }
 
       return data;
