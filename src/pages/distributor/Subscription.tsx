@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,15 +23,22 @@ export default function Subscription() {
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [isPortalLoading, setIsPortalLoading] = useState(false);
 
+  const navigate = useNavigate();
+
   // Handle success/cancel redirects
   useEffect(() => {
-    if (searchParams.get("success") === "true") {
+    const success = searchParams.get("success");
+    const canceled = searchParams.get("canceled");
+    
+    if (success === "true") {
       toast.success("Pagamento realizado com sucesso! Sua assinatura está ativa.");
       checkSubscription();
-    } else if (searchParams.get("canceled") === "true") {
+      navigate("/distributor/subscription", { replace: true });
+    } else if (canceled === "true") {
       toast.info("O pagamento foi cancelado.");
+      navigate("/distributor/subscription", { replace: true });
     }
-  }, [searchParams, checkSubscription]);
+  }, [searchParams, checkSubscription, navigate]);
 
   const subscriptionStatus = stripeSubscription?.status || "none";
   const currentPlan = stripeSubscription?.plan || null;
