@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useDistributor } from "@/hooks/useDistributor";
 
-interface StripeSubscriptionStatus {
+interface SubscriptionData {
   subscribed: boolean;
   plan: "monthly" | "annual" | null;
   subscription_end: string | null;
@@ -10,52 +11,80 @@ interface StripeSubscriptionStatus {
 }
 
 export function useStripeSubscription() {
-  const { user, isAuthenticated } = useAuth();
-  const [subscription, setSubscription] = useState<StripeSubscriptionStatus | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: distributor } = useDistributor();
+  const queryClient = useQueryClient();
 
-  const checkSubscription = useCallback(async () => {
-    if (!isAuthenticated || !user) {
-      setSubscription(null);
-      setIsLoading(false);
-      return;
-    }
+  // Query local database instead of Stripe API
+  const { data: dbSubscription, isLoading, error } = useQuery({
+    queryKey: ["subscription", distributor?.id],
+    queryFn: async () => {
+      if (!distributor?.id) return null;
+      
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("distributor_id", distributor.id)
+        .maybeSingle();
 
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!distributor?.id,
+  });
+
+  // Transform DB data to the expected format
+  const subscription: SubscriptionData | null = dbSubscription
+    ? {
+        subscribed: dbSubscription.status === "active",
+        plan: dbSubscription.plan,
+        subscription_end: dbSubscription.expires_at,
+        status: dbSubscription.status,
+      }
+    : { subscribed: false, plan: null, subscription_end: null, status: "none" };
+
+  // Realtime subscription for instant updates
+  useEffect(() => {
+    if (!distributor?.id) return;
+
+    const channel = supabase
+      .channel("subscription-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "subscriptions",
+          filter: `distributor_id=eq.${distributor.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["subscription", distributor.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [distributor?.id, queryClient]);
+
+  // Force check via Stripe API (only for post-checkout verification)
+  const forceCheckSubscription = useCallback(async () => {
     try {
-      setIsLoading(true);
-      setError(null);
-
       const { data, error: fnError } = await supabase.functions.invoke("check-subscription");
 
-      if (fnError) {
-        throw new Error(fnError.message);
+      if (fnError) throw new Error(fnError.message);
+
+      // Invalidate query to refetch from DB (webhook should have updated it)
+      if (distributor?.id) {
+        queryClient.invalidateQueries({ queryKey: ["subscription", distributor.id] });
       }
 
-      setSubscription(data as StripeSubscriptionStatus);
+      return data;
     } catch (err) {
       console.error("Error checking subscription:", err);
-      setError(err instanceof Error ? err.message : "Error checking subscription");
-      setSubscription(null);
-    } finally {
-      setIsLoading(false);
+      throw err;
     }
-  }, [isAuthenticated, user]);
-
-  useEffect(() => {
-    checkSubscription();
-  }, [checkSubscription]);
-
-  // Auto-refresh every 60 seconds
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const interval = setInterval(() => {
-      checkSubscription();
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, [isAuthenticated, checkSubscription]);
+  }, [distributor?.id, queryClient]);
 
   const createCheckout = async (plan: "monthly" | "annual") => {
     try {
@@ -63,11 +92,9 @@ export function useStripeSubscription() {
         body: { plan },
       });
 
-      if (fnError) {
-        throw new Error(fnError.message);
-      }
+      if (fnError) throw new Error(fnError.message);
 
-    if (data?.url) {
+      if (data?.url) {
         window.location.href = data.url;
       }
 
@@ -82,9 +109,7 @@ export function useStripeSubscription() {
     try {
       const { data, error: fnError } = await supabase.functions.invoke("customer-portal");
 
-      if (fnError) {
-        throw new Error(fnError.message);
-      }
+      if (fnError) throw new Error(fnError.message);
 
       if (data?.url) {
         window.open(data.url, "_blank");
@@ -100,8 +125,8 @@ export function useStripeSubscription() {
   return {
     subscription,
     isLoading,
-    error,
-    checkSubscription,
+    error: error ? (error as Error).message : null,
+    forceCheckSubscription,
     createCheckout,
     openCustomerPortal,
   };
