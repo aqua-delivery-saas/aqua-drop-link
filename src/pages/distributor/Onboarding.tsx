@@ -173,7 +173,7 @@ const Onboarding = () => {
       sessionStorage.removeItem('distributorSignup');
 
       toast.success("Configuração concluída com sucesso!");
-      navigate("/distributor/dashboard");
+      navigate("/distributor/subscription");
     } catch (error) {
       console.error('Error finishing onboarding:', error);
       toast.error("Erro ao salvar dados", {
