@@ -43,8 +43,12 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
     return <Navigate to="/distributor/onboarding" replace />;
   }
 
-  // Verifica se tem assinatura ativa
-  const hasActiveSubscription = subscription?.status === "active";
+  // Verifica se tem assinatura ativa (dupla verificação: status + data)
+  const isExpired = subscription?.subscription_end 
+    ? new Date(subscription.subscription_end) < new Date() 
+    : false;
+
+  const hasActiveSubscription = subscription?.status === "active" && !isExpired;
 
   // Se não tem assinatura ativa e não está em página permitida, redirecionar
   if (!hasActiveSubscription && !isAllowedPath) {

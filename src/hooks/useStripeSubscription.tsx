@@ -7,7 +7,7 @@ interface SubscriptionData {
   subscribed: boolean;
   plan: "monthly" | "annual" | null;
   subscription_end: string | null;
-  status: "active" | "canceled" | "past_due" | "none" | string;
+  status: "active" | "canceled" | "past_due" | "expired" | "none" | string;
 }
 
 export function useStripeSubscription() {
@@ -32,13 +32,21 @@ export function useStripeSubscription() {
     enabled: !!distributor?.id,
   });
 
-  // Transform DB data to the expected format
+  // Transform DB data to the expected format with expiration check
+  const isExpired = dbSubscription?.expires_at 
+    ? new Date(dbSubscription.expires_at) < new Date() 
+    : false;
+
+  const effectiveStatus = dbSubscription?.status === "active" && isExpired 
+    ? "expired" 
+    : dbSubscription?.status;
+
   const subscription: SubscriptionData | null = dbSubscription
     ? {
-        subscribed: dbSubscription.status === "active",
+        subscribed: dbSubscription.status === "active" && !isExpired,
         plan: dbSubscription.plan,
         subscription_end: dbSubscription.expires_at,
-        status: dbSubscription.status,
+        status: effectiveStatus,
       }
     : { subscribed: false, plan: null, subscription_end: null, status: "none" };
 
