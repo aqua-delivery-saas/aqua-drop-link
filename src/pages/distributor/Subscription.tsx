@@ -95,10 +95,10 @@ export default function Subscription() {
         );
       case "none":
         return (
-          <Alert className="bg-blue-50 border-blue-200">
-            <AlertCircle className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-800">
-              Você ainda não possui uma assinatura. Escolha um plano abaixo para começar!
+          <Alert className="bg-primary/10 border-primary">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <AlertDescription className="text-foreground">
+              <strong>Configuração concluída!</strong> Agora escolha um plano para ativar sua distribuidora e começar a receber pedidos.
             </AlertDescription>
           </Alert>
         );
