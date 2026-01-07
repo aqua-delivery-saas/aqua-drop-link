@@ -57,6 +57,8 @@ export default function Subscription() {
         return <Badge className="bg-yellow-500"><AlertCircle className="w-3 h-3 mr-1" /> Pagamento Pendente</Badge>;
       case "canceled":
         return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Cancelado</Badge>;
+      case "expired":
+        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" /> Expirado</Badge>;
       case "none":
         return <Badge variant="secondary"><AlertCircle className="w-3 h-3 mr-1" /> Sem Assinatura</Badge>;
       default:
@@ -90,6 +92,15 @@ export default function Subscription() {
             <XCircle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">
               Assinatura cancelada. Assine novamente para continuar usando o sistema.
+            </AlertDescription>
+          </Alert>
+        );
+      case "expired":
+        return (
+          <Alert variant="destructive" className="bg-red-50 border-red-200">
+            <XCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800">
+              <strong>Sua assinatura expirou.</strong> Renove agora para continuar usando o sistema e receber pedidos.
             </AlertDescription>
           </Alert>
         );
