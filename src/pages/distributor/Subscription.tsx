@@ -16,7 +16,7 @@ import { useStripeSubscription } from "@/hooks/useStripeSubscription";
 
 export default function Subscription() {
   const [searchParams] = useSearchParams();
-  const { subscription: stripeSubscription, isLoading: isLoadingStripe, createCheckout, openCustomerPortal, checkSubscription } = useStripeSubscription();
+  const { subscription: stripeSubscription, isLoading: isLoadingStripe, createCheckout, openCustomerPortal, forceCheckSubscription } = useStripeSubscription();
   const { data: payments = [], isLoading: isLoadingPayments } = useSubscriptionPayments();
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -32,13 +32,13 @@ export default function Subscription() {
     
     if (success === "true") {
       toast.success("Pagamento realizado com sucesso! Sua assinatura está ativa.");
-      checkSubscription();
+      forceCheckSubscription();
       navigate("/distributor/subscription", { replace: true });
     } else if (canceled === "true") {
       toast.info("O pagamento foi cancelado.");
       navigate("/distributor/subscription", { replace: true });
     }
-  }, [searchParams, checkSubscription, navigate]);
+  }, [searchParams, forceCheckSubscription, navigate]);
 
   const subscriptionStatus = stripeSubscription?.status || "none";
   const currentPlan = stripeSubscription?.plan || null;
