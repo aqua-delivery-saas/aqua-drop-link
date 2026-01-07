@@ -136,6 +136,31 @@ serve(async (req) => {
       endDate: subscriptionEnd 
     });
 
+    // Sync subscription data to database
+    const { data: distributor } = await supabaseClient
+      .from("distributors")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (distributor) {
+      const { error: updateError } = await supabaseClient
+        .from("subscriptions")
+        .update({
+          expires_at: subscriptionEnd,
+          status: "active",
+          plan: plan,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("distributor_id", distributor.id);
+
+      if (updateError) {
+        logStep("Error updating subscription in database", { error: updateError.message });
+      } else {
+        logStep("Subscription synced to database", { distributorId: distributor.id });
+      }
+    }
+
     return new Response(JSON.stringify({
       subscribed: true,
       plan: plan,
