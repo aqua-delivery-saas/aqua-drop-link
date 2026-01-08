@@ -33,8 +33,12 @@ const AuthCallback = () => {
                         session.user.user_metadata?.name ||
                         userEmail?.split("@")[0] || "Usuário";
 
-        // Check if user already has a role
-        const { data: existingRole } = await supabase.rpc("has_role", {
+        // Get account type from URL params (customer or distributor)
+        const accountType = searchParams.get("type") || "customer";
+        const redirectPath = searchParams.get("redirect");
+
+        // Check if user already has roles
+        const { data: isCustomer } = await supabase.rpc("has_role", {
           _user_id: userId,
           _role: "customer",
         });
@@ -44,29 +48,30 @@ const AuthCallback = () => {
           _role: "distributor",
         });
 
-        // If user has distributor role, redirect to distributor dashboard
+        // If user already has distributor role, redirect to distributor area
         if (isDistributor) {
           setRole("distributor");
           toast.success("Bem-vindo de volta!");
-          navigate("/distributor/dashboard", { replace: true });
+          navigate(redirectPath || "/distributor/dashboard", { replace: true });
           return;
         }
 
-        // If user already has customer role, redirect
-        if (existingRole) {
+        // If user already has customer role, redirect to customer area
+        if (isCustomer) {
           setRole("customer");
-          const redirectPath = searchParams.get("redirect") || "/customer/history";
           toast.success("Bem-vindo de volta!");
-          navigate(redirectPath, { replace: true });
+          navigate(redirectPath || "/customer/history", { replace: true });
           return;
         }
 
+        // New user - assign role based on account type
         setStatus("Configurando sua conta...");
 
-        // Assign customer role for new OAuth users
+        const roleToAssign = accountType === "distributor" ? "distributor" : "customer";
+
         const { error: roleError } = await supabase
           .from("user_roles")
-          .insert({ user_id: userId, role: "customer" });
+          .insert({ user_id: userId, role: roleToAssign });
 
         if (roleError && !roleError.message.includes("duplicate")) {
           console.error("Error assigning role:", roleError);
@@ -84,11 +89,18 @@ const AuthCallback = () => {
           console.error("Error updating profile:", profileError);
         }
 
-        setRole("customer");
-        toast.success("Conta criada com sucesso!");
-        
-        const redirectPath = searchParams.get("redirect") || "/customer/history";
-        navigate(redirectPath, { replace: true });
+        // Set role and redirect based on account type
+        if (accountType === "distributor") {
+          setRole("distributor");
+          toast.success("Conta criada com sucesso!", {
+            description: "Complete o cadastro da sua distribuidora",
+          });
+          navigate("/distributor/onboarding", { replace: true });
+        } else {
+          setRole("customer");
+          toast.success("Conta criada com sucesso!");
+          navigate(redirectPath || "/customer/history", { replace: true });
+        }
 
       } catch (error: any) {
         console.error("Auth callback error:", error);

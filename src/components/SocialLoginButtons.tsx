@@ -6,19 +6,21 @@ import { Loader2 } from "lucide-react";
 
 interface SocialLoginButtonsProps {
   redirectPath?: string;
+  accountType?: "customer" | "distributor";
 }
 
-export const SocialLoginButtons = ({ redirectPath = "/" }: SocialLoginButtonsProps) => {
+export const SocialLoginButtons = ({ redirectPath = "/", accountType = "customer" }: SocialLoginButtonsProps) => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [facebookLoading, setFacebookLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     try {
+      const callbackUrl = `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectPath)}&type=${accountType}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectPath)}`,
+          redirectTo: callbackUrl,
         },
       });
       if (error) throw error;
@@ -31,10 +33,11 @@ export const SocialLoginButtons = ({ redirectPath = "/" }: SocialLoginButtonsPro
   const handleFacebookLogin = async () => {
     setFacebookLoading(true);
     try {
+      const callbackUrl = `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectPath)}&type=${accountType}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "facebook",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectPath)}`,
+          redirectTo: callbackUrl,
         },
       });
       if (error) throw error;

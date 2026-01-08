@@ -231,7 +231,7 @@ const SignupDistributor = () => {
           </Form>
 
           <div className="mt-6">
-            <SocialLoginButtons redirectPath="/distributor/onboarding" />
+            <SocialLoginButtons redirectPath="/distributor/onboarding" accountType="distributor" />
           </div>
 
           <div className="text-center text-sm mt-4">
