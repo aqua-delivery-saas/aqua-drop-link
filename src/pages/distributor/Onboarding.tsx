@@ -26,6 +26,7 @@ export interface OnboardingData {
     zip_code: string;
     city: string;
     state: string;
+    city_id?: string | null;
     logo?: File;
   };
   businessHours?: {
@@ -165,6 +166,9 @@ const Onboarding = () => {
           complement: onboardingData.distributor?.complement,
           neighborhood: onboardingData.distributor?.neighborhood,
           zip_code: onboardingData.distributor?.zip_code,
+          city: onboardingData.distributor?.city,
+          state: onboardingData.distributor?.state,
+          city_id: onboardingData.distributor?.city_id,
         },
         businessHours: onboardingData.businessHours,
         products,
