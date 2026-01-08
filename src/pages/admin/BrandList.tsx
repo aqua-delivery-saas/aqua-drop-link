@@ -26,26 +26,31 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ResponsiveTable } from '@/components/ui/ResponsiveTable';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
+import { useBrands, useCreateBrand, useUpdateBrand, useDeleteBrand } from '@/hooks/useBrands';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Brand {
   id: string;
   name: string;
-  description: string;
-  logo_url: string;
+  description: string | null;
+  logo_url: string | null;
   is_active: boolean;
   created_at: string;
-  products_count: number;
+  updated_at: string;
 }
 
 export default function BrandList() {
   const { toast } = useToast();
-  const [brands, setBrands] = useState<Brand[]>([]);
+  const { data: brands = [], isLoading } = useBrands();
+  const createBrand = useCreateBrand();
+  const updateBrand = useUpdateBrand();
+  const deleteBrand = useDeleteBrand();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
 
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -81,7 +86,7 @@ export default function BrandList() {
     setIsDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name.trim()) {
       toast({
         title: 'Erro',
@@ -91,38 +96,20 @@ export default function BrandList() {
       return;
     }
 
-    if (editingBrand) {
-      setBrands((prev) =>
-        prev.map((b) =>
-          b.id === editingBrand.id
-            ? { ...b, name: formData.name, description: formData.description, logo_url: formData.logo_url, is_active: formData.is_active }
-            : b
-        )
-      );
-      toast({ title: 'Marca atualizada', description: `${formData.name} foi atualizada com sucesso.` });
-    } else {
-      const newBrand: Brand = {
-        id: `b${Date.now()}`,
-        name: formData.name,
-        description: formData.description,
-        logo_url: formData.logo_url,
-        is_active: formData.is_active,
-        created_at: new Date().toISOString(),
-        products_count: 0,
-      };
-      setBrands((prev) => [newBrand, ...prev]);
-      toast({ title: 'Marca criada', description: `${formData.name} foi adicionada com sucesso.` });
+    try {
+      if (editingBrand) {
+        await updateBrand.mutateAsync({ id: editingBrand.id, formData });
+      } else {
+        await createBrand.mutateAsync(formData);
+      }
+      setIsDialogOpen(false);
+    } catch {
+      // Error handled by mutation
     }
-
-    setIsDialogOpen(false);
   };
 
-  const handleDelete = (brand: Brand) => {
-    setBrands((prev) => prev.filter((b) => b.id !== brand.id));
-    toast({
-      title: 'Marca excluída',
-      description: `${brand.name} foi removida com sucesso.`,
-    });
+  const handleDelete = async (brand: Brand) => {
+    await deleteBrand.mutateAsync(brand);
   };
 
   const columns = [
@@ -130,7 +117,7 @@ export default function BrandList() {
       header: 'Logo',
       accessor: (brand: Brand) => (
         <Avatar className="h-10 w-10">
-          <AvatarImage src={brand.logo_url} alt={brand.name} />
+          <AvatarImage src={brand.logo_url || undefined} alt={brand.name} />
           <AvatarFallback className="bg-primary/10 text-primary text-xs">
             {brand.name.substring(0, 2).toUpperCase()}
           </AvatarFallback>
@@ -158,11 +145,6 @@ export default function BrandList() {
         </Badge>
       ),
       mobileLabel: 'Status',
-    },
-    {
-      header: 'Produtos',
-      accessor: (brand: Brand) => <span className="font-medium">{brand.products_count}</span>,
-      mobileLabel: 'Produtos',
     },
     {
       header: 'Cadastro',
@@ -193,6 +175,45 @@ export default function BrandList() {
       mobileLabel: 'Ações',
     },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <Skeleton className="h-8 w-32 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="flex gap-4">
+          <Skeleton className="h-10 flex-1" />
+          <Skeleton className="h-10 w-44" />
+        </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -351,8 +372,11 @@ export default function BrandList() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleSave}>
-              {editingBrand ? 'Salvar' : 'Adicionar'}
+            <Button 
+              onClick={handleSave} 
+              disabled={createBrand.isPending || updateBrand.isPending}
+            >
+              {createBrand.isPending || updateBrand.isPending ? 'Salvando...' : editingBrand ? 'Salvar' : 'Adicionar'}
             </Button>
           </DialogFooter>
         </DialogContent>
