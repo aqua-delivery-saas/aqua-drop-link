@@ -144,8 +144,9 @@ const Onboarding = () => {
       const signupData = sessionStorage.getItem('distributorSignup');
       const signupEmail = signupData ? JSON.parse(signupData).email : null;
 
-      // Prepare products from marcasSelecionadas
+      // Prepare products from marcasSelecionadas with brand_id
       const products = (onboardingData.products || []).map(marca => ({
+        brandId: marca.id,
         name: marca.nome,
         liters: marca.litros,
         price: marca.preco || 0,

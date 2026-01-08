@@ -566,6 +566,7 @@ export type Database = {
       }
       products: {
         Row: {
+          brand_id: string | null
           created_at: string
           description: string | null
           distributor_id: string
@@ -579,6 +580,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          brand_id?: string | null
           created_at?: string
           description?: string | null
           distributor_id: string
@@ -592,6 +594,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          brand_id?: string | null
           created_at?: string
           description?: string | null
           distributor_id?: string
@@ -605,6 +608,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "products_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_distributor_id_fkey"
             columns: ["distributor_id"]
