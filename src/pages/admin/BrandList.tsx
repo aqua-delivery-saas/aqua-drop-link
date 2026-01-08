@@ -35,6 +35,7 @@ interface Brand {
   description: string | null;
   logo_url: string | null;
   is_active: boolean;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
 }
