@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useBrands, useCreateBrand, useUpdateBrand, useDeleteBrand } from '@/hooks/useBrands';
 import { useAuth } from '@/hooks/useAuth';
+import { BrandCombobox } from '@/components/BrandCombobox';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,6 +51,7 @@ export default function Brands() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
   const [brandToDelete, setBrandToDelete] = useState<Brand | null>(null);
+  const [selectedExistingBrand, setSelectedExistingBrand] = useState<Brand | null>(null);
   const [formData, setFormData] = useState<BrandFormData>({
     name: '',
     description: '',
@@ -60,6 +62,7 @@ export default function Brands() {
   const handleOpenDialog = (brand?: Brand) => {
     if (brand) {
       setEditingBrand(brand);
+      setSelectedExistingBrand(null);
       setFormData({
         name: brand.name,
         description: brand.description || '',
@@ -68,6 +71,7 @@ export default function Brands() {
       });
     } else {
       setEditingBrand(null);
+      setSelectedExistingBrand(null);
       setFormData({
         name: '',
         description: '',
@@ -76,6 +80,26 @@ export default function Brands() {
       });
     }
     setDialogOpen(true);
+  };
+
+  const handleBrandSelect = (brandName: string, brand: Brand | null) => {
+    if (brand) {
+      // Existing brand selected - auto-fill fields
+      setSelectedExistingBrand(brand);
+      setFormData({
+        name: brand.name,
+        description: brand.description || '',
+        logo_url: brand.logo_url || '',
+        is_active: true,
+      });
+    } else {
+      // New brand being created
+      setSelectedExistingBrand(null);
+      setFormData({
+        ...formData,
+        name: brandName,
+      });
+    }
   };
 
   const handleSave = async () => {
@@ -244,12 +268,20 @@ export default function Brands() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nome *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Nome da marca"
-              />
+              {editingBrand ? (
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Nome da marca"
+                />
+              ) : (
+                <BrandCombobox
+                  value={formData.name}
+                  selectedBrandId={selectedExistingBrand?.id || null}
+                  onChange={handleBrandSelect}
+                />
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Descrição</Label>
