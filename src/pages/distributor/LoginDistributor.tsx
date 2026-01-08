@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import heroWater from "@/assets/hero-water.jpg";
+import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 
 const LoginDistributor = () => {
   const navigate = useNavigate();
@@ -154,18 +155,23 @@ const LoginDistributor = () => {
               >
                 {loading ? "Entrando..." : "Entrar"}
               </Button>
-              <div className="text-center text-sm">
-                <span className="text-muted-foreground">Não tem conta? </span>
-                <Button
-                  type="button"
-                  variant="link"
-                  className="p-0 h-auto"
-                  onClick={() => navigate("/distributor/signup")}
-                >
-                  Criar conta da distribuidora
-                </Button>
-              </div>
             </form>
+
+            <div className="mt-6">
+              <SocialLoginButtons redirectPath="/distributor/dashboard" />
+            </div>
+
+            <div className="text-center text-sm mt-4">
+              <span className="text-muted-foreground">Não tem conta? </span>
+              <Button
+                type="button"
+                variant="link"
+                className="p-0 h-auto"
+                onClick={() => navigate("/distributor/signup")}
+              >
+                Criar conta da distribuidora
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

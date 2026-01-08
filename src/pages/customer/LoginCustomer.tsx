@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
+import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 
 const LoginCustomer = () => {
   const navigate = useNavigate();
@@ -125,18 +126,23 @@ const LoginCustomer = () => {
               >
                 Esqueci minha senha
               </button>
-              <div className="text-center space-y-2">
-                <Button type="button" variant="link" onClick={() => navigate("/customer/signup")} className="p-0">
-                  Ainda não tem conta? Criar conta grátis
-                </Button>
-              </div>
-
-              <div className="pt-4 text-center">
-                <Button type="button" variant="ghost" onClick={() => navigate("/")}>
-                  Voltar para Home
-                </Button>
-              </div>
             </form>
+
+            <div className="mt-6">
+              <SocialLoginButtons redirectPath="/customer/history" />
+            </div>
+
+            <div className="text-center space-y-2 mt-4">
+              <Button type="button" variant="link" onClick={() => navigate("/customer/signup")} className="p-0">
+                Ainda não tem conta? Criar conta grátis
+              </Button>
+            </div>
+
+            <div className="pt-2 text-center">
+              <Button type="button" variant="ghost" onClick={() => navigate("/")}>
+                Voltar para Home
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
