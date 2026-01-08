@@ -8,6 +8,7 @@ interface Brand {
   description: string | null;
   logo_url: string | null;
   is_active: boolean;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -40,6 +41,8 @@ export function useCreateBrand() {
 
   return useMutation({
     mutationFn: async (formData: BrandFormData) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { data, error } = await supabase
         .from('brands')
         .insert({
@@ -47,6 +50,7 @@ export function useCreateBrand() {
           description: formData.description || null,
           logo_url: formData.logo_url || null,
           is_active: formData.is_active,
+          created_by: user?.id || null,
         })
         .select()
         .single();
