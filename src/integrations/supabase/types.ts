@@ -709,6 +709,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      notify_scheduled_orders_today: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "distributor" | "customer"
