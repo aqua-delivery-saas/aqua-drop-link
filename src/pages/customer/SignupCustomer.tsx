@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { nameSchema, phoneSchema, emailSchema, simplePasswordSchema, formatPhone } from "@/lib/validators";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 
 const formSchema = z.object({
   name: nameSchema,
@@ -230,20 +231,24 @@ const SignupCustomer = () => {
               >
                 {isSubmitting ? "Criando conta..." : "Cadastrar"}
               </Button>
-
-              <div className="text-center text-sm">
-                <span className="text-muted-foreground">Já tem conta? </span>
-                <Button
-                  type="button"
-                  variant="link"
-                  className="p-0 h-auto"
-                  onClick={() => navigate("/customer/login")}
-                >
-                  Entrar
-                </Button>
-              </div>
             </form>
           </Form>
+
+          <div className="mt-6">
+            <SocialLoginButtons redirectPath="/customer/history" />
+          </div>
+
+          <div className="text-center text-sm mt-4">
+            <span className="text-muted-foreground">Já tem conta? </span>
+            <Button
+              type="button"
+              variant="link"
+              className="p-0 h-auto"
+              onClick={() => navigate("/customer/login")}
+            >
+              Entrar
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
