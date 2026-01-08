@@ -158,7 +158,7 @@ const LoginDistributor = () => {
             </form>
 
             <div className="mt-6">
-              <SocialLoginButtons redirectPath="/distributor/dashboard" />
+              <SocialLoginButtons redirectPath="/distributor/dashboard" accountType="distributor" />
             </div>
 
             <div className="text-center text-sm mt-4">
