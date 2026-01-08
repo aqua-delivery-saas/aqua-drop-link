@@ -2,20 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-// Marcas pré-cadastradas pelo administrador do SaaS
-const marcasPadrao = [
-  { id: "1", nome: "Indaiá", litros: 20, logo: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=100&h=100&fit=crop" },
-  { id: "2", nome: "Bioleve", litros: 20, logo: "https://images.unsplash.com/photo-1559839914-17aae19cec71?w=100&h=100&fit=crop" },
-  { id: "3", nome: "Cristal Premium", litros: 20, logo: "https://images.unsplash.com/photo-1606168094336-48f205276929?w=100&h=100&fit=crop" },
-  { id: "4", nome: "Minalba", litros: 20, logo: "https://images.unsplash.com/photo-1564419320461-6870880221ad?w=100&h=100&fit=crop" },
-  { id: "5", nome: "Crystal", litros: 20, logo: "https://images.unsplash.com/photo-1560023907-5f339617ea30?w=100&h=100&fit=crop" },
-  { id: "6", nome: "Bonafont", litros: 20, logo: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=100&h=100&fit=crop" },
-  { id: "7", nome: "Petrópolis", litros: 20, logo: "https://images.unsplash.com/photo-1559839914-17aae19cec71?w=100&h=100&fit=crop" },
-  { id: "8", nome: "Schin", litros: 20, logo: "https://images.unsplash.com/photo-1606168094336-48f205276929?w=100&h=100&fit=crop" },
-];
+import { useBrands } from "@/hooks/useBrands";
 
 export interface MarcaSelecionada {
   id: string;
@@ -32,10 +21,19 @@ interface OnboardingStep3AProps {
 }
 
 export const OnboardingStep3A = ({ onNext, onBack, initialData }: OnboardingStep3AProps) => {
+  const { data: brands, isLoading } = useBrands();
   const [selectedIds, setSelectedIds] = useState<string[]>(
     initialData?.map(m => m.id) || []
   );
   const [error, setError] = useState<string | null>(null);
+
+  // Map brands from database to component format
+  const marcasDisponiveis = brands?.filter(b => b.is_active).map(brand => ({
+    id: brand.id,
+    nome: brand.name,
+    litros: 20, // Default value for galões
+    logo: brand.logo_url || "",
+  })) || [];
 
   const toggleBrand = (id: string) => {
     setError(null);
@@ -52,7 +50,7 @@ export const OnboardingStep3A = ({ onNext, onBack, initialData }: OnboardingStep
       return;
     }
     
-    const marcasSelecionadas = marcasPadrao
+    const marcasSelecionadas = marcasDisponiveis
       .filter(m => selectedIds.includes(m.id))
       .map(m => ({
         id: m.id,
@@ -65,6 +63,15 @@ export const OnboardingStep3A = ({ onNext, onBack, initialData }: OnboardingStep
     onNext({ marcasSelecionadas });
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-muted-foreground">Carregando marcas disponíveis...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
@@ -76,8 +83,14 @@ export const OnboardingStep3A = ({ onNext, onBack, initialData }: OnboardingStep
         <p className="text-sm text-destructive text-center">{error}</p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[320px] overflow-y-auto pr-2">
-        {marcasPadrao.map((marca) => {
+      {marcasDisponiveis.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>Nenhuma marca disponível no momento.</p>
+          <p className="text-sm">Entre em contato com o administrador.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[320px] overflow-y-auto pr-2">
+        {marcasDisponiveis.map((marca) => {
           const isSelected = selectedIds.includes(marca.id);
           return (
             <Card
@@ -104,10 +117,11 @@ export const OnboardingStep3A = ({ onNext, onBack, initialData }: OnboardingStep
                   <p className="text-sm text-muted-foreground">{marca.litros}L</p>
                 </div>
               </div>
-            </Card>
+          </Card>
           );
         })}
       </div>
+      )}
 
       <p className="text-sm text-muted-foreground text-center">
         {selectedIds.length} marca{selectedIds.length !== 1 ? "s" : ""} selecionada{selectedIds.length !== 1 ? "s" : ""}

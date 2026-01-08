@@ -24,6 +24,7 @@ interface BusinessHoursData {
 }
 
 interface ProductData {
+  brandId: string;
   name: string;
   liters: number;
   price: number;
@@ -174,6 +175,7 @@ export function useCreateDistributor() {
       if (data.products && data.products.length > 0) {
         const productsInserts = data.products.map((product, index) => ({
           distributor_id: distributor.id,
+          brand_id: product.brandId,
           name: product.name,
           liters: product.liters,
           price: product.price,
