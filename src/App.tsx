@@ -49,6 +49,7 @@ import DistributorList from "./pages/admin/DistributorList";
 import UserDetails from "./pages/admin/UserDetails";
 import FinancialReports from "./pages/admin/FinancialReports";
 import BrandList from "./pages/admin/BrandList";
+import AuthCallback from "./pages/AuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,9 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            
+            {/* OAuth Callback */}
+            <Route path="/auth/callback" element={<AuthCallback />} />
             
             {/* Distributor Public Routes */}
             <Route path="/distributor/login" element={<LoginDistributor />} />
