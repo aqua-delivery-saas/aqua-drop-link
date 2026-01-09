@@ -364,6 +364,42 @@ export type Database = {
           },
         ]
       }
+      onboarding_drafts: {
+        Row: {
+          brands_data: Json | null
+          business_hours_data: Json | null
+          created_at: string
+          current_step: number
+          distributor_data: Json | null
+          id: string
+          products_data: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brands_data?: Json | null
+          business_hours_data?: Json | null
+          created_at?: string
+          current_step?: number
+          distributor_data?: Json | null
+          id?: string
+          products_data?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brands_data?: Json | null
+          business_hours_data?: Json | null
+          created_at?: string
+          current_step?: number
+          distributor_data?: Json | null
+          id?: string
+          products_data?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string

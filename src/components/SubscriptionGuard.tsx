@@ -2,6 +2,8 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useDistributor } from "@/hooks/useDistributor";
 import { useStripeSubscription } from "@/hooks/useStripeSubscription";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import { useEffect, useRef } from "react";
 
 interface SubscriptionGuardProps {
   children: React.ReactNode;
@@ -11,6 +13,7 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
   const { data: distributor, isLoading: distributorLoading } = useDistributor();
   const { subscription, isLoading: subscriptionLoading } = useStripeSubscription();
   const location = useLocation();
+  const hasShownOnboardingToast = useRef(false);
 
   // Páginas permitidas sem assinatura ativa
   const allowedPaths = [
@@ -22,6 +25,22 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
   const isAllowedPath = allowedPaths.some((path) =>
     location.pathname.startsWith(path)
   );
+
+  // Show toast when redirecting to onboarding
+  useEffect(() => {
+    if (!distributorLoading && !distributor && !hasShownOnboardingToast.current) {
+      // Only show toast once per session
+      const hasShownInSession = sessionStorage.getItem('onboarding_redirect_toast');
+      if (!hasShownInSession) {
+        toast.info("Complete seu cadastro", {
+          description: "Você precisa finalizar a configuração da sua distribuidora para acessar o painel.",
+          duration: 5000,
+        });
+        sessionStorage.setItem('onboarding_redirect_toast', 'true');
+        hasShownOnboardingToast.current = true;
+      }
+    }
+  }, [distributorLoading, distributor]);
 
   // Se está carregando, mostrar skeleton
   if (distributorLoading || subscriptionLoading) {

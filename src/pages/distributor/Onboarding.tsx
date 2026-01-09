@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, RefreshCw } from "lucide-react";
 import { OnboardingStep1 } from "@/components/onboarding/OnboardingStep1";
 import { OnboardingStep2 } from "@/components/onboarding/OnboardingStep2";
 import { OnboardingStep3A, MarcaSelecionada } from "@/components/onboarding/OnboardingStep3A";
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useDistributor } from "@/hooks/useDistributor";
 import { useCreateDistributor } from "@/hooks/useCreateDistributor";
+import { useOnboardingDraft, useSaveOnboardingDraft, useDeleteOnboardingDraft } from "@/hooks/useOnboardingDraft";
 
 export interface OnboardingData {
   distributor?: {
@@ -42,12 +43,69 @@ const Onboarding = () => {
   const { data: existingDistributor, isLoading: distributorLoading } = useDistributor();
   const createDistributor = useCreateDistributor();
   
+  // Draft hooks
+  const { data: draft, isLoading: draftLoading } = useOnboardingDraft();
+  const saveDraft = useSaveOnboardingDraft();
+  const deleteDraft = useDeleteOnboardingDraft();
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isResumingDraft, setIsResumingDraft] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
 
-  // Load initial data from sessionStorage (from signup)
+  // Load draft data when available
   useEffect(() => {
+    if (draft && !draftLoaded) {
+      setCurrentStep(draft.current_step);
+      
+      // Convert draft data with proper defaults for required fields
+      const distributorData = draft.distributor_data ? {
+        name: draft.distributor_data.name || '',
+        cnpj: draft.distributor_data.cnpj || '',
+        phone: draft.distributor_data.phone || '',
+        street: draft.distributor_data.street || '',
+        number: draft.distributor_data.number || '',
+        complement: draft.distributor_data.complement,
+        neighborhood: draft.distributor_data.neighborhood || '',
+        zip_code: draft.distributor_data.zip_code || '',
+        city: draft.distributor_data.city || '',
+        state: draft.distributor_data.state || '',
+        city_id: draft.distributor_data.city_id,
+      } : undefined;
+      
+      // Convert brands/products with required logo field
+      const convertBrands = (brands: typeof draft.brands_data): MarcaSelecionada[] | undefined => {
+        if (!brands) return undefined;
+        return brands.map(b => ({
+          id: b.id,
+          nome: b.nome,
+          litros: b.litros,
+          logo: b.logo || '',
+          preco: b.preco,
+        }));
+      };
+      
+      setOnboardingData({
+        distributor: distributorData,
+        businessHours: draft.business_hours_data || undefined,
+        marcasSelecionadas: convertBrands(draft.brands_data),
+        products: convertBrands(draft.products_data),
+      });
+      setIsResumingDraft(true);
+      setDraftLoaded(true);
+      
+      toast.info("Progresso recuperado", {
+        description: `Retomando do passo ${draft.current_step}`,
+        duration: 4000,
+      });
+    }
+  }, [draft, draftLoaded]);
+
+  // Load initial data from sessionStorage (from signup) only if no draft
+  useEffect(() => {
+    if (draftLoading || draft) return;
+    
     const signupData = sessionStorage.getItem('distributorSignup');
     if (signupData) {
       try {
@@ -71,7 +129,7 @@ const Onboarding = () => {
         console.error('Error parsing signup data:', e);
       }
     }
-  }, []);
+  }, [draftLoading, draft]);
 
   // Redirect if not authenticated or already has distributor
   useEffect(() => {
@@ -121,14 +179,45 @@ const Onboarding = () => {
     return "pending";
   };
 
-  const handleNext = (data: Partial<OnboardingData>) => {
-    setOnboardingData({ ...onboardingData, ...data });
-    setCurrentStep(currentStep + 1);
+  const handleNext = async (data: Partial<OnboardingData>) => {
+    const newData = { ...onboardingData, ...data };
+    setOnboardingData(newData);
+    
+    const nextStep = currentStep + 1;
+    setCurrentStep(nextStep);
+    
+    // Save draft to database
+    try {
+      await saveDraft.mutateAsync({
+        current_step: nextStep,
+        distributor_data: newData.distributor || null,
+        business_hours_data: newData.businessHours || null,
+        brands_data: newData.marcasSelecionadas || null,
+        products_data: newData.products || null,
+      });
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      // Don't show error to user, draft saving is background operation
+    }
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      const prevStep = currentStep - 1;
+      setCurrentStep(prevStep);
+      
+      // Save updated step to draft
+      try {
+        await saveDraft.mutateAsync({
+          current_step: prevStep,
+          distributor_data: onboardingData.distributor || null,
+          business_hours_data: onboardingData.businessHours || null,
+          brands_data: onboardingData.marcasSelecionadas || null,
+          products_data: onboardingData.products || null,
+        });
+      } catch (error) {
+        console.error('Error saving draft:', error);
+      }
     }
   };
 
@@ -174,6 +263,9 @@ const Onboarding = () => {
         products,
       });
 
+      // Delete the draft after successful completion
+      await deleteDraft.mutateAsync();
+
       // Clear signup data from sessionStorage
       sessionStorage.removeItem('distributorSignup');
 
@@ -218,8 +310,8 @@ const Onboarding = () => {
     }
   };
 
-  // Show loading while checking auth/distributor status
-  if (authLoading || distributorLoading) {
+  // Show loading while checking auth/distributor/draft status
+  if (authLoading || distributorLoading || draftLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -242,6 +334,16 @@ const Onboarding = () => {
           </div>
 
           <Card className="p-8 shadow-lg">
+            {/* Resume indicator */}
+            {isResumingDraft && (
+              <div className="mb-4 p-3 bg-primary/10 rounded-lg flex items-center gap-2">
+                <RefreshCw className="h-4 w-4 text-primary" />
+                <span className="text-sm text-foreground">
+                  Retomando de onde você parou
+                </span>
+              </div>
+            )}
+
             {/* Progress Bar */}
             <div className="mb-8">
               <Progress value={getProgress()} className="h-2 mb-4" />
