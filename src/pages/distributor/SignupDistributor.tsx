@@ -121,7 +121,7 @@ const SignupDistributor = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8 bg-gradient-to-br from-background to-muted">
+    <div className="min-h-screen flex items-center justify-center p-3 bg-gradient-to-br from-background to-muted">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center space-y-2">
           <div className="flex justify-center mb-4">
