@@ -90,7 +90,7 @@ export function DistributorLayout({ children }: DistributorLayoutProps) {
                 </DropdownMenu>
               </div>
             </header>
-            <div className="flex-1 overflow-auto pb-mobile-nav p-6">
+            <div className="flex-1 overflow-auto pb-mobile-nav p-4 sm:p-6">
               {children}
             </div>
           </main>

@@ -64,37 +64,34 @@ const Products = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <main className="container mx-auto px-4 py-8">
-          <div className="mb-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-            <div>
-              <Skeleton className="h-8 w-48" />
-              <Skeleton className="h-4 w-64 mt-2" />
-            </div>
-            <Skeleton className="h-10 w-40" />
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+          <div>
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-64 mt-2" />
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map(i => (
-              <Card key={i}>
-                <CardHeader>
-                  <Skeleton className="h-6 w-32" />
-                  <Skeleton className="h-8 w-24" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-6 w-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </main>
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map(i => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-8 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-6 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold mb-2">Marcas e Preços</h1>
             <p className="text-muted-foreground text-sm sm:text-base">Gerencie as marcas de água disponíveis</p>
@@ -271,18 +268,17 @@ const Products = () => {
           ))}
         </div>
 
-        {products.length === 0 && (
-          <Card className="text-center py-12">
-            <CardContent>
-              <p className="text-muted-foreground mb-4">Nenhuma marca cadastrada ainda.</p>
-              <Button onClick={() => setIsDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Adicionar Primeira Marca
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </main>
+      {products.length === 0 && (
+        <Card className="text-center py-12">
+          <CardContent>
+            <p className="text-muted-foreground mb-4">Nenhuma marca cadastrada ainda.</p>
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar Primeira Marca
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
