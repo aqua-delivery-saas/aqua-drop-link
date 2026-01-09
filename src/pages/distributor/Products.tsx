@@ -7,48 +7,103 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Edit, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useDistributorProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from "@/hooks/useDistributor";
+import { useDistributorProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, ProductWithBrand } from "@/hooks/useDistributor";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BrandCombobox } from "@/components/BrandCombobox";
+import { useCreateBrand } from "@/hooks/useBrands";
+
+interface SelectedBrand {
+  id: string | null;
+  name: string;
+}
 
 const Products = () => {
   const { data: products = [], isLoading } = useDistributorProducts();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
+  const createBrand = useCreateBrand();
 
-  const [newProduct, setNewProduct] = useState({ name: "", price: "", liters: "", available: true });
+  const [selectedBrand, setSelectedBrand] = useState<SelectedBrand>({ id: null, name: '' });
+  const [newProduct, setNewProduct] = useState({ price: "", liters: "", available: true });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<{ id: string; name: string; price: string; liters: string; available: boolean } | null>(null);
+  const [editingProduct, setEditingProduct] = useState<{ 
+    id: string; 
+    name: string; 
+    price: string; 
+    liters: string; 
+    available: boolean;
+    brand_id: string | null;
+  } | null>(null);
+  const [editingBrand, setEditingBrand] = useState<SelectedBrand>({ id: null, name: '' });
 
   const handleAddProduct = async () => {
-    if (!newProduct.name || !newProduct.price || !newProduct.liters) {
+    if (!selectedBrand.name || !newProduct.price || !newProduct.liters) {
       toast.error("Preencha todos os campos obrigatórios");
       return;
     }
 
-    await createProduct.mutateAsync({
-      name: newProduct.name,
-      price: parseFloat(newProduct.price),
-      liters: parseFloat(newProduct.liters),
-      is_available: newProduct.available,
-    });
+    try {
+      let brandId = selectedBrand.id;
 
-    setNewProduct({ name: "", price: "", liters: "", available: true });
-    setIsDialogOpen(false);
+      // Se não tem ID, significa que é uma nova marca - criar primeiro
+      if (!brandId && selectedBrand.name) {
+        const newBrandData = await createBrand.mutateAsync({
+          name: selectedBrand.name,
+          description: '',
+          logo_url: '',
+          is_active: true
+        });
+        brandId = newBrandData.id;
+      }
+
+      await createProduct.mutateAsync({
+        name: selectedBrand.name,
+        brand_id: brandId,
+        price: parseFloat(newProduct.price),
+        liters: parseFloat(newProduct.liters),
+        is_available: newProduct.available,
+      });
+
+      setSelectedBrand({ id: null, name: '' });
+      setNewProduct({ price: "", liters: "", available: true });
+      setIsDialogOpen(false);
+    } catch (error) {
+      // Error handled by mutation
+    }
   };
 
   const handleEditProduct = async () => {
     if (!editingProduct) return;
 
-    await updateProduct.mutateAsync({
-      id: editingProduct.id,
-      name: editingProduct.name,
-      price: parseFloat(editingProduct.price),
-      liters: parseFloat(editingProduct.liters),
-      is_available: editingProduct.available,
-    });
+    try {
+      let brandId = editingBrand.id;
 
-    setEditingProduct(null);
+      // Se mudou a marca e não tem ID, criar nova
+      if (!brandId && editingBrand.name && editingBrand.name !== editingProduct.name) {
+        const newBrandData = await createBrand.mutateAsync({
+          name: editingBrand.name,
+          description: '',
+          logo_url: '',
+          is_active: true
+        });
+        brandId = newBrandData.id;
+      }
+
+      await updateProduct.mutateAsync({
+        id: editingProduct.id,
+        name: editingBrand.name || editingProduct.name,
+        brand_id: brandId,
+        price: parseFloat(editingProduct.price),
+        liters: parseFloat(editingProduct.liters),
+        is_available: editingProduct.available,
+      });
+
+      setEditingProduct(null);
+      setEditingBrand({ id: null, name: '' });
+    } catch (error) {
+      // Error handled by mutation
+    }
   };
 
   const toggleAvailability = async (id: string, currentAvailable: boolean) => {
@@ -60,6 +115,21 @@ const Products = () => {
 
   const handleDeleteProduct = async (id: string) => {
     await deleteProduct.mutateAsync(id);
+  };
+
+  const openEditDialog = (product: ProductWithBrand) => {
+    setEditingProduct({
+      id: product.id,
+      name: product.name,
+      price: product.price.toString(),
+      liters: product.liters.toString(),
+      available: product.is_available,
+      brand_id: product.brand_id,
+    });
+    setEditingBrand({
+      id: product.brand?.id || null,
+      name: product.brand?.name || product.name,
+    });
   };
 
   if (isLoading) {
@@ -93,30 +163,45 @@ const Products = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Marcas e Preços</h1>
-            <p className="text-muted-foreground text-sm sm:text-base">Gerencie as marcas de água disponíveis</p>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Produtos</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">Gerencie as marcas de água disponíveis e seus preços</p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) {
+              setSelectedBrand({ id: null, name: '' });
+              setNewProduct({ price: "", liters: "", available: true });
+            }
+          }}>
             <DialogTrigger asChild>
               <Button size="lg" className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" />
-                Adicionar Nova Marca
+                Adicionar Produto
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Cadastrar Nova Marca</DialogTitle>
-                <DialogDescription>Adicione uma nova marca de água ao seu catálogo</DialogDescription>
+                <DialogTitle>Adicionar Produto</DialogTitle>
+                <DialogDescription>
+                  Selecione uma marca existente ou crie uma nova
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="productName">Nome da Marca</Label>
-                  <Input
-                    id="productName"
-                    placeholder="Ex: Água Mineral Crystal"
-                    value={newProduct.name}
-                    onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                  <Label>Marca</Label>
+                  <BrandCombobox
+                    value={selectedBrand.name}
+                    selectedBrandId={selectedBrand.id}
+                    onChange={(brandName, brand) => {
+                      setSelectedBrand({
+                        id: brand?.id || null,
+                        name: brandName
+                      });
+                    }}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Digite para buscar ou criar uma nova marca
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="productLiters">Litros</Label>
@@ -151,10 +236,10 @@ const Products = () => {
                 <Button 
                   onClick={handleAddProduct} 
                   className="w-full"
-                  disabled={createProduct.isPending}
+                  disabled={createProduct.isPending || createBrand.isPending}
                 >
-                  {createProduct.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Salvar Marca
+                  {(createProduct.isPending || createBrand.isPending) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Salvar Produto
                 </Button>
               </div>
             </DialogContent>
@@ -167,7 +252,16 @@ const Products = () => {
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <CardTitle className="text-lg">{product.name}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      {product.brand?.logo_url && (
+                        <img 
+                          src={product.brand.logo_url} 
+                          alt="" 
+                          className="h-6 w-6 object-contain rounded"
+                        />
+                      )}
+                      <CardTitle className="text-lg">{product.brand?.name || product.name}</CardTitle>
+                    </div>
                     <CardDescription className="mt-1">
                       {Number(product.liters)}L
                     </CardDescription>
@@ -183,27 +277,27 @@ const Products = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => setEditingProduct({
-                            id: product.id,
-                            name: product.name,
-                            price: product.price.toString(),
-                            liters: product.liters.toString(),
-                            available: product.is_available,
-                          })}
+                          onClick={() => openEditDialog(product)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>Editar Marca</DialogTitle>
+                          <DialogTitle>Editar Produto</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4 pt-4">
                           <div className="space-y-2">
-                            <Label>Nome da Marca</Label>
-                            <Input
-                              value={editingProduct?.name || ""}
-                              onChange={(e) => setEditingProduct(prev => prev ? { ...prev, name: e.target.value } : null)}
+                            <Label>Marca</Label>
+                            <BrandCombobox
+                              value={editingBrand.name}
+                              selectedBrandId={editingBrand.id}
+                              onChange={(brandName, brand) => {
+                                setEditingBrand({
+                                  id: brand?.id || null,
+                                  name: brandName
+                                });
+                              }}
                             />
                           </div>
                           <div className="space-y-2">
@@ -234,9 +328,9 @@ const Products = () => {
                           <Button 
                             onClick={handleEditProduct} 
                             className="w-full"
-                            disabled={updateProduct.isPending}
+                            disabled={updateProduct.isPending || createBrand.isPending}
                           >
-                            {updateProduct.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            {(updateProduct.isPending || createBrand.isPending) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                             Salvar Alterações
                           </Button>
                         </div>
@@ -271,10 +365,10 @@ const Products = () => {
       {products.length === 0 && (
         <Card className="text-center py-12">
           <CardContent>
-            <p className="text-muted-foreground mb-4">Nenhuma marca cadastrada ainda.</p>
+            <p className="text-muted-foreground mb-4">Nenhum produto cadastrado ainda.</p>
             <Button onClick={() => setIsDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Adicionar Primeira Marca
+              Adicionar Primeiro Produto
             </Button>
           </CardContent>
         </Card>

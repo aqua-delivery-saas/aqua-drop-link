@@ -30,7 +30,7 @@ import LoyaltyProgram from "./pages/distributor/LoyaltyProgram";
 import Subscription from "./pages/distributor/Subscription";
 import Onboarding from "./pages/distributor/Onboarding";
 import Reports from "./pages/distributor/Reports";
-import DistributorBrands from "./pages/distributor/Brands";
+
 import OrderPage from "./pages/customer/OrderPage";
 import OrderConfirmation from "./pages/customer/OrderConfirmation";
 import SignupCustomer from "./pages/customer/SignupCustomer";
@@ -158,14 +158,6 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="distributor">
                   <DistributorLayout><Reports /></DistributorLayout>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/distributor/brands" 
-              element={
-                <ProtectedRoute requiredRole="distributor">
-                  <DistributorLayout><DistributorBrands /></DistributorLayout>
                 </ProtectedRoute>
               } 
             />

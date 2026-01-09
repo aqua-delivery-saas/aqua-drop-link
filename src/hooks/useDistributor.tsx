@@ -62,6 +62,14 @@ export function useUpdateDistributor() {
   });
 }
 
+export type ProductWithBrand = Product & {
+  brand: {
+    id: string;
+    name: string;
+    logo_url: string | null;
+  } | null;
+};
+
 export function useDistributorProducts() {
   const { data: distributor } = useDistributor();
 
@@ -72,12 +80,19 @@ export function useDistributorProducts() {
       
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          brand:brands (
+            id,
+            name,
+            logo_url
+          )
+        `)
         .eq('distributor_id', distributor.id)
         .order('sort_order', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as ProductWithBrand[];
     },
     enabled: !!distributor?.id,
   });
