@@ -12,10 +12,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import heroWater from "@/assets/hero-water.jpg";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
-
 const LoginDistributor = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated, isDistributor, isLoading: authLoading, role } = useAuth();
+  const {
+    login,
+    isAuthenticated,
+    isDistributor,
+    isLoading: authLoading,
+    role
+  } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,41 +36,37 @@ const LoginDistributor = () => {
       }
     }
   }, [isAuthenticated, authLoading, role, isDistributor, navigate]);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!email || !password) {
       toast.error("Preencha todos os campos");
       return;
     }
-
     setLoading(true);
-    
     try {
       await login(email, password);
-      
+
       // Role will be fetched by the auth hook, we need to wait for it
       // The useEffect above will handle the redirect once role is set
       toast.success("Login realizado com sucesso!");
     } catch (error: unknown) {
       console.error('Login error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      
       if (errorMessage.includes('Invalid login credentials')) {
         toast.error("E-mail ou senha incorretos");
       } else if (errorMessage.includes('Email not confirmed')) {
         toast.error("E-mail não confirmado", {
-          description: "Verifique sua caixa de entrada",
+          description: "Verifique sua caixa de entrada"
         });
       } else {
-        toast.error("Erro ao fazer login", { description: errorMessage });
+        toast.error("Erro ao fazer login", {
+          description: errorMessage
+        });
       }
     } finally {
       setLoading(false);
     }
   };
-
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetEmail) {
@@ -74,8 +75,10 @@ const LoginDistributor = () => {
     }
     setResetLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/distributor/reset-password`,
+      const {
+        error
+      } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/distributor/reset-password`
       });
       if (error) throw error;
       toast.success("Email enviado! Verifique sua caixa de entrada.");
@@ -87,15 +90,9 @@ const LoginDistributor = () => {
       setResetLoading(false);
     }
   };
-
-  return (
-    <div className="min-h-screen flex">
+  return <div className="min-h-screen flex">
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <img 
-          src={heroWater} 
-          alt="Aqua Delivery" 
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        <img src={heroWater} alt="Aqua Delivery" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-secondary/80 flex items-center justify-center">
           <div className="text-center text-white p-8">
             <Logo size="lg" />
@@ -104,7 +101,7 @@ const LoginDistributor = () => {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-8 bg-gradient-to-br from-background to-muted">
+      <div className="flex-1 flex items-center justify-center p-8 bg-gradient-to-br from-background to-muted px-[12px] py-[12px]">
         <Card className="w-full max-w-md shadow-xl">
           <CardHeader className="text-center space-y-2">
             <div className="flex justify-center lg:hidden mb-4">
@@ -117,42 +114,18 @@ const LoginDistributor = () => {
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">E-mail</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+                <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <Input id="password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
                 <div className="text-right">
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="p-0 h-auto text-xs"
-                    onClick={() => setForgotPasswordOpen(true)}
-                  >
+                  <Button type="button" variant="link" className="p-0 h-auto text-xs" onClick={() => setForgotPasswordOpen(true)}>
                     Esqueci minha senha
                   </Button>
                 </div>
               </div>
-              <Button 
-                type="submit" 
-                className="w-full" 
-                size="lg"
-                disabled={loading || authLoading}
-              >
+              <Button type="submit" className="w-full" size="lg" disabled={loading || authLoading}>
                 {loading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
@@ -163,12 +136,7 @@ const LoginDistributor = () => {
 
             <div className="text-center text-sm mt-4">
               <span className="text-muted-foreground">Não tem conta? </span>
-              <Button
-                type="button"
-                variant="link"
-                className="p-0 h-auto"
-                onClick={() => navigate("/distributor/signup")}
-              >
+              <Button type="button" variant="link" className="p-0 h-auto" onClick={() => navigate("/distributor/signup")}>
                 Criar conta da distribuidora
               </Button>
             </div>
@@ -188,39 +156,22 @@ const LoginDistributor = () => {
           <form onSubmit={handleForgotPassword} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="reset-email">E-mail</Label>
-              <Input
-                id="reset-email"
-                type="email"
-                placeholder="seu@email.com"
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-                required
-              />
+              <Input id="reset-email" type="email" placeholder="seu@email.com" value={resetEmail} onChange={e => setResetEmail(e.target.value)} required />
             </div>
             <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setForgotPasswordOpen(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => setForgotPasswordOpen(false)}>
                 Cancelar
               </Button>
               <Button type="submit" disabled={resetLoading}>
-                {resetLoading ? (
-                  <>
+                {resetLoading ? <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Enviando...
-                  </>
-                ) : (
-                  "Enviar Link"
-                )}
+                  </> : "Enviar Link"}
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default LoginDistributor;
