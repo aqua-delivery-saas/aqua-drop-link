@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/Logo";
 import { Minus, Plus, Clock, CalendarDays, AlertTriangle, MapPin, CreditCard, User, Phone, RefreshCw } from "lucide-react";
+import { formatPhone } from "@/lib/validators";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/hooks/useAuth";
@@ -124,7 +125,7 @@ const OrderPage = () => {
       } = await supabase.from('profiles').select('full_name, phone, street, number, neighborhood, city, state').eq('id', user.id).maybeSingle();
       if (data) {
         if (data.full_name) setCustomerName(data.full_name);
-        if (data.phone) setCustomerPhone(data.phone);
+        if (data.phone) setCustomerPhone(formatPhone(data.phone));
 
         // Build address string from profile fields
         if (data.street && !address) {
@@ -471,7 +472,7 @@ const OrderPage = () => {
                         <Phone className="h-4 w-4" />
                         Telefone / WhatsApp
                       </Label>
-                      <Input placeholder="(11) 99999-9999" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} required />
+                      <Input placeholder="(00) 00000-0000" value={customerPhone} onChange={e => setCustomerPhone(formatPhone(e.target.value))} maxLength={15} required />
                     </div>
                   </div>
 

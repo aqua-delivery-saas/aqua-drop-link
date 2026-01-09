@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { formatPhone } from "@/lib/validators";
+import { formatPhone, formatCNPJ, formatCEP } from "@/lib/validators";
 import { useDistributor, useUpdateDistributor } from "@/hooks/useDistributor";
 
 const Settings = () => {
@@ -36,14 +36,14 @@ const Settings = () => {
       setSettings({
         name: distributor.name || "",
         slug: distributor.slug || "",
-        cnpj: distributor.cnpj || "",
-        whatsapp: distributor.whatsapp || "",
+        cnpj: formatCNPJ(distributor.cnpj || ""),
+        whatsapp: formatPhone(distributor.whatsapp || ""),
         rua: distributor.street || "",
         numero: distributor.number || "",
         bairro: distributor.neighborhood || "",
-        cep: distributor.zip_code || "",
+        cep: formatCEP(distributor.zip_code || ""),
         email_contato: distributor.email || "",
-        telefone: distributor.phone || "",
+        telefone: formatPhone(distributor.phone || ""),
         paymentMethods: {
           cash: distributor.accepts_cash ?? true,
           card: distributor.accepts_card ?? true,
@@ -156,8 +156,12 @@ const Settings = () => {
             <Input
               id="cnpj"
               value={settings.cnpj}
-              onChange={handleChange}
+              onChange={(e) => {
+                const formatted = formatCNPJ(e.target.value);
+                setSettings({ ...settings, cnpj: formatted });
+              }}
               placeholder="00.000.000/0000-00"
+              maxLength={18}
             />
           </div>
           
@@ -243,8 +247,12 @@ const Settings = () => {
             <Input
               id="cep"
               value={settings.cep}
-              onChange={handleChange}
+              onChange={(e) => {
+                const formatted = formatCEP(e.target.value);
+                setSettings({ ...settings, cep: formatted });
+              }}
               placeholder="00000-000"
+              maxLength={9}
             />
           </div>
         </CardContent>

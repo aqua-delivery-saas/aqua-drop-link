@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatPhone } from "@/lib/validators";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -38,7 +39,7 @@ const Profile = () => {
           ...prev,
           name: data?.full_name || "",
           email: user.email || "",
-          phone: data?.phone || "",
+          phone: formatPhone(data?.phone || ""),
         }));
       } catch (error) {
         console.error('Erro ao buscar perfil:', error);
@@ -52,9 +53,19 @@ const Profile = () => {
   }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    
+    if (id === 'phone') {
+      setFormData({
+        ...formData,
+        phone: formatPhone(value),
+      });
+      return;
+    }
+    
     setFormData({
       ...formData,
-      [e.target.id]: e.target.value,
+      [id]: value,
     });
   };
 
@@ -174,7 +185,8 @@ const Profile = () => {
                   id="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="21 98765-4321"
+                  placeholder="(00) 00000-0000"
+                  maxLength={15}
                 />
               </div>
             </CardContent>
