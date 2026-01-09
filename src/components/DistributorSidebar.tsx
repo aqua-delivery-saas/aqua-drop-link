@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, Settings, ShoppingCart, ChevronDown, Search, Clock, Percent, Gift, CreditCard, BarChart3, Tags } from "lucide-react";
+import { LayoutDashboard, Package, Settings, ShoppingCart, ChevronDown, Search, Clock, Percent, Gift, CreditCard, BarChart3 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -23,7 +23,6 @@ import { Logo } from "./Logo";
     { title: "Dashboard", url: "/distributor/dashboard", icon: LayoutDashboard },
     { title: "Pedidos", url: "/distributor/orders", icon: ShoppingCart },
     { title: "Produtos", url: "/distributor/products", icon: Package },
-    { title: "Marcas", url: "/distributor/brands", icon: Tags },
     { title: "Relatórios", url: "/distributor/reports", icon: BarChart3 },
   ];
 
