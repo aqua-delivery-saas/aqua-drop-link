@@ -155,7 +155,7 @@ const Settings = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-2xl mx-auto">
         <div>
           <Skeleton className="h-9 w-64 mb-2" />
           <Skeleton className="h-5 w-96" />
@@ -183,7 +183,7 @@ const Settings = () => {
       <Helmet>
         <title>Configurações - AquaDelivery</title>
       </Helmet>
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-2xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold mb-2">Informações da Empresa</h1>
         <p className="text-muted-foreground">Dados cadastrais e de contato da sua distribuidora</p>

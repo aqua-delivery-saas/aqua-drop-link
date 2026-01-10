@@ -72,7 +72,7 @@ const BusinessHours = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-2xl mx-auto">
         <div>
           <Skeleton className="h-9 w-64 mb-2" />
           <Skeleton className="h-5 w-80" />
@@ -97,7 +97,7 @@ const BusinessHours = () => {
       <Helmet>
         <title>Horários - AquaDelivery</title>
       </Helmet>
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-2xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Horário de Atendimento</h1>
           <p className="text-muted-foreground">Configure os dias e horários de funcionamento</p>
