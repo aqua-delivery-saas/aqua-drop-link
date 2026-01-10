@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -88,7 +89,11 @@ const DiscountSettings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <Helmet>
+        <title>Descontos - AquaDelivery</title>
+      </Helmet>
+      <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Desconto por Quantidade</h1>
@@ -181,6 +186,7 @@ const DiscountSettings = () => {
         </div>
       </main>
     </div>
+    </>
   );
 };
 

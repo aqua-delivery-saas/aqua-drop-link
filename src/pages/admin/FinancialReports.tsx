@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Helmet } from "react-helmet-async";
 import { Building2, CreditCard, AlertCircle, DollarSign, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -134,7 +135,11 @@ export default function FinancialReports() {
   };
 
   return (
-    <div className="space-y-8">
+    <>
+      <Helmet>
+        <title>Admin - Relatórios Financeiros</title>
+      </Helmet>
+      <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -376,5 +381,6 @@ export default function FinancialReports() {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }

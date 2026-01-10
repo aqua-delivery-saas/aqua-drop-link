@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,7 +13,12 @@ const Index = () => {
   const { isAuthenticated, isDistributor } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+    <>
+      <Helmet>
+        <title>AquaDelivery - Água Mineral</title>
+        <meta name="description" content="Plataforma completa para distribuidoras de água mineral gerenciarem pedidos online." />
+      </Helmet>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 sm:py-4 flex justify-between items-center">
           <Logo size="md" />
@@ -146,6 +152,7 @@ const Index = () => {
         </div>
       </footer>
     </div>
+    </>
   );
 };
 

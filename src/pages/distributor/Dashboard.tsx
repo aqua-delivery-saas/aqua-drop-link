@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Package, Settings, Share2, ShoppingBag, TrendingUp, DollarSign, Clock } from "lucide-react";
@@ -55,7 +56,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <Helmet>
+        <title>Dashboard - AquaDelivery</title>
+      </Helmet>
+      <div className="space-y-6">
       <div>
         <h1 className="text-heading-1 text-foreground">Dashboard</h1>
         <p className="text-body-md text-muted-foreground mt-1">
@@ -229,5 +234,6 @@ export default function Dashboard() {
         </Card>
       </div>
     </div>
+    </>
   );
 }

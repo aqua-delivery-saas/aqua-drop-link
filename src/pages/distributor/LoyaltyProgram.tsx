@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -75,7 +76,11 @@ const LoyaltyProgram = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <Helmet>
+        <title>Fidelidade - AquaDelivery</title>
+      </Helmet>
+      <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Programa de Fidelização</h1>
@@ -203,6 +208,7 @@ const LoyaltyProgram = () => {
         </div>
       </main>
     </div>
+    </>
   );
 };
 

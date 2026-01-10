@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -180,7 +181,11 @@ export default function Subscription() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <Helmet>
+        <title>Assinatura - AquaDelivery</title>
+      </Helmet>
+      <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Minha Assinatura</h1>
         <p className="text-muted-foreground mt-1">Gerencie seu plano e pagamentos</p>
@@ -418,5 +423,6 @@ export default function Subscription() {
         </DialogContent>
       </Dialog>
     </div>
+    </>
   );
 }
