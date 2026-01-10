@@ -1,17 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatPhone, formatCNPJ, formatCEP } from "@/lib/validators";
 import { useDistributor, useUpdateDistributor } from "@/hooks/useDistributor";
+import { supabase } from "@/integrations/supabase/client";
 
 const Settings = () => {
   const { data: distributor, isLoading } = useDistributor();
   const updateDistributor = useUpdateDistributor();
+
+  // Logo upload state
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [settings, setSettings] = useState({
     name: "",
@@ -50,10 +58,64 @@ const Settings = () => {
           pix: distributor.accepts_pix ?? true,
         },
       });
+      setLogoPreview(distributor.logo_url || null);
     }
   }, [distributor]);
 
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Arquivo inválido", { description: "Selecione uma imagem (PNG, JPG ou WEBP)" });
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Arquivo muito grande", { description: "O tamanho máximo é 2MB" });
+      return;
+    }
+
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
+
   const handleSave = async () => {
+    let logoUrl = distributor?.logo_url;
+
+    // Upload new logo if selected
+    if (logoFile) {
+      setIsUploadingLogo(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.id) throw new Error('Usuário não autenticado');
+
+        const fileExt = logoFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('distributor-logos')
+          .upload(fileName, logoFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('distributor-logos')
+          .getPublicUrl(fileName);
+
+        logoUrl = publicUrl;
+        setLogoFile(null);
+      } catch (error) {
+        console.error('Logo upload error:', error);
+        toast.error("Erro no upload da logo", { description: "Tente novamente" });
+        setIsUploadingLogo(false);
+        return;
+      }
+      setIsUploadingLogo(false);
+    }
+
     await updateDistributor.mutateAsync({
       name: settings.name,
       slug: settings.slug,
@@ -68,6 +130,7 @@ const Settings = () => {
       accepts_cash: settings.paymentMethods.cash,
       accepts_card: settings.paymentMethods.card,
       accepts_pix: settings.paymentMethods.pix,
+      logo_url: logoUrl,
     });
     toast.success("Configurações salvas com sucesso!");
   };
@@ -129,6 +192,38 @@ const Settings = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Logo da Empresa</Label>
+            <div 
+              className="border-2 border-dashed border-muted rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {logoPreview ? (
+                <div className="flex flex-col items-center">
+                  <img 
+                    src={logoPreview} 
+                    alt="Logo da empresa" 
+                    className="w-20 h-20 object-contain mb-2 rounded"
+                  />
+                  <p className="text-sm text-muted-foreground">Clique para alterar</p>
+                </div>
+              ) : (
+                <>
+                  <Upload className="w-10 h-10 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">Adicionar logo</p>
+                  <p className="text-xs text-muted-foreground">PNG, JPG ou WEBP (máx 2MB)</p>
+                </>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={handleLogoChange}
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="name">Nome da Empresa</Label>
             <Input
@@ -295,9 +390,18 @@ const Settings = () => {
         onClick={handleSave} 
         size="lg" 
         className="w-full"
-        disabled={updateDistributor.isPending}
+        disabled={updateDistributor.isPending || isUploadingLogo}
       >
-        {updateDistributor.isPending ? "Salvando..." : "Salvar Alterações"}
+        {isUploadingLogo ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Enviando logo...
+          </>
+        ) : updateDistributor.isPending ? (
+          "Salvando..."
+        ) : (
+          "Salvar Alterações"
+        )}
       </Button>
     </div>
   );
