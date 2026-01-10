@@ -121,7 +121,7 @@ const Profile = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-2xl mx-auto">
         <div>
           <Skeleton className="h-9 w-48 mb-2" />
           <Skeleton className="h-5 w-80" />
@@ -146,7 +146,7 @@ const Profile = () => {
       <Helmet>
         <title>Meu Perfil - AquaDelivery</title>
       </Helmet>
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6 max-w-2xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Meu Perfil</h1>
           <p className="text-muted-foreground">Gerencie suas informações pessoais e segurança</p>
