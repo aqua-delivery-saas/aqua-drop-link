@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -92,7 +93,11 @@ const BusinessHours = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <>
+      <Helmet>
+        <title>Horários - AquaDelivery</title>
+      </Helmet>
+      <div className="space-y-6 max-w-2xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Horário de Atendimento</h1>
           <p className="text-muted-foreground">Configure os dias e horários de funcionamento</p>
@@ -155,6 +160,7 @@ const BusinessHours = () => {
         </Button>
       </div>
     </div>
+    </>
   );
 };
 

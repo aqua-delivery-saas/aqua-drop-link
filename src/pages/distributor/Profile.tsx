@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -141,7 +142,11 @@ const Profile = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <>
+      <Helmet>
+        <title>Meu Perfil - AquaDelivery</title>
+      </Helmet>
+      <div className="space-y-6 max-w-2xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Meu Perfil</h1>
           <p className="text-muted-foreground">Gerencie suas informações pessoais e segurança</p>
@@ -238,6 +243,7 @@ const Profile = () => {
         </Button>
       </div>
     </div>
+    </>
   );
 };
 

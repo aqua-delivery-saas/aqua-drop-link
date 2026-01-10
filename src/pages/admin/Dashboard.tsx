@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Building2, DollarSign, TrendingUp } from 'lucide-react';
 import { useAdminMetrics, useAllOrders } from '@/hooks/useAdminData';
@@ -80,7 +81,11 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <Helmet>
+        <title>Admin - Dashboard</title>
+      </Helmet>
+      <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-heading-1 text-foreground">Dashboard Administrativo</h1>
@@ -245,5 +250,6 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
+    </>
   );
 }

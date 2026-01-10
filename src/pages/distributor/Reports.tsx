@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, Award, TrendingUp, DollarSign, ShoppingBag, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -58,7 +59,11 @@ export default function Reports() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <Helmet>
+        <title>Relatórios - AquaDelivery</title>
+      </Helmet>
+      <div className="space-y-6">
       <div>
         <h1 className="text-heading-1 text-foreground">Relatórios</h1>
         <p className="text-body-md text-muted-foreground mt-1">Análise detalhada do desempenho da sua distribuidora</p>
@@ -157,5 +162,6 @@ export default function Reports() {
         </div>
       )}
     </div>
+    </>
   );
 }

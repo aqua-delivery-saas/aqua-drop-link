@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -178,7 +179,11 @@ const Settings = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <>
+      <Helmet>
+        <title>Configurações - AquaDelivery</title>
+      </Helmet>
+      <div className="space-y-6 max-w-2xl">
       <div>
         <h1 className="text-3xl font-bold mb-2">Informações da Empresa</h1>
         <p className="text-muted-foreground">Dados cadastrais e de contato da sua distribuidora</p>
@@ -404,6 +409,7 @@ const Settings = () => {
         )}
       </Button>
     </div>
+    </>
   );
 };
 

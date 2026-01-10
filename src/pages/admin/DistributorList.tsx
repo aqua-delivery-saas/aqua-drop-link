@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from "react-helmet-async";
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,7 +63,11 @@ export default function DistributorList() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <Helmet>
+        <title>Admin - Distribuidoras</title>
+      </Helmet>
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-heading-1 text-foreground">Distribuidoras</h1>
@@ -140,5 +145,6 @@ export default function DistributorList() {
         </div>
       )}
     </div>
+    </>
   );
 }

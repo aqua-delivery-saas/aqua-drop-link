@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -160,7 +161,11 @@ const Products = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <Helmet>
+        <title>Produtos - AquaDelivery</title>
+      </Helmet>
+      <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold mb-2">Produtos</h1>
@@ -374,6 +379,7 @@ const Products = () => {
         </Card>
       )}
     </div>
+    </>
   );
 };
 
