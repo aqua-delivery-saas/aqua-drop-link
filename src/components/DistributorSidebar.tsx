@@ -36,9 +36,16 @@ const configItems = [
 ];
 
 export function DistributorSidebar() {
-  const { open } = useSidebar();
+  const { open, setOpenMobile, isMobile } = useSidebar();
   const location = useLocation();
   const [configOpen, setConfigOpen] = useState(false);
+
+  // Fecha o menu mobile ao navegar
+  const handleNavClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   // Keep config group open if any config route is active
   useEffect(() => {
@@ -64,7 +71,7 @@ export function DistributorSidebar() {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavClass}>
+                    <NavLink to={item.url} className={getNavClass} onClick={handleNavClick}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </NavLink>
@@ -92,7 +99,7 @@ export function DistributorSidebar() {
                   {configItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild>
-                        <NavLink to={item.url} end className={getNavClass}>
+                        <NavLink to={item.url} end className={getNavClass} onClick={handleNavClick}>
                           <item.icon className="h-4 w-4" />
                           <span>{item.title}</span>
                         </NavLink>
