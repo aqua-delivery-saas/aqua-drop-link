@@ -28,7 +28,7 @@ export interface OnboardingData {
     city: string;
     state: string;
     city_id?: string | null;
-    logo?: File;
+    logo_url?: string;
   };
   businessHours?: {
     [key: string]: { open: string; close: string; active: boolean };
@@ -258,6 +258,7 @@ const Onboarding = () => {
           city: onboardingData.distributor?.city,
           state: onboardingData.distributor?.state,
           city_id: onboardingData.distributor?.city_id,
+          logo_url: onboardingData.distributor?.logo_url,
         },
         businessHours: onboardingData.businessHours,
         products,

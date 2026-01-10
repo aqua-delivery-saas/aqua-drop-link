@@ -17,6 +17,7 @@ interface DistributorData {
   city_id?: string | null;
   state?: string;
   zip_code?: string;
+  logo_url?: string;
 }
 
 interface BusinessHoursData {
@@ -140,6 +141,7 @@ export function useCreateDistributor() {
           neighborhood: data.distributor.neighborhood || null,
           zip_code: data.distributor.zip_code || null,
           city_id: cityId,
+          logo_url: data.distributor.logo_url || null,
           is_active: true,
           is_verified: false,
         })

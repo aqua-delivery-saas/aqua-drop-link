@@ -1,15 +1,17 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Upload, Loader2 } from "lucide-react";
 import { cnpjSchema, phoneSchema, nameSchema, formatCNPJ, formatPhone } from "@/lib/validators";
 import { useCepLookup } from "@/hooks/useCepLookup";
 import { findCityByNameAndState } from "@/hooks/useCities";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   name: nameSchema,
@@ -27,12 +29,18 @@ const formSchema = z.object({
 
 interface OnboardingStep1Props {
   onNext: (data: any) => void;
-  initialData?: z.infer<typeof formSchema>;
+  initialData?: z.infer<typeof formSchema> & { logo_url?: string };
 }
 
 export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) => {
   const { toast } = useToast();
   const { fetchAddress, isLoading: isCepLoading, error: cepError, clearError } = useCepLookup();
+  
+  // Logo upload state
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(initialData?.logo_url || null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -96,8 +104,71 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
     }
   }, [cepError, toast, clearError]);
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    onNext({ distributor: values });
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Arquivo inválido",
+        description: "Selecione uma imagem (PNG, JPG ou WEBP)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "Arquivo muito grande",
+        description: "O tamanho máximo é 2MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    let logoUrl: string | undefined = initialData?.logo_url;
+
+    if (logoFile) {
+      setIsUploading(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.id) throw new Error('Usuário não autenticado');
+
+        const fileExt = logoFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('distributor-logos')
+          .upload(fileName, logoFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('distributor-logos')
+          .getPublicUrl(fileName);
+
+        logoUrl = publicUrl;
+      } catch (error) {
+        console.error('Logo upload error:', error);
+        toast({
+          title: "Erro no upload",
+          description: "Não foi possível enviar a logo. Tente novamente.",
+          variant: "destructive",
+        });
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    }
+
+    onNext({ distributor: { ...values, logo_url: logoUrl } });
   };
 
   return (
@@ -297,14 +368,49 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
           />
         </div>
 
-        <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
-          <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground mb-2">Adicionar logo da distribuidora (opcional)</p>
-          <p className="text-xs text-muted-foreground">Arraste uma imagem ou clique para selecionar</p>
+        <div className="space-y-2">
+          <Label>Logo da Distribuidora (opcional)</Label>
+          <div 
+            className="border-2 border-dashed border-muted rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {logoPreview ? (
+              <div className="flex flex-col items-center">
+                <img 
+                  src={logoPreview} 
+                  alt="Preview da logo" 
+                  className="w-24 h-24 object-contain mb-2 rounded"
+                />
+                <p className="text-sm text-muted-foreground">Clique para alterar</p>
+              </div>
+            ) : (
+              <>
+                <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground mb-2">Adicionar logo da distribuidora</p>
+                <p className="text-xs text-muted-foreground">PNG, JPG ou WEBP (máx 2MB)</p>
+              </>
+            )}
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            className="hidden"
+            onChange={handleLogoChange}
+          />
         </div>
 
         <div className="flex justify-end pt-4">
-          <Button type="submit" size="lg">Próximo</Button>
+          <Button type="submit" size="lg" disabled={isUploading}>
+            {isUploading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Enviando...
+              </>
+            ) : (
+              "Próximo"
+            )}
+          </Button>
         </div>
       </form>
     </Form>
