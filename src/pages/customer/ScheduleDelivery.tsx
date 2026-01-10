@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/Logo";
-import { Minus, Plus, MapPin, CreditCard, Calendar, User, Phone } from "lucide-react";
+import { Minus, Plus, MapPin, CreditCard, Calendar, User, Phone, MessageSquare } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 import { DeliveryScheduler } from "@/components/customer/DeliveryScheduler";
@@ -85,6 +86,7 @@ const ScheduleDelivery = () => {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [customerName, setCustomerName] = useState(user?.user_metadata?.full_name || "");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [notes, setNotes] = useState("");
   
   const createOrder = useCreateOrder();
 
@@ -140,6 +142,7 @@ const ScheduleDelivery = () => {
           subtotal: subtotalValue,
           discount_amount: discountAmountValue,
           total: totalValue,
+          notes: notes || null,
         },
         items: [{
           product_id: product.id,
@@ -166,7 +169,7 @@ const ScheduleDelivery = () => {
           scheduledDate: selectedDate.toLocaleDateString('pt-BR'),
           scheduledTime: selectedTime,
           whatsappUrl: distribuidora.whatsapp ? `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(
-            `Olá! Agendamento #${createdOrder.order_number}:\n\nProduto: ${product.name}\nQtd: ${quantity}\nData: ${selectedDate.toLocaleDateString('pt-BR')}\nHorário: ${selectedTime}\nTotal: R$ ${totalValue.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}`
+            `Olá! Agendamento #${createdOrder.order_number}:\n\nProduto: ${product.name}\nQtd: ${quantity}\nData: ${selectedDate.toLocaleDateString('pt-BR')}\nHorário: ${selectedTime}\nTotal: R$ ${totalValue.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}${notes ? `\nObs: ${notes}` : ''}`
           )}` : null,
         },
       });
@@ -379,7 +382,7 @@ const ScheduleDelivery = () => {
                   4. Endereço de Entrega
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="address">Endereço Completo</Label>
                   <Input
@@ -388,6 +391,19 @@ const ScheduleDelivery = () => {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="notes" className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    Observações (opcional)
+                  </Label>
+                  <Textarea
+                    id="notes"
+                    placeholder="Ex: Entregar no portão lateral, tocar interfone 102..."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows={3}
                   />
                 </div>
               </CardContent>

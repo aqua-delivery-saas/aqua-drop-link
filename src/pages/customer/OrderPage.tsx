@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/Logo";
-import { Minus, Plus, Clock, CalendarDays, AlertTriangle, MapPin, CreditCard, User, Phone, RefreshCw } from "lucide-react";
+import { Minus, Plus, Clock, CalendarDays, AlertTriangle, MapPin, CreditCard, User, Phone, RefreshCw, MessageSquare } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { formatPhone } from "@/lib/validators";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
@@ -114,6 +115,7 @@ const OrderPage = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isRepeatOrder, setIsRepeatOrder] = useState(false);
+  const [notes, setNotes] = useState("");
   const createOrder = useCreateOrder();
 
   // Fetch customer profile for auto-fill
@@ -275,7 +277,8 @@ const OrderPage = () => {
           payment_method: paymentMethod as 'dinheiro' | 'pix' | 'cartao',
           subtotal: subtotalValue,
           discount_amount: discountAmountValue,
-          total: totalValue
+          total: totalValue,
+          notes: notes || null
         },
         items: [{
           product_id: product.id,
@@ -301,7 +304,7 @@ const OrderPage = () => {
           isScheduled: false,
           scheduledDate: null,
           scheduledPeriod: null,
-          whatsappUrl: distribuidora.whatsapp ? `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(`Olá! Pedido #${createdOrder.order_number}:\n\nProduto: ${product.name}\nQtd: ${quantity}\nTotal: R$ ${totalValue.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}`)}` : null
+          whatsappUrl: distribuidora.whatsapp ? `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(`Olá! Pedido #${createdOrder.order_number}:\n\nProduto: ${product.name}\nQtd: ${quantity}\nTotal: R$ ${totalValue.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}${notes ? `\nObs: ${notes}` : ''}`)}` : null
         }
       });
     } catch (error) {
@@ -483,6 +486,20 @@ const OrderPage = () => {
                       Endereço de Entrega
                     </Label>
                     <Input placeholder="Rua, número, complemento, bairro" value={address} onChange={e => setAddress(e.target.value)} required />
+                  </div>
+
+                  {/* Notes */}
+                  <div className="space-y-2">
+                    <Label className="text-base flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Observações (opcional)
+                    </Label>
+                    <Textarea
+                      placeholder="Ex: Entregar no portão lateral, tocar interfone 102..."
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      rows={3}
+                    />
                   </div>
 
                   {/* Payment Method */}
