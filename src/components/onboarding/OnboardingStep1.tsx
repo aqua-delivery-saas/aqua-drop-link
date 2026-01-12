@@ -7,7 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Upload, Loader2 } from "lucide-react";
-import { cnpjSchema, phoneSchema, nameSchema, formatCNPJ, formatPhone } from "@/lib/validators";
+import { cnpjSchema, phoneSchema, whatsappSchema, nameSchema, formatCNPJ, formatPhone } from "@/lib/validators";
 import { useCepLookup } from "@/hooks/useCepLookup";
 import { findCityByNameAndState } from "@/hooks/useCities";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +17,7 @@ const formSchema = z.object({
   name: nameSchema,
   cnpj: cnpjSchema,
   phone: phoneSchema,
+  whatsapp: whatsappSchema,
   zip_code: z.string().regex(/^\d{5}-?\d{3}$/, "CEP inválido (formato: 00000-000)"),
   street: z.string().min(3, "Rua deve ter pelo menos 3 caracteres").max(200, "Rua muito longa"),
   number: z.string().min(1, "Número é obrigatório").max(20, "Número muito longo"),
@@ -48,6 +49,7 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
       name: "",
       cnpj: "",
       phone: "",
+      whatsapp: "",
       zip_code: "",
       street: "",
       number: "",
@@ -193,29 +195,29 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="cnpj"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>CNPJ *</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="00.000.000/0000-00" 
-                    {...field}
-                    onChange={(e) => {
-                      const formatted = formatCNPJ(e.target.value);
-                      field.onChange(formatted);
-                    }}
-                  />
-                </FormControl>
-                <FormDescription>Formato: XX.XXX.XXX/XXXX-XX</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={form.control}
+          name="cnpj"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>CNPJ *</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="00.000.000/0000-00" 
+                  {...field}
+                  onChange={(e) => {
+                    const formatted = formatCNPJ(e.target.value);
+                    field.onChange(formatted);
+                  }}
+                />
+              </FormControl>
+              <FormDescription>Formato: XX.XXX.XXX/XXXX-XX</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="phone"
@@ -234,6 +236,29 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
                   />
                 </FormControl>
                 <FormDescription>Formato: (XX) XXXXX-XXXX</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="whatsapp"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>WhatsApp *</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="tel"
+                    placeholder="(00) 90000-0000" 
+                    {...field}
+                    onChange={(e) => {
+                      const formatted = formatPhone(e.target.value);
+                      field.onChange(formatted);
+                    }}
+                  />
+                </FormControl>
+                <FormDescription>Celular com DDD (11 dígitos)</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

@@ -84,6 +84,17 @@ const Settings = () => {
   };
 
   const handleSave = async () => {
+    // Validate required WhatsApp field
+    const cleanWhatsapp = settings.whatsapp.replace(/\D/g, '');
+    if (!cleanWhatsapp || cleanWhatsapp.length !== 11) {
+      toast.error("WhatsApp obrigatório", { description: "Informe um número de WhatsApp válido com 11 dígitos (DDD + número)" });
+      return;
+    }
+    if (cleanWhatsapp[2] !== '9') {
+      toast.error("WhatsApp inválido", { description: "O número deve começar com 9 após o DDD" });
+      return;
+    }
+
     let logoUrl = distributor?.logo_url;
 
     // Upload new logo if selected
@@ -267,7 +278,7 @@ const Settings = () => {
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="whatsapp">WhatsApp</Label>
+              <Label htmlFor="whatsapp">WhatsApp *</Label>
               <Input
                 id="whatsapp"
                 value={settings.whatsapp}
@@ -275,9 +286,13 @@ const Settings = () => {
                   const formatted = formatPhone(e.target.value);
                   setSettings({ ...settings, whatsapp: formatted });
                 }}
-                placeholder="(00) 00000-0000"
+                placeholder="(00) 90000-0000"
                 maxLength={15}
+                required
               />
+              <p className="text-xs text-muted-foreground">
+                Obrigatório para receber notificações de pedidos
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="telefone">Telefone</Label>
