@@ -524,6 +524,8 @@ export type CreateOrderInput = {
   discount_amount: number;
   total: number;
   notes?: string | null;
+  container_year_start?: number | null;
+  container_year_end?: number | null;
 };
 
 export type CreateOrderItemInput = {
@@ -565,6 +567,8 @@ export function useCreateOrder() {
           discount_amount: order.discount_amount,
           total: order.total,
           notes: order.notes || null,
+          container_year_start: order.container_year_start || null,
+          container_year_end: order.container_year_end || null,
           items: items,
         },
       });

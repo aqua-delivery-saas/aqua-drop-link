@@ -454,6 +454,8 @@ export type Database = {
       orders: {
         Row: {
           change_for: number | null
+          container_year_end: number | null
+          container_year_start: number | null
           created_at: string
           customer_id: string | null
           customer_name: string
@@ -483,6 +485,8 @@ export type Database = {
         }
         Insert: {
           change_for?: number | null
+          container_year_end?: number | null
+          container_year_start?: number | null
           created_at?: string
           customer_id?: string | null
           customer_name: string
@@ -514,6 +518,8 @@ export type Database = {
         }
         Update: {
           change_for?: number | null
+          container_year_end?: number | null
+          container_year_start?: number | null
           created_at?: string
           customer_id?: string | null
           customer_name?: string

@@ -33,6 +33,8 @@ interface CreateOrderRequest {
   discount_amount: number;
   total: number;
   notes?: string | null;
+  container_year_start?: number | null;
+  container_year_end?: number | null;
   items: OrderItemInput[];
 }
 
@@ -108,6 +110,8 @@ Deno.serve(async (req) => {
         discount_amount: body.discount_amount,
         total: body.total,
         notes: body.notes || null,
+        container_year_start: body.container_year_start || null,
+        container_year_end: body.container_year_end || null,
         status: 'novo',
       })
       .select('id, order_number')
@@ -208,6 +212,10 @@ Deno.serve(async (req) => {
           orderMessage += `📅 *Agendado para:* ${formattedDate}${period ? ` - ${period}` : ''}\n`;
         } else {
           orderMessage += `⚡ *Tipo:* Entrega Imediata\n`;
+        }
+
+        if (body.container_year_start || body.container_year_end) {
+          orderMessage += `\n📅 *Ano do Vasilhame:* ${body.container_year_start || '?'} - ${body.container_year_end || '?'}\n`;
         }
 
         if (body.notes) {
