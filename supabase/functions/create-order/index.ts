@@ -158,9 +158,16 @@ Deno.serve(async (req) => {
     try {
       const { data: distributor } = await supabaseAdmin
         .from('distributors')
-        .select('whatsapp, name')
+        .select('whatsapp, name, phone')
         .eq('id', body.distributor_id)
         .single();
+
+      console.log('=== DISTRIBUTOR NOTIFICATION DEBUG ===');
+      console.log('Distributor ID:', body.distributor_id);
+      console.log('Distributor Name:', distributor?.name);
+      console.log('Distributor WhatsApp (USADO):', distributor?.whatsapp);
+      console.log('Distributor Phone (NÃO usado):', distributor?.phone);
+      console.log('======================================');
 
       if (distributor?.whatsapp) {
         const paymentMethodLabels: Record<string, string> = {
