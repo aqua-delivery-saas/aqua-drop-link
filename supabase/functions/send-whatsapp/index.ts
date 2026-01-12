@@ -34,10 +34,20 @@ Deno.serve(async (req) => {
     }
 
     // Format number for Whapi (5511999999999@s.whatsapp.net)
-    const cleanNumber = to.replace(/\D/g, '');
+    let cleanNumber = to.replace(/\D/g, '');
+    
+    // Garantir código do país (55 para Brasil)
+    if (!cleanNumber.startsWith('55')) {
+      cleanNumber = '55' + cleanNumber;
+    }
+    
     const formattedNumber = cleanNumber + '@s.whatsapp.net';
 
-    console.log('Sending WhatsApp message to:', formattedNumber);
+    console.log('=== WHATSAPP SEND DEBUG ===');
+    console.log('1. Raw "to" received:', to);
+    console.log('2. Clean number with country code:', cleanNumber);
+    console.log('3. Formatted for Whapi:', formattedNumber);
+    console.log('===========================');
 
     // Send message via Whapi Cloud
     const response = await fetch('https://gate.whapi.cloud/messages/text', {
@@ -55,6 +65,9 @@ Deno.serve(async (req) => {
     });
 
     const result = await response.json();
+    
+    console.log('Whapi Response Status:', response.status);
+    console.log('Whapi Response Body:', JSON.stringify(result, null, 2));
 
     if (!response.ok) {
       console.error('Whapi error:', result);
