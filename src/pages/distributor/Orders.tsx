@@ -128,6 +128,14 @@ const Orders = () => {
             <p className="text-sm text-muted-foreground">Endereço de Entrega</p>
             <p className="font-semibold">{order.delivery_street}, {order.delivery_number}</p>
           </div>
+          {(order.container_year_start || order.container_year_end) && (
+            <div className="md:col-span-2 p-3 bg-muted/50 rounded-lg">
+              <p className="text-sm text-muted-foreground">Ano do Vasilhame</p>
+              <p className="font-semibold">
+                {order.container_year_start || '?'} - {order.container_year_end || '?'}
+              </p>
+            </div>
+          )}
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <Button variant="secondary" onClick={() => handleWhatsApp(order.customer_phone, order.customer_name)} className="w-full sm:w-auto touch-input">

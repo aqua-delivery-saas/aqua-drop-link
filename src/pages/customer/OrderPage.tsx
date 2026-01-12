@@ -116,6 +116,8 @@ const OrderPage = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isRepeatOrder, setIsRepeatOrder] = useState(false);
   const [notes, setNotes] = useState("");
+  const [containerYearStart, setContainerYearStart] = useState("");
+  const [containerYearEnd, setContainerYearEnd] = useState("");
   const createOrder = useCreateOrder();
 
   // Fetch customer profile for auto-fill
@@ -278,7 +280,9 @@ const OrderPage = () => {
           subtotal: subtotalValue,
           discount_amount: discountAmountValue,
           total: totalValue,
-          notes: notes || null
+          notes: notes || null,
+          container_year_start: containerYearStart ? parseInt(containerYearStart) : null,
+          container_year_end: containerYearEnd ? parseInt(containerYearEnd) : null,
         },
         items: [{
           product_id: product.id,
@@ -459,6 +463,40 @@ const OrderPage = () => {
                             <p className="text-primary font-bold text-xl">Total: R$ {total.toFixed(2)}</p>
                           </div> : <p className="text-primary font-bold text-xl">Total: R$ {total.toFixed(2)}</p>}
                       </div>}
+                  </div>
+
+                  {/* Container Year */}
+                  <div className="space-y-3">
+                    <Label className="text-base">Ano do Vasilhame</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Informe o ano de fabricação do seu galão (geralmente gravado no fundo)
+                    </p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="containerYearStart">Ano Inicial</Label>
+                        <Input
+                          id="containerYearStart"
+                          type="number"
+                          min="2010"
+                          max={new Date().getFullYear()}
+                          placeholder="Ex: 2018"
+                          value={containerYearStart}
+                          onChange={(e) => setContainerYearStart(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="containerYearEnd">Ano Final</Label>
+                        <Input
+                          id="containerYearEnd"
+                          type="number"
+                          min="2010"
+                          max={new Date().getFullYear()}
+                          placeholder="Ex: 2023"
+                          value={containerYearEnd}
+                          onChange={(e) => setContainerYearEnd(e.target.value)}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Customer Info */}
