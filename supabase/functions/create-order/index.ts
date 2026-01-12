@@ -150,6 +150,97 @@ Deno.serve(async (req) => {
 
     console.log('Order items created successfully');
 
+    // Send WhatsApp notification to distributor
+    try {
+      const { data: distributor } = await supabaseAdmin
+        .from('distributors')
+        .select('whatsapp, name')
+        .eq('id', body.distributor_id)
+        .single();
+
+      if (distributor?.whatsapp) {
+        const paymentMethodLabels: Record<string, string> = {
+          'dinheiro': 'Dinheiro',
+          'pix': 'PIX',
+          'cartao': 'Cartão',
+          'cartao_entrega': 'Cartão na Entrega',
+        };
+
+        const periodLabels: Record<string, string> = {
+          'manha': 'Manhã',
+          'tarde': 'Tarde',
+          'noite': 'Noite',
+        };
+
+        const itemsList = body.items
+          .map(item => `• ${item.product_name} x${item.quantity} - R$ ${item.total_price.toFixed(2)}`)
+          .join('\n');
+
+        const addressParts = [
+          body.delivery_street,
+          body.delivery_number ? `nº ${body.delivery_number}` : null,
+          body.delivery_complement,
+          body.delivery_neighborhood,
+          body.delivery_city,
+          body.delivery_state,
+        ].filter(Boolean).join(', ');
+
+        let orderMessage = `🛒 *Novo Pedido #${createdOrder.order_number}*\n\n`;
+        orderMessage += `👤 *Cliente:* ${body.customer_name}\n`;
+        orderMessage += `📱 *Telefone:* ${body.customer_phone}\n\n`;
+        orderMessage += `📦 *Itens:*\n${itemsList}\n\n`;
+        orderMessage += `📍 *Endereço:*\n${addressParts}\n`;
+        if (body.delivery_zip_code) {
+          orderMessage += `CEP: ${body.delivery_zip_code}\n`;
+        }
+        orderMessage += `\n💳 *Pagamento:* ${paymentMethodLabels[body.payment_method] || body.payment_method}\n`;
+        
+        if (body.discount_amount > 0) {
+          orderMessage += `💰 *Subtotal:* R$ ${body.subtotal.toFixed(2)}\n`;
+          orderMessage += `🏷️ *Desconto:* -R$ ${body.discount_amount.toFixed(2)}\n`;
+        }
+        orderMessage += `✅ *Total:* R$ ${body.total.toFixed(2)}\n\n`;
+
+        if (body.order_type === 'scheduled' && body.scheduled_date) {
+          const scheduledDate = new Date(body.scheduled_date);
+          const formattedDate = scheduledDate.toLocaleDateString('pt-BR');
+          const period = body.delivery_period ? periodLabels[body.delivery_period] : '';
+          orderMessage += `📅 *Agendado para:* ${formattedDate}${period ? ` - ${period}` : ''}\n`;
+        } else {
+          orderMessage += `⚡ *Tipo:* Entrega Imediata\n`;
+        }
+
+        if (body.notes) {
+          orderMessage += `\n📝 *Observações:* ${body.notes}`;
+        }
+
+        // Send WhatsApp notification
+        const whatsappResponse = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            to: distributor.whatsapp,
+            message: orderMessage,
+          }),
+        });
+
+        if (whatsappResponse.ok) {
+          console.log('WhatsApp notification sent to distributor:', distributor.name);
+        } else {
+          const whatsappError = await whatsappResponse.json();
+          console.error('Failed to send WhatsApp notification:', whatsappError);
+        }
+      } else {
+        console.log('Distributor has no WhatsApp number configured');
+      }
+    } catch (whatsappError) {
+      // Don't fail the order if WhatsApp notification fails
+      console.error('Error sending WhatsApp notification:', whatsappError);
+    }
+
     // Return success response
     return new Response(
       JSON.stringify({
