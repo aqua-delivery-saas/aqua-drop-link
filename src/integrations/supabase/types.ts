@@ -121,6 +121,50 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_loyalty_points: {
+        Row: {
+          available_points: number | null
+          created_at: string
+          customer_id: string
+          distributor_id: string
+          id: string
+          last_order_at: string | null
+          redeemed_points: number
+          total_points: number
+          updated_at: string
+        }
+        Insert: {
+          available_points?: number | null
+          created_at?: string
+          customer_id: string
+          distributor_id: string
+          id?: string
+          last_order_at?: string | null
+          redeemed_points?: number
+          total_points?: number
+          updated_at?: string
+        }
+        Update: {
+          available_points?: number | null
+          created_at?: string
+          customer_id?: string
+          distributor_id?: string
+          id?: string
+          last_order_at?: string | null
+          redeemed_points?: number
+          total_points?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_loyalty_points_distributor_id_fkey"
+            columns: ["distributor_id"]
+            isOneToOne: false
+            referencedRelation: "distributors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discount_rules: {
         Row: {
           created_at: string
