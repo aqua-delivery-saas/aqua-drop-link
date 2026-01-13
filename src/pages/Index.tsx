@@ -1,133 +1,138 @@
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
-import { Search } from "lucide-react";
+import { Building2, Users, Droplets } from "lucide-react";
 import heroWater from "@/assets/hero-water.jpg";
 import { useAuth } from "@/hooks/useAuth";
 import { UserMenu } from "@/components/customer/UserMenu";
-import { CitySearchCombobox } from "@/components/CitySearchCombobox";
-import type { City } from "@/hooks/useCities";
-
 const Index = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, isDistributor, isCustomer } = useAuth();
-
-  const handleCitySelect = (city: City) => {
-    navigate(`/distribuidoras/${city.slug}`);
-  };
-
-  return (
-    <>
+  const {
+    isAuthenticated,
+    isDistributor
+  } = useAuth();
+  return <>
       <Helmet>
-        <title>AquaDelivery - Encontre água mineral na sua cidade</title>
-        <meta
-          name="description"
-          content="Encontre distribuidoras de água mineral perto de você. Peça água de forma rápida e simples."
-        />
+        <title>AquaDelivery - Água Mineral</title>
+        <meta name="description" content="Plataforma completa para distribuidoras de água mineral gerenciarem pedidos online." />
       </Helmet>
-
-      <div className="min-h-screen relative">
-        {/* Background Image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${heroWater})` }}
-        >
-          <div className="absolute inset-0 bg-black/60" />
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3 sm:py-4 flex justify-between items-center">
+          <Logo size="md" />
+          <div className="flex gap-1 sm:gap-2 items-center">
+            {!isAuthenticated && <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4" onClick={() => navigate("/distributor/login")}>
+                Login Distribuidora
+              </Button>}
+            {isAuthenticated && isDistributor() && <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4" onClick={() => navigate("/distributor/dashboard")}>
+                Painel Distribuidora
+              </Button>}
+            <UserMenu />
+          </div>
         </div>
+      </header>
 
-        {/* Content */}
-        <div className="relative z-10 min-h-screen flex flex-col">
-          {/* Header */}
-          <header className="py-4 px-3 sm:px-6">
-            <div className="max-w-6xl mx-auto flex justify-between items-center">
-              <Logo size="md" variant="dark" />
+      <main className="container mx-auto px-4">
+        <section className="py-20 text-center">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex justify-center mb-8">
+              <Logo size="lg" />
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
+              ​Sou Cliente 
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Plataforma completa para distribuidoras gerenciarem pedidos online. Elimine o WhatsApp manual e organize
+              sua operação.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" onClick={() => navigate("/distributor/signup")} className="text-lg">
+                Começar Grátis
+              </Button>
+              <Button size="lg" variant="secondary" onClick={() => navigate("/order/distribuidora-agua-pura")} className="text-lg">
+                Ver Demo do Cliente
+              </Button>
+            </div>
+          </div>
+        </section>
 
-              <div className="flex gap-1 sm:gap-2 items-center">
-                {!isAuthenticated ? (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-white hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-4"
-                      onClick={() => navigate("/distributor/login")}
-                    >
-                      Sou Distribuidora
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-white/30 text-white hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-4"
-                      onClick={() => navigate("/customer/login")}
-                    >
-                      Entrar
-                    </Button>
-                  </>
-                ) : isDistributor() ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-white/30 text-white hover:bg-white/10"
-                    onClick={() => navigate("/distributor/dashboard")}
-                  >
-                    Meu Painel
-                  </Button>
-                ) : (
-                  <UserMenu />
-                )}
+        <section className="py-16">
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl max-w-5xl mx-auto">
+            <img src={heroWater} alt="Entrega de água profissional" className="w-full h-[400px] object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent flex items-end">
+              <div className="p-8">
+                <h3 className="text-2xl font-bold text-foreground mb-2">Tecnologia para o seu negócio</h3>
+                <p className="text-foreground/80">Transforme a experiência de compra dos seus clientes</p>
               </div>
             </div>
-          </header>
+          </div>
+        </section>
 
-          {/* Hero Content */}
-          <main className="flex-1 flex items-center justify-center px-3 sm:px-4">
-            <div className="max-w-2xl w-full text-center">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
-                Encontre água mineral{" "}
-                <br className="hidden sm:block" />
-                <span className="text-primary">na sua cidade</span>
-              </h1>
-              <p className="text-base sm:text-lg md:text-xl text-white/80 mb-6 sm:mb-8">
-                Peça água de forma rápida e simples
-              </p>
-
-              {/* Search Box */}
-              <div className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
-                <div className="flex-1">
-                  <CitySearchCombobox onSelect={handleCitySelect} />
+        <section className="py-16">
+          <h2 className="text-3xl font-bold text-center mb-12">Como Funciona</h2>
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="pt-8 pb-6">
+                <div className="rounded-full bg-primary/10 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Building2 className="h-8 w-8 text-primary" />
                 </div>
-                <Button
-                  size="lg"
-                  className="h-12 sm:h-14 px-6 sm:w-auto"
-                  onClick={() => {}}
-                >
-                  <Search className="mr-2 h-5 w-5" />
-                  Buscar
-                </Button>
-              </div>
+                <h3 className="text-xl font-semibold mb-3">Para Distribuidoras</h3>
+                <p className="text-muted-foreground">
+                  Crie sua conta, cadastre produtos e receba um link exclusivo para compartilhar
+                </p>
+              </CardContent>
+            </Card>
 
-              {/* CTA para distribuidoras */}
-              <p className="mt-6 sm:mt-8 text-white/70 text-sm sm:text-base">
-                É distribuidora?{" "}
-                <Button
-                  variant="link"
-                  className="text-primary p-0 h-auto text-sm sm:text-base"
-                  onClick={() => navigate("/distributor/signup")}
-                >
-                  Cadastre-se gratuitamente
-                </Button>
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="pt-8 pb-6">
+                <div className="rounded-full bg-secondary/10 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Users className="h-8 w-8 text-secondary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Para Clientes</h3>
+                <p className="text-muted-foreground">
+                  Acesse o link, escolha água, quantidade e endereço em menos de 1 minuto
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="pt-8 pb-6">
+                <div className="rounded-full bg-accent/10 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <Droplets className="h-8 w-8 text-accent" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Entrega Simples</h3>
+                <p className="text-muted-foreground">
+                  Pedidos organizados no painel e notificação por WhatsApp automática
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        <section className="py-16 text-center">
+          <Card className="max-w-3xl mx-auto bg-gradient-to-r from-primary/10 to-secondary/10">
+            <CardContent className="py-12 px-8">
+              <h2 className="text-3xl font-bold mb-4">Pronto para começar?</h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                Crie sua conta gratuitamente e comece a receber pedidos online hoje mesmo
               </p>
-            </div>
-          </main>
+              <Button size="lg" onClick={() => navigate("/distributor/signup")} className="text-lg">
+                Criar Conta Grátis
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+      </main>
 
-          {/* Footer mínimo */}
-          <footer className="py-4 text-center text-white/50 text-xs sm:text-sm">
-            © 2025 Aqua Delivery
-          </footer>
+      <footer className="border-t mt-16 py-8 bg-card/50">
+        <div className="container mx-auto px-4 text-center text-muted-foreground">
+          <Logo size="sm" />
+          <p className="mt-4">© 2025 Aqua Delivery. Simplificando a entrega de água.</p>
         </div>
-      </div>
-    </>
-  );
+      </footer>
+    </div>
+    </>;
 };
-
 export default Index;
