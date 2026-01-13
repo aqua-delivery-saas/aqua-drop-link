@@ -1,15 +1,27 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
-import { CheckCircle2, Calendar, Clock, MapPin, CreditCard, Bell } from "lucide-react";
+import { CheckCircle2, Calendar, Clock, MapPin, CreditCard, Bell, Copy, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Helmet } from "react-helmet-async";
+import { toast } from "sonner";
 
 const ScheduleConfirmation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const orderData = location.state;
+  const [pixCopied, setPixCopied] = useState(false);
+
+  const handleCopyPix = () => {
+    if (orderData?.pixKey) {
+      navigator.clipboard.writeText(orderData.pixKey);
+      setPixCopied(true);
+      toast.success("Chave PIX copiada!");
+      setTimeout(() => setPixCopied(false), 2000);
+    }
+  };
 
   if (!orderData) {
     return (
@@ -40,7 +52,8 @@ const ScheduleConfirmation = () => {
     distributor,
     scheduledDate,
     scheduledTime,
-    whatsappUrl 
+    whatsappUrl,
+    pixKey
   } = orderData;
 
   return (
@@ -115,6 +128,35 @@ const ScheduleConfirmation = () => {
                       <p className="font-medium capitalize">{paymentMethod}</p>
                     </div>
                   </div>
+
+                  {/* PIX Key Section */}
+                  {paymentMethod?.toLowerCase().includes('pix') && pixKey && (
+                    <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-900">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-green-800 dark:text-green-200 mb-1">
+                            Chave PIX
+                          </p>
+                          <p className="font-mono text-sm text-green-700 dark:text-green-300 truncate">
+                            {pixKey}
+                          </p>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleCopyPix}
+                          className="shrink-0 border-green-300 hover:bg-green-100 dark:border-green-700 dark:hover:bg-green-900"
+                        >
+                          {pixCopied ? (
+                            <Check className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Copy className="h-4 w-4 text-green-600" />
+                          )}
+                          <span className="ml-2">{pixCopied ? "Copiado!" : "Copiar"}</span>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

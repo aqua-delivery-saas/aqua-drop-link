@@ -344,6 +344,7 @@ const OrderPage = () => {
           isScheduled: false,
           scheduledDate: null,
           scheduledPeriod: null,
+          pixKey: (distribuidora as any).pix_key || null,
           whatsappUrl: distribuidora.whatsapp ? `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(`Olá! Pedido #${createdOrder.order_number}:\n\nProduto: ${product.name}\nQtd: ${quantity}\nTotal: R$ ${totalValue.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}${notes ? `\nObs: ${notes}` : ''}`)}` : null
         }
       });

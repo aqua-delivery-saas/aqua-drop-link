@@ -18,6 +18,7 @@ interface DistributorData {
   state?: string;
   zip_code?: string;
   logo_url?: string;
+  pix_key?: string;
 }
 
 interface BusinessHoursData {
@@ -175,6 +176,7 @@ export function useCreateDistributor() {
           zip_code: data.distributor.zip_code || null,
           city_id: cityId,
           logo_url: data.distributor.logo_url || null,
+          pix_key: data.distributor.pix_key || null,
           is_active: true,
           is_verified: false,
           meta_title: seoData.meta_title,
