@@ -80,7 +80,7 @@ const Index = () => {
               {/* CTA para distribuidoras */}
               <p className="mt-6 sm:mt-8 text-white/70 text-sm sm:text-base">
                 É distribuidora?{" "}
-                <Button variant="link" className="text-primary p-0 h-auto text-sm sm:text-base" onClick={() => navigate("/distributor/signup")}>
+                <Button variant="link" className="p-0 h-auto sm:text-base text-lg font-bold text-secondary" onClick={() => navigate("/distributor/signup")}>
                   Cadastre-se gratuitamente
                 </Button>
               </p>
