@@ -117,20 +117,20 @@ export default function Help() {
         />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-6 px-3 sm:py-12 sm:px-4">
         <div className="container max-w-4xl mx-auto">
-          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6">
+          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4 sm:mb-6">
             ← Voltar
           </Button>
 
           <Card>
-            <CardHeader className="text-center border-b">
+            <CardHeader className="text-center border-b px-4 sm:px-6">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-primary/10 rounded-full">
                   <HelpCircle className="w-8 h-8 text-primary" />
                 </div>
               </div>
-              <CardTitle className="text-3xl mb-4">Central de Ajuda</CardTitle>
+              <CardTitle className="text-2xl sm:text-3xl mb-4">Central de Ajuda</CardTitle>
 
               <div className="relative max-w-md mx-auto">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

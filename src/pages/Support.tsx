@@ -91,19 +91,19 @@ export default function Support() {
         <meta name="description" content="Entre em contato com nossa equipe de suporte" />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-6 px-3 sm:py-12 sm:px-4">
         <div className="container max-w-5xl mx-auto">
           <Button 
             variant="ghost" 
             onClick={() => navigate(-1)}
-            className="mb-6"
+            className="mb-4 sm:mb-6"
           >
             ← Voltar
           </Button>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Contact Information */}
-            <div className="space-y-6">
+          <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
+            {/* Contact Information - appears first on mobile */}
+            <div className="space-y-4 sm:space-y-6 order-first md:order-first">
 
               <Card>
                 <CardHeader>
@@ -148,8 +148,8 @@ export default function Support() {
               </Card>
             </div>
 
-            {/* Contact Form */}
-            <Card className="md:col-span-2">
+            {/* Contact Form - appears after contact cards on mobile */}
+            <Card className="md:col-span-2 order-last md:order-last">
               <CardHeader>
                 <CardTitle className="text-2xl">Envie sua Mensagem</CardTitle>
                 <CardDescription>
