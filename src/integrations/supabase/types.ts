@@ -229,6 +229,7 @@ export type Database = {
           neighborhood: string | null
           number: string | null
           phone: string | null
+          pix_key: string | null
           slug: string
           street: string | null
           updated_at: string
@@ -258,6 +259,7 @@ export type Database = {
           neighborhood?: string | null
           number?: string | null
           phone?: string | null
+          pix_key?: string | null
           slug: string
           street?: string | null
           updated_at?: string
@@ -287,6 +289,7 @@ export type Database = {
           neighborhood?: string | null
           number?: string | null
           phone?: string | null
+          pix_key?: string | null
           slug?: string
           street?: string | null
           updated_at?: string

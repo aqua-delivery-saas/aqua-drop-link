@@ -29,6 +29,7 @@ export interface OnboardingData {
     state: string;
     city_id?: string | null;
     logo_url?: string;
+    pix_key?: string;
   };
   businessHours?: {
     [key: string]: { open: string; close: string; active: boolean };

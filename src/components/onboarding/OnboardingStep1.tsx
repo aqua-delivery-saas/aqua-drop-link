@@ -18,6 +18,7 @@ const formSchema = z.object({
   cnpj: cnpjSchema,
   phone: phoneSchema,
   whatsapp: whatsappSchema,
+  pix_key: z.string().max(100, "Chave PIX muito longa").optional(),
   zip_code: z.string().regex(/^\d{5}-?\d{3}$/, "CEP inválido (formato: 00000-000)"),
   street: z.string().min(3, "Rua deve ter pelo menos 3 caracteres").max(200, "Rua muito longa"),
   number: z.string().min(1, "Número é obrigatório").max(20, "Número muito longo"),
@@ -50,6 +51,7 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
       cnpj: "",
       phone: "",
       whatsapp: "",
+      pix_key: "",
       zip_code: "",
       street: "",
       number: "",
@@ -264,6 +266,24 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="pix_key"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Chave PIX (opcional)</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="CPF, CNPJ, email, telefone ou chave aleatória" 
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>Será exibida para clientes que pagarem via PIX</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}

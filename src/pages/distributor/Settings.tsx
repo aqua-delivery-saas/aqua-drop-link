@@ -33,6 +33,7 @@ const Settings = () => {
     cep: "",
     email_contato: "",
     telefone: "",
+    pix_key: "",
     paymentMethods: {
       cash: true,
       card: true,
@@ -53,6 +54,7 @@ const Settings = () => {
         cep: formatCEP(distributor.zip_code || ""),
         email_contato: distributor.email || "",
         telefone: formatPhone(distributor.phone || ""),
+        pix_key: (distributor as any).pix_key || "",
         paymentMethods: {
           cash: distributor.accepts_cash ?? true,
           card: distributor.accepts_card ?? true,
@@ -139,11 +141,12 @@ const Settings = () => {
       zip_code: settings.cep,
       email: settings.email_contato,
       phone: settings.telefone,
+      pix_key: settings.pix_key,
       accepts_cash: settings.paymentMethods.cash,
       accepts_card: settings.paymentMethods.card,
       accepts_pix: settings.paymentMethods.pix,
       logo_url: logoUrl,
-    });
+    } as any);
     toast.success("Configurações salvas com sucesso!");
   };
 
@@ -403,6 +406,21 @@ const Settings = () => {
             />
             <Label htmlFor="pix" className="cursor-pointer">Pix (Manual)</Label>
           </div>
+          
+          {settings.paymentMethods.pix && (
+            <div className="space-y-2 pt-2 border-t mt-4">
+              <Label htmlFor="pix_key">Chave PIX</Label>
+              <Input
+                id="pix_key"
+                value={settings.pix_key}
+                onChange={handleChange}
+                placeholder="CPF, CNPJ, email, telefone ou chave aleatória"
+              />
+              <p className="text-xs text-muted-foreground">
+                Será exibida para clientes que pagarem via PIX
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
