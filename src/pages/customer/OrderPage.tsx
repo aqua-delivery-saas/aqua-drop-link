@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/Logo";
-import { Minus, Plus, Clock, CalendarDays, AlertTriangle, MapPin, CreditCard, User, Phone, RefreshCw, MessageSquare } from "lucide-react";
+import { Minus, Plus, Clock, CalendarDays, AlertTriangle, MapPin, CreditCard, User, Phone, RefreshCw, MessageSquare, Star } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { formatPhone } from "@/lib/validators";
 import { toast } from "sonner";
@@ -21,6 +21,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useCreateOrder } from "@/hooks/useDistributor";
+import { useCustomerLoyaltyPoints } from "@/hooks/useCustomerLoyalty";
+import { Progress } from "@/components/ui/progress";
 interface RepeatOrderState {
   repeatItems?: {
     product_id: string | null;
@@ -100,6 +102,9 @@ const OrderPage = () => {
     },
     enabled: !!distribuidora?.id
   });
+  // Fetch customer loyalty points
+  const { data: loyaltyData } = useCustomerLoyaltyPoints(distribuidora?.id);
+
   const isLoading = distributorLoading || productsLoading;
   const mockCustomer = {
     isLoggedIn: isAuthenticated && isCustomer(),
@@ -374,6 +379,35 @@ const OrderPage = () => {
         </header>
 
         <main className="container mx-auto px-4 py-8 max-w-2xl space-y-4">
+          {/* Loyalty Points Card */}
+          {loyaltyData?.program && mockCustomer.isLoggedIn && (
+            <Card className="border-amber-200 bg-amber-50/50">
+              <CardContent className="pt-4 pb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
+                  <span className="font-medium text-amber-800">{loyaltyData.program.program_name || 'Programa de Fidelidade'}</span>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-amber-700">
+                    Você tem <strong>{loyaltyData.points?.available_points || 0}</strong> de{' '}
+                    <strong>{loyaltyData.program.reward_threshold}</strong> pontos para resgatar:{' '}
+                    <span className="font-medium">{loyaltyData.program.reward_description || 'Recompensa'}</span>
+                  </p>
+                  <Progress 
+                    value={((loyaltyData.points?.available_points || 0) / loyaltyData.program.reward_threshold) * 100} 
+                    className="h-2 bg-amber-200"
+                  />
+                  <p className="text-xs text-amber-600">
+                    +{loyaltyData.program.points_per_order} ponto(s) por pedido
+                    {loyaltyData.program.min_order_value && loyaltyData.program.min_order_value > 0 
+                      ? ` acima de R$ ${Number(loyaltyData.program.min_order_value).toFixed(2)}`
+                      : ''}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Repeat order notice */}
           {isRepeatOrder && <Card className="border-primary/30 bg-primary/5">
               <CardContent className="pt-4 pb-4">

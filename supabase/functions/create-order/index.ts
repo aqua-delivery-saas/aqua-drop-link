@@ -38,6 +38,17 @@ interface CreateOrderRequest {
   items: OrderItemInput[];
 }
 
+interface LoyaltyProgram {
+  id: string;
+  distributor_id: string;
+  is_enabled: boolean;
+  points_per_order: number;
+  reward_threshold: number;
+  min_order_value: number | null;
+  program_name: string | null;
+  reward_description: string | null;
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -87,6 +98,35 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Calculate loyalty points if customer is logged in
+    let loyaltyPointsEarned = 0;
+    let loyaltyProgram: LoyaltyProgram | null = null;
+
+    if (customerId) {
+      // Fetch loyalty program for this distributor
+      const { data: programData } = await supabaseAdmin
+        .from('loyalty_programs')
+        .select('*')
+        .eq('distributor_id', body.distributor_id)
+        .eq('is_enabled', true)
+        .maybeSingle();
+
+      if (programData) {
+        loyaltyProgram = programData as LoyaltyProgram;
+        const minValue = Number(loyaltyProgram.min_order_value) || 0;
+        
+        // Check if order meets minimum value requirement
+        if (body.total >= minValue) {
+          loyaltyPointsEarned = loyaltyProgram.points_per_order;
+          console.log('Loyalty points earned:', loyaltyPointsEarned);
+        } else {
+          console.log('Order total below minimum for loyalty points:', body.total, '<', minValue);
+        }
+      } else {
+        console.log('No active loyalty program for this distributor');
+      }
+    }
+
     // Insert order using service role (bypasses RLS)
     const { data: createdOrder, error: orderError } = await supabaseAdmin
       .from('orders')
@@ -112,9 +152,10 @@ Deno.serve(async (req) => {
         notes: body.notes || null,
         container_year_start: body.container_year_start || null,
         container_year_end: body.container_year_end || null,
+        loyalty_points_earned: loyaltyPointsEarned,
         status: 'novo',
       })
-      .select('id, order_number')
+      .select('id, order_number, loyalty_points_earned')
       .single();
 
     if (orderError) {
@@ -125,7 +166,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('Order created:', createdOrder.id, 'Number:', createdOrder.order_number);
+    console.log('Order created:', createdOrder.id, 'Number:', createdOrder.order_number, 'Points:', createdOrder.loyalty_points_earned);
 
     // Insert order items
     const orderItems = body.items.map(item => ({
@@ -210,7 +251,14 @@ Deno.serve(async (req) => {
           orderMessage += `💰 *Subtotal:* R$ ${body.subtotal.toFixed(2)}\n`;
           orderMessage += `🏷️ *Desconto:* -R$ ${body.discount_amount.toFixed(2)}\n`;
         }
-        orderMessage += `✅ *Total:* R$ ${body.total.toFixed(2)}\n\n`;
+        orderMessage += `✅ *Total:* R$ ${body.total.toFixed(2)}\n`;
+
+        // Add loyalty points info to WhatsApp message
+        if (loyaltyPointsEarned > 0) {
+          orderMessage += `⭐ *Fidelidade:* +${loyaltyPointsEarned} ponto(s) ganhos\n`;
+        }
+
+        orderMessage += '\n';
 
         if (body.order_type === 'scheduled' && body.scheduled_date) {
           const scheduledDate = new Date(body.scheduled_date);
@@ -256,13 +304,14 @@ Deno.serve(async (req) => {
       console.error('Error sending WhatsApp notification:', whatsappError);
     }
 
-    // Return success response
+    // Return success response with loyalty points info
     return new Response(
       JSON.stringify({
         success: true,
         order: {
           id: createdOrder.id,
           order_number: createdOrder.order_number,
+          loyalty_points_earned: loyaltyPointsEarned,
         },
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
