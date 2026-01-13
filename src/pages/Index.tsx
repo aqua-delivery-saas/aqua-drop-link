@@ -8,31 +8,27 @@ import { useAuth } from "@/hooks/useAuth";
 import { UserMenu } from "@/components/customer/UserMenu";
 import { CitySearchCombobox } from "@/components/CitySearchCombobox";
 import type { City } from "@/hooks/useCities";
-
 const Index = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, isDistributor, isCustomer } = useAuth();
-
+  const {
+    isAuthenticated,
+    isDistributor,
+    isCustomer
+  } = useAuth();
   const handleCitySelect = (city: City) => {
     navigate(`/distribuidoras/${city.slug}`);
   };
-
-  return (
-    <>
+  return <>
       <Helmet>
         <title>AquaDelivery - Encontre água mineral na sua cidade</title>
-        <meta
-          name="description"
-          content="Encontre distribuidoras de água mineral perto de você. Peça água de forma rápida e simples."
-        />
+        <meta name="description" content="Encontre distribuidoras de água mineral perto de você. Peça água de forma rápida e simples." />
       </Helmet>
 
       <div className="min-h-screen relative">
         {/* Background Image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${heroWater})` }}
-        >
+        <div className="absolute inset-0 bg-cover bg-center" style={{
+        backgroundImage: `url(${heroWater})`
+      }}>
           <div className="absolute inset-0 bg-black/60" />
         </div>
 
@@ -44,37 +40,16 @@ const Index = () => {
               <Logo size="md" variant="dark" />
 
               <div className="flex gap-1 sm:gap-2 items-center">
-                {!isAuthenticated ? (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-white hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-4"
-                      onClick={() => navigate("/distributor/login")}
-                    >
+                {!isAuthenticated ? <>
+                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-4" onClick={() => navigate("/distributor/login")}>
                       Sou Distribuidora
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-white/30 text-white hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-4"
-                      onClick={() => navigate("/customer/login")}
-                    >
-                      Entrar
+                    <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-4" onClick={() => navigate("/customer/login")}>
+                      Sou Cliente 
                     </Button>
-                  </>
-                ) : isDistributor() ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-white/30 text-white hover:bg-white/10"
-                    onClick={() => navigate("/distributor/dashboard")}
-                  >
+                  </> : isDistributor() ? <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10" onClick={() => navigate("/distributor/dashboard")}>
                     Meu Painel
-                  </Button>
-                ) : (
-                  <UserMenu />
-                )}
+                  </Button> : <UserMenu />}
               </div>
             </div>
           </header>
@@ -96,11 +71,7 @@ const Index = () => {
                 <div className="flex-1">
                   <CitySearchCombobox onSelect={handleCitySelect} />
                 </div>
-                <Button
-                  size="lg"
-                  className="h-12 sm:h-14 px-6 sm:w-auto"
-                  onClick={() => {}}
-                >
+                <Button size="lg" className="h-12 sm:h-14 px-6 sm:w-auto" onClick={() => {}}>
                   <Search className="mr-2 h-5 w-5" />
                   Buscar
                 </Button>
@@ -109,11 +80,7 @@ const Index = () => {
               {/* CTA para distribuidoras */}
               <p className="mt-6 sm:mt-8 text-white/70 text-sm sm:text-base">
                 É distribuidora?{" "}
-                <Button
-                  variant="link"
-                  className="text-primary p-0 h-auto text-sm sm:text-base"
-                  onClick={() => navigate("/distributor/signup")}
-                >
+                <Button variant="link" className="text-primary p-0 h-auto text-sm sm:text-base" onClick={() => navigate("/distributor/signup")}>
                   Cadastre-se gratuitamente
                 </Button>
               </p>
@@ -126,8 +93,6 @@ const Index = () => {
           </footer>
         </div>
       </div>
-    </>
-  );
+    </>;
 };
-
 export default Index;
