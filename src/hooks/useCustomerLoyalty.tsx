@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 interface CustomerLoyaltyPoints {
   id: string;
@@ -105,5 +106,61 @@ export function useAllCustomerLoyaltyPoints() {
       return data || [];
     },
     enabled: !!user?.id,
+  });
+}
+
+// Hook to redeem loyalty points
+export function useRedeemLoyaltyPoints() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      distributorId, 
+      pointsToRedeem, 
+      rewardDescription 
+    }: { 
+      distributorId: string; 
+      pointsToRedeem: number; 
+      rewardDescription: string;
+    }) => {
+      if (!user?.id) throw new Error('Usuário não autenticado');
+
+      // 1. Create redemption record
+      const { data: redemption, error: redemptionError } = await supabase
+        .from('loyalty_redemptions')
+        .insert({
+          customer_id: user.id,
+          distributor_id: distributorId,
+          points_redeemed: pointsToRedeem,
+          reward_description: rewardDescription,
+          status: 'pending',
+        })
+        .select()
+        .single();
+
+      if (redemptionError) throw redemptionError;
+
+      // 2. Call RPC to update redeemed_points safely
+      const { error: updateError } = await supabase.rpc('redeem_loyalty_points', {
+        p_customer_id: user.id,
+        p_distributor_id: distributorId,
+        p_points: pointsToRedeem,
+      });
+
+      if (updateError) throw updateError;
+
+      return redemption;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['customer-loyalty-points', variables.distributorId] 
+      });
+      toast.success('Resgate solicitado com sucesso! O distribuidor foi notificado.');
+    },
+    onError: (error) => {
+      console.error('Erro ao resgatar pontos:', error);
+      toast.error('Erro ao resgatar pontos. Tente novamente.');
+    },
   });
 }

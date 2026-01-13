@@ -354,6 +354,57 @@ export type Database = {
           },
         ]
       }
+      loyalty_redemptions: {
+        Row: {
+          created_at: string
+          customer_id: string
+          distributor_id: string
+          id: string
+          order_id: string | null
+          points_redeemed: number
+          reward_description: string
+          status: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          distributor_id: string
+          id?: string
+          order_id?: string | null
+          points_redeemed: number
+          reward_description: string
+          status?: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          distributor_id?: string
+          id?: string
+          order_id?: string | null
+          points_redeemed?: number
+          reward_description?: string
+          status?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_redemptions_distributor_id_fkey"
+            columns: ["distributor_id"]
+            isOneToOne: false
+            referencedRelation: "distributors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_redemptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string | null
@@ -839,6 +890,14 @@ export type Database = {
         Returns: boolean
       }
       notify_scheduled_orders_today: { Args: never; Returns: undefined }
+      redeem_loyalty_points: {
+        Args: {
+          p_customer_id: string
+          p_distributor_id: string
+          p_points: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "distributor" | "customer"
@@ -853,6 +912,7 @@ export type Database = {
         | "customer_review"
         | "system_update"
         | "scheduled_reminder"
+        | "loyalty_redemption"
       order_status: "novo" | "em_entrega" | "concluido" | "cancelado"
       order_type: "immediate" | "scheduled"
       payment_method: "dinheiro" | "pix" | "cartao" | "cartao_entrega"
@@ -997,6 +1057,7 @@ export const Constants = {
         "customer_review",
         "system_update",
         "scheduled_reminder",
+        "loyalty_redemption",
       ],
       order_status: ["novo", "em_entrega", "concluido", "cancelado"],
       order_type: ["immediate", "scheduled"],

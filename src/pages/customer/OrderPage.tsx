@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/Logo";
-import { Minus, Plus, Clock, CalendarDays, AlertTriangle, MapPin, CreditCard, User, Phone, RefreshCw, MessageSquare, Star } from "lucide-react";
+import { Minus, Plus, Clock, CalendarDays, AlertTriangle, MapPin, CreditCard, User, Phone, RefreshCw, MessageSquare, Star, Gift } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { formatPhone } from "@/lib/validators";
 import { toast } from "sonner";
@@ -21,8 +21,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useCreateOrder } from "@/hooks/useDistributor";
-import { useCustomerLoyaltyPoints } from "@/hooks/useCustomerLoyalty";
+import { useCustomerLoyaltyPoints, useRedeemLoyaltyPoints } from "@/hooks/useCustomerLoyalty";
 import { Progress } from "@/components/ui/progress";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 interface RepeatOrderState {
   repeatItems?: {
     product_id: string | null;
@@ -104,6 +115,7 @@ const OrderPage = () => {
   });
   // Fetch customer loyalty points
   const { data: loyaltyData } = useCustomerLoyaltyPoints(distribuidora?.id);
+  const redeemLoyalty = useRedeemLoyaltyPoints();
 
   const isLoading = distributorLoading || productsLoading;
   const mockCustomer = {
@@ -123,7 +135,26 @@ const OrderPage = () => {
   const [notes, setNotes] = useState("");
   const [containerYearStart, setContainerYearStart] = useState("");
   const [containerYearEnd, setContainerYearEnd] = useState("");
+  const [showRedeemDialog, setShowRedeemDialog] = useState(false);
   const createOrder = useCreateOrder();
+
+  // Check if user can redeem points
+  const canRedeem = useMemo(() => {
+    if (!loyaltyData?.program || !loyaltyData?.points) return false;
+    return (loyaltyData.points.available_points || 0) >= loyaltyData.program.reward_threshold;
+  }, [loyaltyData]);
+
+  const handleRedeem = async () => {
+    if (!distribuidora?.id || !loyaltyData?.program) return;
+    
+    await redeemLoyalty.mutateAsync({
+      distributorId: distribuidora.id,
+      pointsToRedeem: loyaltyData.program.reward_threshold,
+      rewardDescription: loyaltyData.program.reward_description || 'Recompensa',
+    });
+    
+    setShowRedeemDialog(false);
+  };
 
   // Fetch customer profile for auto-fill
   useEffect(() => {
@@ -394,7 +425,7 @@ const OrderPage = () => {
                     <span className="font-medium">{loyaltyData.program.reward_description || 'Recompensa'}</span>
                   </p>
                   <Progress 
-                    value={((loyaltyData.points?.available_points || 0) / loyaltyData.program.reward_threshold) * 100} 
+                    value={Math.min(((loyaltyData.points?.available_points || 0) / loyaltyData.program.reward_threshold) * 100, 100)} 
                     className="h-2 bg-amber-200"
                   />
                   <p className="text-xs text-amber-600">
@@ -403,6 +434,18 @@ const OrderPage = () => {
                       ? ` acima de R$ ${Number(loyaltyData.program.min_order_value).toFixed(2)}`
                       : ''}
                   </p>
+                  
+                  {/* Redeem button - shows when threshold is reached */}
+                  {canRedeem && (
+                    <Button
+                      className="w-full mt-2 bg-amber-500 hover:bg-amber-600 text-white"
+                      onClick={() => setShowRedeemDialog(true)}
+                      disabled={redeemLoyalty.isPending}
+                    >
+                      <Gift className="mr-2 h-4 w-4" />
+                      Resgatar: {loyaltyData.program.reward_description || 'Recompensa'}
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -610,6 +653,39 @@ const OrderPage = () => {
             </Card>)}
         </main>
       </div>
+
+      {/* Redeem Confirmation Dialog */}
+      <AlertDialog open={showRedeemDialog} onOpenChange={setShowRedeemDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Gift className="h-5 w-5 text-amber-500" />
+              Resgatar Recompensa
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                Você vai resgatar: <strong>{loyaltyData?.program?.reward_description || 'Recompensa'}</strong>
+              </p>
+              <p>
+                Serão usados <strong>{loyaltyData?.program?.reward_threshold} pontos</strong>.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                O distribuidor será notificado e a recompensa será aplicada no seu próximo pedido.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={redeemLoyalty.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleRedeem}
+              disabled={redeemLoyalty.isPending}
+              className="bg-amber-500 hover:bg-amber-600"
+            >
+              {redeemLoyalty.isPending ? "Processando..." : "Confirmar Resgate"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>;
 };
 export default OrderPage;
