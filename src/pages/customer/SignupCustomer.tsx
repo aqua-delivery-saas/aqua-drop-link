@@ -96,7 +96,20 @@ const SignupCustomer = () => {
         // Don't fail if role insert fails - user can still use the app
       }
 
-      // 3. Update auth state with the new role
+      // 3. Update profile with phone and address data
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          phone: data.phone,
+          street: data.address,
+        })
+        .eq('id', authData.user.id);
+
+      if (profileError) {
+        console.error('Error updating profile:', profileError);
+      }
+
+      // 4. Update auth state with the new role
       useAuth.getState().setRole('customer');
 
       toast.success("Conta criada com sucesso!");
