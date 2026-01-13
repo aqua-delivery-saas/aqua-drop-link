@@ -37,6 +37,36 @@ interface CreateDistributorInput {
   products?: ProductData[];
 }
 
+const generateSeoData = (distributor: DistributorData) => {
+  const city = distributor.city || '';
+  const neighborhood = distributor.neighborhood || '';
+  const state = distributor.state || '';
+  
+  // Meta Title: Nome - Água Mineral em Cidade (máx 60 chars)
+  const baseTitle = `${distributor.name} - Água Mineral em ${city}`;
+  const meta_title = baseTitle.length > 60 
+    ? `${distributor.name} - ${city}`.slice(0, 60)
+    : baseTitle;
+  
+  // Meta Description: Descrição atrativa (máx 160 chars)
+  const baseDescription = neighborhood
+    ? `Distribuidora de água mineral em ${neighborhood}, ${city} - ${state}. Entrega rápida de galões. Peça agora pelo WhatsApp!`
+    : `Distribuidora de água mineral em ${city} - ${state}. Entrega rápida de galões de água. Peça agora pelo WhatsApp!`;
+  const meta_description = baseDescription.slice(0, 160);
+  
+  // Meta Keywords: Palavras-chave relevantes
+  const keywords = [
+    'água mineral',
+    'galão de água',
+    'entrega de água',
+    'distribuidora de água',
+    city.toLowerCase(),
+    neighborhood?.toLowerCase(),
+  ].filter(Boolean).join(', ');
+  
+  return { meta_title, meta_description, meta_keywords: keywords };
+};
+
 const generateSlug = (name: string): string => {
   return name
     .toLowerCase()
@@ -122,6 +152,9 @@ export function useCreateDistributor() {
         }
       }
 
+      // Generate SEO data automatically
+      const seoData = generateSeoData(data.distributor);
+
       // 2. Create distributor
       const slug = generateSlug(data.distributor.name);
       
@@ -144,6 +177,9 @@ export function useCreateDistributor() {
           logo_url: data.distributor.logo_url || null,
           is_active: true,
           is_verified: false,
+          meta_title: seoData.meta_title,
+          meta_description: seoData.meta_description,
+          meta_keywords: seoData.meta_keywords,
         })
         .select()
         .single();
