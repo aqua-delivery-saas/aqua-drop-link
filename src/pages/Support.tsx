@@ -3,42 +3,35 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Mail, Phone } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-
 const supportSchema = z.object({
   name: z.string().trim().min(3, "Nome deve ter pelo menos 3 caracteres").max(100),
   email: z.string().trim().email("E-mail inválido").max(255),
   subject: z.string().min(1, "Selecione um assunto"),
-  message: z.string().trim().min(10, "Mensagem deve ter pelo menos 10 caracteres").max(1000),
+  message: z.string().trim().min(10, "Mensagem deve ter pelo menos 10 caracteres").max(1000)
 });
-
 const subjectMap: Record<string, string> = {
   pedido: "Dúvida sobre Pedido",
   pagamento: "Problema com Pagamento",
   conta: "Questão de Conta",
   tecnico: "Problema Técnico",
   distribuidora: "Sou Distribuidora",
-  outro: "Outro Assunto",
+  outro: "Outro Assunto"
 };
 
 // Número de WhatsApp do suporte
 const SUPPORT_WHATSAPP = "5511999999999";
-
 export default function Support() {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -46,46 +39,41 @@ export default function Support() {
     subject: "",
     message: ""
   });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     try {
       supportSchema.parse(formData);
       setIsSubmitting(true);
 
       // Formatar mensagem para WhatsApp
-      const mensagem = 
-        `*Suporte - ${subjectMap[formData.subject] || formData.subject}*\n\n` +
-        `*Nome:* ${formData.name}\n` +
-        `*E-mail:* ${formData.email}\n\n` +
-        `*Mensagem:*\n${formData.message}`;
+      const mensagem = `*Suporte - ${subjectMap[formData.subject] || formData.subject}*\n\n` + `*Nome:* ${formData.name}\n` + `*E-mail:* ${formData.email}\n\n` + `*Mensagem:*\n${formData.message}`;
 
       // Abrir WhatsApp com mensagem pré-preenchida
       const whatsappUrl = `https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent(mensagem)}`;
       window.open(whatsappUrl, '_blank');
-
       toast({
         title: "Redirecionando para WhatsApp",
-        description: "Complete o envio da mensagem no WhatsApp.",
+        description: "Complete o envio da mensagem no WhatsApp."
       });
-
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: ""
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
           title: "Erro de Validação",
           description: error.errors[0].message,
-          variant: "destructive",
+          variant: "destructive"
         });
       }
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  return (
-    <>
+  return <>
       <Helmet>
         <title>Suporte - Entre em Contato</title>
         <meta name="description" content="Entre em contato com nossa equipe de suporte" />
@@ -93,11 +81,7 @@ export default function Support() {
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-6 px-3 sm:py-12 sm:px-4">
         <div className="container max-w-5xl mx-auto">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate(-1)}
-            className="mb-4 sm:mb-6"
-          >
+          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4 sm:mb-6">
             ← Voltar
           </Button>
 
@@ -118,9 +102,7 @@ export default function Support() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    suporte@exemplo.com
-                  </p>
+                  <p className="text-sm text-muted-foreground">suporte@aquadelivery.com.br</p>
                 </CardContent>
               </Card>
 
@@ -137,11 +119,7 @@ export default function Support() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => window.open('https://wa.me/5511999999999', '_blank')}
-                  >
+                  <Button variant="outline" className="w-full" onClick={() => window.open('https://wa.me/5511999999999', '_blank')}>
                     Abrir WhatsApp
                   </Button>
                 </CardContent>
@@ -162,34 +140,27 @@ export default function Support() {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Nome Completo *</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Seu nome"
-                        required
-                      />
+                      <Input id="name" value={formData.name} onChange={e => setFormData({
+                      ...formData,
+                      name: e.target.value
+                    })} placeholder="Seu nome" required />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="email">E-mail *</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="seu@email.com"
-                        required
-                      />
+                      <Input id="email" type="email" value={formData.email} onChange={e => setFormData({
+                      ...formData,
+                      email: e.target.value
+                    })} placeholder="seu@email.com" required />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="subject">Assunto *</Label>
-                    <Select
-                      value={formData.subject}
-                      onValueChange={(value) => setFormData({ ...formData, subject: value })}
-                    >
+                    <Select value={formData.subject} onValueChange={value => setFormData({
+                    ...formData,
+                    subject: value
+                  })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o assunto" />
                       </SelectTrigger>
@@ -206,32 +177,20 @@ export default function Support() {
 
                   <div className="space-y-2">
                     <Label htmlFor="message">Mensagem *</Label>
-                    <Textarea
-                      id="message"
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="Descreva sua dúvida ou problema..."
-                      className="min-h-[150px]"
-                      required
-                    />
+                    <Textarea id="message" value={formData.message} onChange={e => setFormData({
+                    ...formData,
+                    message: e.target.value
+                  })} placeholder="Descreva sua dúvida ou problema..." className="min-h-[150px]" required />
                     <p className="text-xs text-muted-foreground">
                       {formData.message.length}/1000 caracteres
                     </p>
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <Button 
-                      type="submit" 
-                      className="flex-1"
-                      disabled={isSubmitting}
-                    >
+                    <Button type="submit" className="flex-1" disabled={isSubmitting}>
                       {isSubmitting ? "Enviando..." : "Enviar Mensagem"}
                     </Button>
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      onClick={() => navigate("/help")}
-                    >
+                    <Button type="button" variant="outline" onClick={() => navigate("/help")}>
                       Ver FAQ
                     </Button>
                   </div>
@@ -241,6 +200,5 @@ export default function Support() {
           </div>
         </div>
       </div>
-    </>
-  );
+    </>;
 }
