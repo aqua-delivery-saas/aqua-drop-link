@@ -409,7 +409,7 @@ const OrderPage = () => {
           </div>
         </header>
 
-        <main className="container mx-auto px-4 py-8 max-w-2xl space-y-4">
+        <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-2xl space-y-4">
           {/* Loyalty Points Card */}
           {loyaltyData?.program && mockCustomer.isLoggedIn && (
             <Card className="border-amber-200 bg-amber-50/50">

@@ -14,24 +14,24 @@ export default function Terms() {
         <meta name="description" content="Leia nossos termos de uso e condições de serviço" />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-4">
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-6 px-3 sm:py-12 sm:px-4">
         <div className="container max-w-4xl mx-auto">
           <Button 
             variant="ghost" 
             onClick={() => navigate(-1)}
-            className="mb-6"
+            className="mb-4 sm:mb-6"
           >
             ← Voltar
           </Button>
 
           <Card>
-            <CardHeader className="text-center border-b">
+            <CardHeader className="text-center border-b px-4 sm:px-6">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-primary/10 rounded-full">
                   <FileText className="w-8 h-8 text-primary" />
                 </div>
               </div>
-              <CardTitle className="text-3xl">Termos de Uso</CardTitle>
+              <CardTitle className="text-2xl sm:text-3xl">Termos de Uso</CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
                 Última atualização: {new Date().toLocaleDateString('pt-BR')}
               </p>
