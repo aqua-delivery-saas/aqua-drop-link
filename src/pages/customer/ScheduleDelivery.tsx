@@ -344,8 +344,6 @@ const ScheduleDelivery = () => {
                       <Input
                         id="containerYearStart"
                         type="number"
-                        min="2010"
-                        max={new Date().getFullYear()}
                         placeholder="Ex: 2018"
                         value={containerYearStart}
                         onChange={(e) => setContainerYearStart(e.target.value)}
@@ -356,8 +354,6 @@ const ScheduleDelivery = () => {
                       <Input
                         id="containerYearEnd"
                         type="number"
-                        min="2010"
-                        max={new Date().getFullYear()}
                         placeholder="Ex: 2023"
                         value={containerYearEnd}
                         onChange={(e) => setContainerYearEnd(e.target.value)}

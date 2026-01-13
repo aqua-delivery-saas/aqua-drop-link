@@ -477,8 +477,6 @@ const OrderPage = () => {
                         <Input
                           id="containerYearStart"
                           type="number"
-                          min="2010"
-                          max={new Date().getFullYear()}
                           placeholder="Ex: 2018"
                           value={containerYearStart}
                           onChange={(e) => setContainerYearStart(e.target.value)}
@@ -489,8 +487,6 @@ const OrderPage = () => {
                         <Input
                           id="containerYearEnd"
                           type="number"
-                          min="2010"
-                          max={new Date().getFullYear()}
                           placeholder="Ex: 2023"
                           value={containerYearEnd}
                           onChange={(e) => setContainerYearEnd(e.target.value)}
