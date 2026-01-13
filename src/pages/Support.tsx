@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { MessageSquare, Mail, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -23,6 +23,18 @@ const supportSchema = z.object({
   subject: z.string().min(1, "Selecione um assunto"),
   message: z.string().trim().min(10, "Mensagem deve ter pelo menos 10 caracteres").max(1000),
 });
+
+const subjectMap: Record<string, string> = {
+  pedido: "Dúvida sobre Pedido",
+  pagamento: "Problema com Pagamento",
+  conta: "Questão de Conta",
+  tecnico: "Problema Técnico",
+  distribuidora: "Sou Distribuidora",
+  outro: "Outro Assunto",
+};
+
+// Número de WhatsApp do suporte
+const SUPPORT_WHATSAPP = "5511999999999";
 
 export default function Support() {
   const navigate = useNavigate();
@@ -42,12 +54,20 @@ export default function Support() {
       supportSchema.parse(formData);
       setIsSubmitting(true);
 
-      // Simulação de envio - em produção, seria uma chamada para backend
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Formatar mensagem para WhatsApp
+      const mensagem = 
+        `*Suporte - ${subjectMap[formData.subject] || formData.subject}*\n\n` +
+        `*Nome:* ${formData.name}\n` +
+        `*E-mail:* ${formData.email}\n\n` +
+        `*Mensagem:*\n${formData.message}`;
+
+      // Abrir WhatsApp com mensagem pré-preenchida
+      const whatsappUrl = `https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent(mensagem)}`;
+      window.open(whatsappUrl, '_blank');
 
       toast({
-        title: "Mensagem Enviada!",
-        description: "Nossa equipe responderá em breve. Verifique seu e-mail.",
+        title: "Redirecionando para WhatsApp",
+        description: "Complete o envio da mensagem no WhatsApp.",
       });
 
       setFormData({ name: "", email: "", subject: "", message: "" });
@@ -84,24 +104,6 @@ export default function Support() {
           <div className="grid md:grid-cols-3 gap-6">
             {/* Contact Information */}
             <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <MessageSquare className="w-5 h-5 text-primary" />
-                    </div>
-                    <CardTitle className="text-lg">Chat Online</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Fale com nossa equipe em tempo real
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
-                    Iniciar Chat
-                  </Button>
-                </CardContent>
-              </Card>
 
               <Card>
                 <CardHeader>
