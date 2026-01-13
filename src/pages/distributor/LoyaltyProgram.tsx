@@ -10,11 +10,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Info } from "lucide-react";
 import { useDistributorLoyaltyProgram, useSaveLoyaltyProgram } from "@/hooks/useDistributor";
-
 const LoyaltyProgram = () => {
-  const { data: loyaltyProgram, isLoading } = useDistributorLoyaltyProgram();
+  const {
+    data: loyaltyProgram,
+    isLoading
+  } = useDistributorLoyaltyProgram();
   const saveLoyaltyProgram = useSaveLoyaltyProgram();
-
   const [enabled, setEnabled] = useState(false);
   const [programName, setProgramName] = useState("Programa de Fidelidade");
   const [description, setDescription] = useState("");
@@ -22,7 +23,6 @@ const LoyaltyProgram = () => {
   const [minValue, setMinValue] = useState(0);
   const [rewardThreshold, setRewardThreshold] = useState(10);
   const [rewardDescription, setRewardDescription] = useState("Galão grátis");
-
   useEffect(() => {
     if (loyaltyProgram) {
       setEnabled(loyaltyProgram.is_enabled);
@@ -34,7 +34,6 @@ const LoyaltyProgram = () => {
       setRewardDescription(loyaltyProgram.reward_description || "Galão grátis");
     }
   }, [loyaltyProgram]);
-
   const handleSave = async () => {
     await saveLoyaltyProgram.mutateAsync({
       is_enabled: enabled,
@@ -43,13 +42,11 @@ const LoyaltyProgram = () => {
       points_per_order: pointsPerOrder,
       min_order_value: minValue,
       reward_threshold: rewardThreshold,
-      reward_description: rewardDescription,
+      reward_description: rewardDescription
     });
   };
-
   if (isLoading) {
-    return (
-      <div className="space-y-6 max-w-2xl mx-auto">
+    return <div className="space-y-6 max-w-2xl mx-auto">
         <div className="mb-8">
           <Skeleton className="h-9 w-64 mb-2" />
           <Skeleton className="h-5 w-80" />
@@ -61,20 +58,15 @@ const LoyaltyProgram = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             <Skeleton className="h-10 w-full" />
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="space-y-2">
+            {[...Array(4)].map((_, i) => <div key={i} className="space-y-2">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-10 w-full" />
-              </div>
-            ))}
+              </div>)}
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <>
+  return <>
       <Helmet>
         <title>Fidelidade - AquaDelivery</title>
       </Helmet>
@@ -101,57 +93,29 @@ const LoyaltyProgram = () => {
                   Habilite o programa para seus clientes
                 </p>
               </div>
-              <Switch
-                id="program-enabled"
-                checked={enabled}
-                onCheckedChange={setEnabled}
-              />
+              <Switch id="program-enabled" checked={enabled} onCheckedChange={setEnabled} />
             </div>
 
-            {enabled && (
-              <>
+            {enabled && <>
                 <div className="space-y-2">
                   <Label htmlFor="program-name">Nome do Programa</Label>
-                  <Input
-                    id="program-name"
-                    value={programName}
-                    onChange={(e) => setProgramName(e.target.value)}
-                    placeholder="Ex: Clube Água Pura"
-                  />
+                  <Input id="program-name" value={programName} onChange={e => setProgramName(e.target.value)} placeholder="Ex: Clube Água Pura" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="description">Descrição Breve</Label>
-                  <Textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={3}
-                    placeholder="Descreva os benefícios do programa"
-                  />
+                  <Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Descreva os benefícios do programa" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="points-per-order">Pontos por Pedido</Label>
-                    <Input
-                      id="points-per-order"
-                      type="number"
-                      min="1"
-                      value={pointsPerOrder}
-                      onChange={(e) => setPointsPerOrder(Number(e.target.value))}
-                    />
+                    <Input id="points-per-order" type="number" min="1" value={pointsPerOrder} onChange={e => setPointsPerOrder(Number(e.target.value))} />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="min-value">Valor Mínimo (R$)</Label>
-                    <Input
-                      id="min-value"
-                      type="number"
-                      min="0"
-                      value={minValue}
-                      onChange={(e) => setMinValue(Number(e.target.value))}
-                    />
+                    <Input id="min-value" type="number" min="0" value={minValue} onChange={e => setMinValue(Number(e.target.value))} />
                     <p className="text-xs text-muted-foreground">
                       Para gerar pontos
                     </p>
@@ -161,49 +125,24 @@ const LoyaltyProgram = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="reward-threshold">Pontos para Resgatar</Label>
-                    <Input
-                      id="reward-threshold"
-                      type="number"
-                      min="1"
-                      value={rewardThreshold}
-                      onChange={(e) => setRewardThreshold(Number(e.target.value))}
-                    />
+                    <Input id="reward-threshold" type="number" min="1" value={rewardThreshold} onChange={e => setRewardThreshold(Number(e.target.value))} />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="reward-description">Recompensa</Label>
-                    <Input
-                      id="reward-description"
-                      value={rewardDescription}
-                      onChange={(e) => setRewardDescription(e.target.value)}
-                      placeholder="Ex: Galão grátis"
-                    />
+                    <Input id="reward-description" value={rewardDescription} onChange={e => setRewardDescription(e.target.value)} placeholder="Ex: Galão grátis" />
                   </div>
                 </div>
 
-                <Alert>
-                  <Info className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>Nota:</strong> Nesta versão, o programa é apenas informativo, sem cálculo automático de pontos.
-                    Em breve, teremos integração completa com o sistema de pedidos.
-                  </AlertDescription>
-                </Alert>
-              </>
-            )}
+                
+              </>}
           </CardContent>
         </Card>
 
-        <Button 
-          onClick={handleSave} 
-          size="lg" 
-          className="w-full"
-          disabled={saveLoyaltyProgram.isPending}
-        >
+        <Button onClick={handleSave} size="lg" className="w-full" disabled={saveLoyaltyProgram.isPending}>
           {saveLoyaltyProgram.isPending ? "Salvando..." : "Salvar Programa"}
         </Button>
       </div>
-    </>
-  );
+    </>;
 };
-
 export default LoyaltyProgram;
