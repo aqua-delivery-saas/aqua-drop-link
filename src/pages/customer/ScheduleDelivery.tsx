@@ -343,20 +343,24 @@ const ScheduleDelivery = () => {
                       <Label htmlFor="containerYearStart">Ano Inicial</Label>
                       <Input
                         id="containerYearStart"
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={4}
                         placeholder="Ex: 2018"
                         value={containerYearStart}
-                        onChange={(e) => setContainerYearStart(e.target.value)}
+                        onChange={(e) => setContainerYearStart(e.target.value.replace(/\D/g, '').slice(0, 4))}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="containerYearEnd">Ano Final</Label>
                       <Input
                         id="containerYearEnd"
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={4}
                         placeholder="Ex: 2023"
                         value={containerYearEnd}
-                        onChange={(e) => setContainerYearEnd(e.target.value)}
+                        onChange={(e) => setContainerYearEnd(e.target.value.replace(/\D/g, '').slice(0, 4))}
                       />
                     </div>
                   </div>
