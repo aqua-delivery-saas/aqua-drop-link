@@ -172,6 +172,8 @@ const ScheduleDelivery = () => {
           distributor: distribuidora.name,
           scheduledDate: selectedDate.toLocaleDateString('pt-BR'),
           scheduledTime: selectedTime,
+          customerPhone: customerPhone,
+          pixKey: (distribuidora as any).pix_key || null,
           whatsappUrl: distribuidora.whatsapp ? `https://wa.me/${distribuidora.whatsapp}?text=${encodeURIComponent(
             `Olá! Agendamento #${createdOrder.order_number}:\n\nProduto: ${product.name}\nQtd: ${quantity}\nData: ${selectedDate.toLocaleDateString('pt-BR')}\nHorário: ${selectedTime}\nTotal: R$ ${totalValue.toFixed(2)}\nEndereço: ${address}\nPagamento: ${paymentMethod}${notes ? `\nObs: ${notes}` : ''}`
           )}` : null,

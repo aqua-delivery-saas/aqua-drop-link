@@ -44,18 +44,31 @@ const OrderConfirmation = () => {
   };
 
   const handleWhatsApp = () => {
-    if (orderData.whatsappUrl) {
-      window.open(orderData.whatsappUrl, "_blank");
-    } else {
-      const message = encodeURIComponent(
-        `Olá! Acabei de fazer um pedido${orderData.orderNumber ? ` #${orderData.orderNumber}` : ""}:\n\n` +
-          `Produto: ${orderData.product} × ${orderData.quantity}\n` +
-          `Endereço: ${orderData.address}\n` +
-          `Pagamento: ${orderData.paymentMethod}\n` +
-          `Total: R$ ${orderData.total.toFixed(2)}`,
-      );
-      window.open(`https://wa.me/5511999999999?text=${message}`, "_blank");
+    // Send confirmation to customer's phone
+    const phoneNumber = orderData.customerPhone?.replace(/\D/g, '') || '';
+    
+    if (!phoneNumber) {
+      toast.error("Telefone não disponível para envio");
+      return;
     }
+    
+    // Ensure 55 prefix for Brazil
+    const formattedPhone = phoneNumber.startsWith('55') 
+      ? phoneNumber 
+      : `55${phoneNumber}`;
+    
+    const message = encodeURIComponent(
+      `📦 *Confirmação do Pedido${orderData.orderNumber ? ` #${orderData.orderNumber}` : ""}*\n\n` +
+      `📌 *Produto:* ${orderData.product} × ${orderData.quantity}\n` +
+      `📍 *Endereço:* ${orderData.address}\n` +
+      `💳 *Pagamento:* ${orderData.paymentMethod}\n` +
+      `${orderData.discount > 0 ? `🎉 *Desconto:* -R$ ${orderData.discount.toFixed(2)}\n` : ''}` +
+      `💰 *Total:* R$ ${orderData.total.toFixed(2)}\n\n` +
+      `🏪 *Distribuidora:* ${orderData.distributor}\n\n` +
+      `Obrigado pela sua compra! 💧`
+    );
+    
+    window.open(`https://wa.me/${formattedPhone}?text=${message}`, "_blank");
   };
 
   return (
@@ -68,7 +81,7 @@ const OrderConfirmation = () => {
 
       <main className="container mx-auto px-4 py-8 md:py-16 max-w-3xl">
         {/* Success Animation Header */}
-        <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="text-center mb-8 animate-in fade-in duration-700">
           <div className="relative inline-flex mb-6">
             <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
             <div className="relative rounded-full bg-gradient-to-br from-primary to-secondary p-4">
@@ -87,7 +100,7 @@ const OrderConfirmation = () => {
         </div>
 
         {/* Order Details Card */}
-        <Card className="shadow-2xl border-2 mb-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150">
+        <Card className="shadow-2xl border-2 mb-6 animate-in fade-in duration-700 delay-150">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-center gap-2 mb-6 pb-4 border-b">
               <Package className="h-6 w-6 text-primary" />
@@ -197,10 +210,10 @@ const OrderConfirmation = () => {
         </Card>
 
         {/* Action Buttons */}
-        <div className="space-y-3 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+        <div className="space-y-3 animate-in fade-in duration-700 delay-300">
           <Button onClick={handleWhatsApp} size="lg" className="w-full text-base group" variant="secondary">
             <MessageCircle className="h-5 w-5 group-hover:scale-110 transition-transform" />
-            Enviar confirmação no WhatsApp
+            Salvar comprovante no WhatsApp
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Button>
 
