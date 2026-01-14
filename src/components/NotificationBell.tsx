@@ -65,56 +65,70 @@ export function NotificationBell() {
           </div>
         ) : (
           <ScrollArea className="h-[400px]">
-            {notifications.map((notification) => {
-              const config = notificationConfig[notification.type];
-              
-              return (
-                <DropdownMenuItem
-                  key={notification.id}
-                  className={cn(
-                    "flex flex-col items-start p-4 cursor-pointer border-b border-border last:border-b-0",
-                    !notification.read 
-                      ? 'bg-primary/10 hover:bg-primary/15' 
-                      : 'hover:bg-muted/50'
-                  )}
-                  onClick={() => handleNotificationClick(notification.id, notification.link)}
-                >
-                  <div className="flex items-start justify-between w-full gap-3">
-                    <div className="flex items-start gap-3 flex-1">
-                      <span className="text-lg mt-0.5 shrink-0">{config.icon}</span>
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <p className={cn(
-                          "text-sm font-semibold",
-                          !notification.read ? "text-primary" : "text-foreground"
-                        )}>
-                          {notification.title}
-                        </p>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-muted-foreground/70">
-                          {formatDistanceToNow(notification.timestamp, {
-                            addSuffix: true,
-                            locale: ptBR
-                          })}
-                        </p>
+            <div className="space-y-2 p-2">
+              {notifications.map((notification) => {
+                const config = notificationConfig[notification.type];
+                const isUnread = !notification.read;
+                
+                return (
+                  <DropdownMenuItem
+                    key={notification.id}
+                    className={cn(
+                      "flex flex-col items-start p-4 cursor-pointer rounded-lg",
+                      isUnread 
+                        ? 'bg-primary text-white hover:bg-primary/90' 
+                        : 'bg-muted/30 hover:bg-muted/50'
+                    )}
+                    onClick={() => handleNotificationClick(notification.id, notification.link)}
+                  >
+                    <div className="flex items-start justify-between w-full gap-3">
+                      <div className="flex items-start gap-3 flex-1">
+                        <span className="text-lg mt-0.5 shrink-0">{config.icon}</span>
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <p className={cn(
+                            "text-sm font-semibold",
+                            isUnread ? "text-white" : "text-foreground"
+                          )}>
+                            {notification.title}
+                          </p>
+                          <p className={cn(
+                            "text-sm line-clamp-2",
+                            isUnread ? "text-white/90" : "text-muted-foreground"
+                          )}>
+                            {notification.message}
+                          </p>
+                          <p className={cn(
+                            "text-xs",
+                            isUnread ? "text-white/70" : "text-muted-foreground/70"
+                          )}>
+                            {formatDistanceToNow(notification.timestamp, {
+                              addSuffix: true,
+                              locale: ptBR
+                            })}
+                          </p>
+                        </div>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          "h-7 w-7 shrink-0",
+                          isUnread 
+                            ? "text-white/70 hover:text-white hover:bg-white/20" 
+                            : "text-muted-foreground hover:text-destructive"
+                        )}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notification.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteNotification(notification.id);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </DropdownMenuItem>
-              );
-            })}
+                  </DropdownMenuItem>
+                );
+              })}
+            </div>
           </ScrollArea>
         )}
       </DropdownMenuContent>
