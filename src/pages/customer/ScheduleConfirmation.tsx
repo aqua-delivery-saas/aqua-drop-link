@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/Logo";
-import { CheckCircle2, Calendar, Clock, MapPin, CreditCard, Bell, Copy, Check } from "lucide-react";
+import { CheckCircle2, Calendar, Clock, MapPin, CreditCard, Bell, Copy, Check, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
@@ -21,6 +21,36 @@ const ScheduleConfirmation = () => {
       toast.success("Chave PIX copiada!");
       setTimeout(() => setPixCopied(false), 2000);
     }
+  };
+
+  const handleWhatsApp = () => {
+    // Send confirmation to customer's phone
+    const phoneNumber = orderData?.customerPhone?.replace(/\D/g, '') || '';
+    
+    if (!phoneNumber) {
+      toast.error("Telefone não disponível para envio");
+      return;
+    }
+    
+    // Ensure 55 prefix for Brazil
+    const formattedPhone = phoneNumber.startsWith('55') 
+      ? phoneNumber 
+      : `55${phoneNumber}`;
+    
+    const message = encodeURIComponent(
+      `📅 *Confirmação de Agendamento${orderData.orderNumber ? ` #${orderData.orderNumber}` : ""}*\n\n` +
+      `📌 *Produto:* ${orderData.product} × ${orderData.quantity}\n` +
+      `📆 *Data:* ${orderData.scheduledDate}\n` +
+      `⏰ *Horário:* ${orderData.scheduledTime}\n` +
+      `📍 *Endereço:* ${orderData.address}\n` +
+      `💳 *Pagamento:* ${orderData.paymentMethod}\n` +
+      `${orderData.discount > 0 ? `🎉 *Desconto:* -R$ ${orderData.discount.toFixed(2)}\n` : ''}` +
+      `💰 *Total:* R$ ${orderData.total.toFixed(2)}\n\n` +
+      `🏪 *Distribuidora:* ${orderData.distributor}\n\n` +
+      `Obrigado pelo agendamento! 💧`
+    );
+    
+    window.open(`https://wa.me/${formattedPhone}?text=${message}`, "_blank");
   };
 
   if (!orderData) {
@@ -52,8 +82,8 @@ const ScheduleConfirmation = () => {
     distributor,
     scheduledDate,
     scheduledTime,
-    whatsappUrl,
-    pixKey
+    pixKey,
+    orderNumber
   } = orderData;
 
   return (
@@ -71,7 +101,7 @@ const ScheduleConfirmation = () => {
         </header>
 
         <main className="container mx-auto px-4 py-8 max-w-2xl">
-          <Card className="shadow-xl border-primary">
+          <Card className="shadow-xl border-primary animate-in fade-in duration-700">
             <CardHeader className="text-center pb-4">
               <div className="flex justify-center mb-4">
                 <CheckCircle2 className="h-20 w-20 text-primary animate-scale-in" />
@@ -197,9 +227,10 @@ const ScheduleConfirmation = () => {
                 <Button 
                   size="lg" 
                   className="w-full" 
-                  onClick={() => window.open(whatsappUrl, '_blank')}
+                  onClick={handleWhatsApp}
                 >
-                  Confirmar pelo WhatsApp
+                  <MessageCircle className="h-5 w-5 mr-2" />
+                  Salvar comprovante no WhatsApp
                 </Button>
                 
                 <Button 
@@ -221,7 +252,7 @@ const ScheduleConfirmation = () => {
 
               <div className="text-center pt-4 border-t">
                 <Badge variant="outline" className="text-xs">
-                  Agendamento #{Math.floor(Math.random() * 10000)}
+                  Agendamento #{orderNumber || Math.floor(Math.random() * 10000)}
                 </Badge>
               </div>
             </CardContent>
