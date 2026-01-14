@@ -24,16 +24,16 @@ const Index = () => {
         <meta name="description" content="Encontre distribuidoras de água mineral perto de você. Peça água de forma rápida e simples." />
       </Helmet>
 
-      <div className="min-h-screen relative">
+      <div className="min-h-[100dvh] relative overflow-hidden">
         {/* Background Image */}
-        <div className="absolute inset-0 bg-cover bg-center" style={{
+        <div className="fixed inset-0 bg-cover bg-center bg-no-repeat" style={{
         backgroundImage: `url(${heroWater})`
       }}>
           <div className="absolute inset-0 bg-black/60" />
         </div>
 
         {/* Content */}
-        <div className="relative z-10 min-h-screen flex flex-col">
+        <div className="relative z-10 min-h-[100dvh] flex flex-col">
           {/* Header */}
           <header className="py-4 px-3 sm:px-6">
             <div className="max-w-6xl mx-auto flex justify-between items-center">
