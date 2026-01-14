@@ -71,22 +71,28 @@ export function NotificationBell() {
               return (
                 <DropdownMenuItem
                   key={notification.id}
-                  className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${
-                    !notification.read ? 'bg-accent/50' : ''
-                  }`}
+                  className={cn(
+                    "flex flex-col items-start p-4 cursor-pointer border-b border-border last:border-b-0",
+                    !notification.read 
+                      ? 'bg-primary/10 hover:bg-primary/15' 
+                      : 'hover:bg-muted/50'
+                  )}
                   onClick={() => handleNotificationClick(notification.id, notification.link)}
                 >
-                  <div className="flex items-start justify-between w-full gap-2">
-                    <div className="flex items-start gap-2 flex-1">
-                      <span className="text-lg mt-0.5">{config.icon}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium ${config.color}`}>
+                  <div className="flex items-start justify-between w-full gap-3">
+                    <div className="flex items-start gap-3 flex-1">
+                      <span className="text-lg mt-0.5 shrink-0">{config.icon}</span>
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <p className={cn(
+                          "text-sm font-semibold",
+                          !notification.read ? "text-primary" : "text-foreground"
+                        )}>
                           {notification.title}
                         </p>
                         <p className="text-sm text-muted-foreground line-clamp-2">
                           {notification.message}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-muted-foreground/70">
                           {formatDistanceToNow(notification.timestamp, {
                             addSuffix: true,
                             locale: ptBR
@@ -97,13 +103,13 @@ export function NotificationBell() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 shrink-0"
+                      className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
                       onClick={(e) => {
                         e.stopPropagation();
                         deleteNotification(notification.id);
                       }}
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </DropdownMenuItem>
