@@ -52,6 +52,10 @@ import FinancialReports from "./pages/admin/FinancialReports";
 import BrandList from "./pages/admin/BrandList";
 import AuthCallback from "./pages/AuthCallback";
 
+// Demo Pages
+import DemoOrderPage from "./pages/demo/DemoOrderPage";
+import DemoOrderConfirmation from "./pages/demo/DemoOrderConfirmation";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -188,6 +192,10 @@ const App = () => (
               } 
             />
             <Route path="/schedule/confirmation" element={<ScheduleConfirmation />} />
+            
+            {/* Demo Routes */}
+            <Route path="/demo/order" element={<DemoOrderPage />} />
+            <Route path="/demo/confirmation" element={<DemoOrderConfirmation />} />
             
             {/* Legal & Support Routes */}
             <Route path="/terms" element={<Terms />} />
