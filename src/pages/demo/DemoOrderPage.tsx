@@ -174,9 +174,7 @@ const DemoOrderPage = () => {
           </Card>
 
           {/* Status Card - Always Open in Demo */}
-          <Card className="border-primary/20">
-            
-          </Card>
+          
 
           <form onSubmit={handleOrder} className="space-y-4">
             {/* Product Selection */}
