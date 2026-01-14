@@ -187,7 +187,7 @@ const OrderConfirmation = () => {
                       ) : (
                         <Copy className="h-4 w-4 text-green-600" />
                       )}
-                      <span className="ml-2">{pixCopied ? "Copiado!" : "Copiar"}</span>
+                      <span>{pixCopied ? "Copiado!" : "Copiar"}</span>
                     </Button>
                   </div>
                 </div>
@@ -199,9 +199,9 @@ const OrderConfirmation = () => {
         {/* Action Buttons */}
         <div className="space-y-3 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
           <Button onClick={handleWhatsApp} size="lg" className="w-full text-base group" variant="secondary">
-            <MessageCircle className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+            <MessageCircle className="h-5 w-5 group-hover:scale-110 transition-transform" />
             Enviar confirmação no WhatsApp
-            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Button>
 
           <Button onClick={() => navigate(-2)} size="lg" className="w-full text-base" variant="outline">
