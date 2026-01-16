@@ -225,7 +225,7 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Telefone *</FormLabel>
+                <FormLabel>Telefone Comercial *</FormLabel>
                 <FormControl>
                   <Input 
                     type="tel"
@@ -237,7 +237,7 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
                     }}
                   />
                 </FormControl>
-                <FormDescription>Formato: (XX) XXXXX-XXXX</FormDescription>
+                <FormDescription>Número de contato da distribuidora</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -248,7 +248,7 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
             name="whatsapp"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>WhatsApp *</FormLabel>
+                <FormLabel>WhatsApp Comercial *</FormLabel>
                 <FormControl>
                   <Input 
                     type="tel"
@@ -260,7 +260,7 @@ export const OnboardingStep1 = ({ onNext, initialData }: OnboardingStep1Props) =
                     }}
                   />
                 </FormControl>
-                <FormDescription>Celular com DDD (11 dígitos)</FormDescription>
+                <FormDescription>Receberá notificações de novos pedidos</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
