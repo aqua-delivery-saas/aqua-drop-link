@@ -114,9 +114,9 @@ const Onboarding = () => {
         setOnboardingData(prev => ({
           ...prev,
           distributor: {
-            name: parsed.name || '',
+            name: '', // Deixar vazio - é o nome da DISTRIBUIDORA, não do usuário
             cnpj: '',
-            phone: parsed.whatsapp || '',
+            phone: '', // Deixar vazio - é o telefone COMERCIAL, não pessoal
             street: '',
             number: '',
             complement: '',
