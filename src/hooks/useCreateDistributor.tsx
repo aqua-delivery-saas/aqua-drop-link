@@ -68,15 +68,46 @@ const generateSeoData = (distributor: DistributorData) => {
   return { meta_title, meta_description, meta_keywords: keywords };
 };
 
-const generateSlug = (name: string): string => {
-  return name
+const generateUniqueSlug = async (name: string): Promise<string> => {
+  const baseSlug = name
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // Remove accents
     .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
     .trim();
+
+  // Check if base slug already exists
+  const { data: existing } = await supabase
+    .from('distributors')
+    .select('slug')
+    .ilike('slug', `${baseSlug}%`);
+
+  if (!existing || existing.length === 0) {
+    return baseSlug;
+  }
+
+  const existingSlugs = existing.map(d => d.slug);
+  
+  if (!existingSlugs.includes(baseSlug)) {
+    return baseSlug;
+  }
+
+  // Find next available numeric suffix
+  let maxSuffix = 1;
+  for (const slug of existingSlugs) {
+    const match = slug.match(new RegExp(`^${baseSlug}-(\\d+)$`));
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num >= maxSuffix) {
+        maxSuffix = num + 1;
+      }
+    }
+  }
+
+  return `${baseSlug}-${maxSuffix}`;
 };
 
 const generateCitySlug = (cityName: string, state: string): string => {
@@ -157,7 +188,7 @@ export function useCreateDistributor() {
       const seoData = generateSeoData(data.distributor);
 
       // 2. Create distributor
-      const slug = generateSlug(data.distributor.name);
+      const slug = await generateUniqueSlug(data.distributor.name);
       
       const { data: distributor, error: distributorError } = await supabase
         .from('distributors')
