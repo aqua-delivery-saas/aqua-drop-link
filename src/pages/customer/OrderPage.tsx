@@ -371,15 +371,20 @@ const OrderPage = () => {
       </div>;
   }
   if (!distribuidora) {
-    return <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="max-w-md">
+    return <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="max-w-md w-full text-center">
           <CardHeader>
-            <CardTitle>Distribuidora não encontrada</CardTitle>
-            <CardDescription>A distribuidora que você procura não existe.</CardDescription>
+            <div className="mx-auto mb-4">
+              <AlertTriangle className="h-12 w-12 text-muted-foreground" />
+            </div>
+            <CardTitle>Distribuidora Indisponível</CardTitle>
+            <CardDescription>
+              Esta distribuidora não está disponível para pedidos no momento.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => navigate("/")} className="w-full">
-              Voltar para Home
+              Voltar ao Início
             </Button>
           </CardContent>
         </Card>
