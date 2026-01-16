@@ -64,7 +64,7 @@ export const OnboardingStep2 = ({ onNext, onBack, initialData }: OnboardingStep2
           <Card key={day.key} className="p-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <div className="flex items-center justify-between sm:justify-start sm:min-w-[180px] gap-4">
-                <Label className="font-medium">{day.label}</Label>
+                <Label className="font-medium min-w-[120px]">{day.label}</Label>
                 <Switch
                   checked={hours[day.key]?.active}
                   onCheckedChange={(checked) => handleChange(day.key, "active", checked)}
