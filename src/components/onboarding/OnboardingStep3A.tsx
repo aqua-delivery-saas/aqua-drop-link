@@ -44,6 +44,7 @@ export const OnboardingStep3A = ({ onNext, onBack, initialData }: OnboardingStep
 
   const toggleBrand = (id: string) => {
     setError(null);
+    setSearchTerm(""); // Limpa a busca ao selecionar
     setSelectedIds(prev => 
       prev.includes(id) 
         ? prev.filter(i => i !== id) 
