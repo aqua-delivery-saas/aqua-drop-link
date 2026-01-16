@@ -131,6 +131,14 @@ const SignupDistributor = () => {
           <CardDescription>Dados do responsável pela distribuidora</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-6">
+            <SocialLoginButtons 
+              redirectPath="/distributor/onboarding" 
+              accountType="distributor"
+              enabledProviders={["google"]}
+            />
+          </div>
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -229,10 +237,6 @@ const SignupDistributor = () => {
               </Button>
             </form>
           </Form>
-
-          <div className="mt-6">
-            <SocialLoginButtons redirectPath="/distributor/onboarding" accountType="distributor" />
-          </div>
 
           <div className="text-center text-sm mt-4">
             <span className="text-muted-foreground">Já tem conta? </span>
