@@ -127,8 +127,8 @@ const SignupDistributor = () => {
           <div className="flex justify-center mb-4">
             <Logo size="md" />
           </div>
-          <CardTitle className="text-3xl">Criar Conta da Distribuidora</CardTitle>
-          <CardDescription>Comece a gerenciar seus pedidos hoje</CardDescription>
+          <CardTitle className="text-3xl">Criar Conta</CardTitle>
+          <CardDescription>Dados do responsável pela distribuidora</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -138,9 +138,9 @@ const SignupDistributor = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome da Distribuidora</FormLabel>
+                    <FormLabel>Seu Nome Completo</FormLabel>
                     <FormControl>
-                      <Input placeholder="Água Cristalina Ltda" {...field} />
+                      <Input placeholder="João da Silva" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -156,7 +156,7 @@ const SignupDistributor = () => {
                     <FormControl>
                       <Input 
                         type="email" 
-                        placeholder="contato@distribuidora.com" 
+                        placeholder="seu@email.com" 
                         className={form.formState.errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
                         {...field} 
                       />
@@ -199,7 +199,7 @@ const SignupDistributor = () => {
                 name="whatsapp"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>WhatsApp</FormLabel>
+                    <FormLabel>Seu WhatsApp Pessoal</FormLabel>
                     <FormControl>
                       <Input 
                         type="tel" 
@@ -212,7 +212,7 @@ const SignupDistributor = () => {
                       />
                     </FormControl>
                     <FormDescription>
-                      Formato: (DDD) 9XXXX-XXXX
+                      Você receberá notificações neste número
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
