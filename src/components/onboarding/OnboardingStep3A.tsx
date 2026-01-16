@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, ArrowRight, Loader2, Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBrands } from "@/hooks/useBrands";
 
@@ -26,6 +27,7 @@ export const OnboardingStep3A = ({ onNext, onBack, initialData }: OnboardingStep
     initialData?.map(m => m.id) || []
   );
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Map brands from database to component format
   const marcasDisponiveis = brands?.filter(b => b.is_active).map(brand => ({
@@ -34,6 +36,11 @@ export const OnboardingStep3A = ({ onNext, onBack, initialData }: OnboardingStep
     litros: 20, // Default value for galões
     logo: brand.logo_url || "",
   })) || [];
+
+  // Filter brands based on search term
+  const marcasFiltradas = marcasDisponiveis.filter(marca =>
+    marca.nome.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const toggleBrand = (id: string) => {
     setError(null);
@@ -89,38 +96,57 @@ export const OnboardingStep3A = ({ onNext, onBack, initialData }: OnboardingStep
           <p className="text-sm">Entre em contato com o administrador.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[320px] overflow-y-auto pr-2">
-        {marcasDisponiveis.map((marca) => {
-          const isSelected = selectedIds.includes(marca.id);
-          return (
-            <Card
-              key={marca.id}
-              className={`p-4 cursor-pointer transition-all border-2 ${
-                isSelected 
-                  ? "border-primary bg-primary/5" 
-                  : "border-transparent hover:border-muted-foreground/20"
-              }`}
-              onClick={() => toggleBrand(marca.id)}
-            >
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  checked={isSelected}
-                  onCheckedChange={() => toggleBrand(marca.id)}
-                  className="pointer-events-none"
-                />
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={marca.logo} alt={marca.nome} />
-                  <AvatarFallback>{marca.nome.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <p className="font-medium">{marca.nome}</p>
-                  <p className="text-sm text-muted-foreground">{marca.litros}L</p>
-                </div>
-              </div>
-          </Card>
-          );
-        })}
-      </div>
+        <>
+          {/* Search input */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar marca..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
+          {marcasFiltradas.length === 0 && searchTerm ? (
+            <div className="text-center py-6 text-muted-foreground">
+              <p>Nenhuma marca encontrada para "{searchTerm}"</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[280px] overflow-y-auto pr-2">
+              {marcasFiltradas.map((marca) => {
+                const isSelected = selectedIds.includes(marca.id);
+                return (
+                  <Card
+                    key={marca.id}
+                    className={`p-4 cursor-pointer transition-all border-2 ${
+                      isSelected 
+                        ? "border-primary bg-primary/5" 
+                        : "border-transparent hover:border-muted-foreground/20"
+                    }`}
+                    onClick={() => toggleBrand(marca.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => toggleBrand(marca.id)}
+                        className="pointer-events-none"
+                      />
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={marca.logo} alt={marca.nome} />
+                        <AvatarFallback>{marca.nome.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-medium">{marca.nome}</p>
+                        <p className="text-sm text-muted-foreground">{marca.litros}L</p>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
 
       <p className="text-sm text-muted-foreground text-center">
