@@ -20,6 +20,7 @@ export interface OnboardingDraftData {
     state?: string;
     city_id?: string | null;
     pix_key?: string;
+    logo_url?: string;
   } | null;
   business_hours_data: {
     [key: string]: { open: string; close: string; active: boolean };

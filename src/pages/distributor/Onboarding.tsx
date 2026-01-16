@@ -73,6 +73,8 @@ const Onboarding = () => {
         city: draft.distributor_data.city || '',
         state: draft.distributor_data.state || '',
         city_id: draft.distributor_data.city_id,
+        pix_key: draft.distributor_data.pix_key,
+        logo_url: draft.distributor_data.logo_url,
       } : undefined;
       
       // Convert brands/products with required logo field
@@ -260,6 +262,7 @@ const Onboarding = () => {
           state: onboardingData.distributor?.state,
           city_id: onboardingData.distributor?.city_id,
           logo_url: onboardingData.distributor?.logo_url,
+          pix_key: onboardingData.distributor?.pix_key,
         },
         businessHours: onboardingData.businessHours,
         products,
