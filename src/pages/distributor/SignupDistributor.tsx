@@ -94,6 +94,19 @@ const SignupDistributor = () => {
         return;
       }
 
+      // 2.1 Update profile with phone
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          phone: data.whatsapp,
+        })
+        .eq('id', authData.user.id);
+
+      if (profileError) {
+        console.error('Error updating profile phone:', profileError);
+        // Don't block the flow, just log the error
+      }
+
       // 3. Save initial data to sessionStorage for onboarding
       sessionStorage.setItem('distributorSignup', JSON.stringify({
         name: data.name,
