@@ -59,49 +59,35 @@ export const OnboardingStep2 = ({ onNext, onBack, initialData }: OnboardingStep2
         <p className="text-muted-foreground">Defina quando sua distribuidora estará disponível</p>
       </div>
 
-      {/* Day selection - all checkboxes in one line */}
-      <Card className="p-4">
-        <Label className="font-medium mb-3 block">Dias de funcionamento</Label>
-        <div className="flex flex-wrap gap-3">
-          {daysOfWeek.map((day) => (
-            <div 
-              key={day.key} 
-              className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2"
-            >
-              <Label className="text-sm font-normal cursor-pointer" htmlFor={`day-${day.key}`}>
-                {day.label.replace('-feira', '')}
-              </Label>
-              <Switch
-                id={`day-${day.key}`}
-                checked={hours[day.key]?.active}
-                onCheckedChange={(checked) => handleChange(day.key, "active", checked)}
-              />
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Time inputs for active days */}
       <div className="space-y-3">
-        {daysOfWeek.filter(day => hours[day.key]?.active).map((day) => (
+        {daysOfWeek.map((day) => (
           <Card key={day.key} className="p-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <Label className="font-medium sm:min-w-[140px]">{day.label}</Label>
-              <div className="flex items-center gap-2 flex-1">
-                <Input
-                  type="time"
-                  value={hours[day.key]?.open || ""}
-                  onChange={(e) => handleChange(day.key, "open", e.target.value)}
-                  className="w-32"
-                />
-                <span className="text-muted-foreground">às</span>
-                <Input
-                  type="time"
-                  value={hours[day.key]?.close || ""}
-                  onChange={(e) => handleChange(day.key, "close", e.target.value)}
-                  className="w-32"
+              <div className="flex items-center justify-between sm:justify-start sm:min-w-[180px] gap-4">
+                <Label className="font-medium">{day.label}</Label>
+                <Switch
+                  checked={hours[day.key]?.active}
+                  onCheckedChange={(checked) => handleChange(day.key, "active", checked)}
                 />
               </div>
+
+              {hours[day.key]?.active && (
+                <div className="flex items-center gap-2 flex-1">
+                  <Input
+                    type="time"
+                    value={hours[day.key]?.open || ""}
+                    onChange={(e) => handleChange(day.key, "open", e.target.value)}
+                    className="w-32"
+                  />
+                  <span className="text-muted-foreground">às</span>
+                  <Input
+                    type="time"
+                    value={hours[day.key]?.close || ""}
+                    onChange={(e) => handleChange(day.key, "close", e.target.value)}
+                    className="w-32"
+                  />
+                </div>
+              )}
             </div>
           </Card>
         ))}
