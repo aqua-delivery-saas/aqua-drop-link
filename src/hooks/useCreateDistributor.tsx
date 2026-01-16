@@ -242,25 +242,31 @@ export function useCreateDistributor() {
         }
       }
 
-      // 3. Create products if provided
+      // 3. Create products if provided (via Edge Function para bypass RLS de assinatura)
       if (data.products && data.products.length > 0) {
-        const productsInserts = data.products.map((product, index) => ({
-          distributor_id: distributor.id,
-          brand_id: product.brandId,
-          name: product.name,
-          liters: product.liters,
-          price: product.price,
-          is_available: true,
-          sort_order: index,
-        }));
+        const { data: session } = await supabase.auth.getSession();
+        
+        const response = await fetch(
+          `https://emeejnoqjvubxysxnmia.supabase.co/functions/v1/create-distributor-products`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.session?.access_token}`,
+            },
+            body: JSON.stringify({
+              distributorId: distributor.id,
+              products: data.products,
+            }),
+          }
+        );
 
-        const { error: productsError } = await supabase
-          .from('products')
-          .insert(productsInserts);
-
-        if (productsError) {
-          console.error('Error creating products:', productsError);
-          // Don't throw, just log - distributor is already created
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Error creating products via Edge Function:', errorData);
+          // Não interrompe o fluxo, apenas loga o erro
+        } else {
+          console.log('Products created successfully via Edge Function');
         }
       }
 
