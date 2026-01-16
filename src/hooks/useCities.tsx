@@ -76,6 +76,7 @@ export function useDistributorsByCity(cityId: string | undefined) {
       if (!cityId) return [];
 
       // Only select public commercial fields (whatsapp and cnpj are intentionally public)
+      // Filter by active subscription to hide distributors without confirmed subscription
       const { data, error } = await supabase
         .from('distributors')
         .select(`
@@ -101,10 +102,16 @@ export function useDistributorsByCity(cityId: string | undefined) {
           meta_title,
           meta_description,
           business_hours (*),
-          products (*)
+          products (*),
+          subscriptions!inner (
+            status,
+            expires_at
+          )
         `)
         .eq('city_id', cityId)
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .eq('subscriptions.status', 'active')
+        .gte('subscriptions.expires_at', new Date().toISOString());
 
       if (error) throw error;
       return data || [];
@@ -120,6 +127,7 @@ export function useDistributorBySlug(slug: string) {
       if (!slug) return null;
 
       // Only select public commercial fields (whatsapp and cnpj are intentionally public)
+      // Filter by active subscription to hide distributors without confirmed subscription
       const { data, error } = await supabase
         .from('distributors')
         .select(`
@@ -148,10 +156,16 @@ export function useDistributorBySlug(slug: string) {
           business_hours (*),
           products (*),
           discount_rules (*),
-          loyalty_programs (*)
+          loyalty_programs (*),
+          subscriptions!inner (
+            status,
+            expires_at
+          )
         `)
         .eq('slug', slug)
         .eq('is_active', true)
+        .eq('subscriptions.status', 'active')
+        .gte('subscriptions.expires_at', new Date().toISOString())
         .maybeSingle();
 
       if (error) throw error;
