@@ -2,13 +2,14 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Phone, Mail, Clock, ExternalLink, Heart } from "lucide-react";
+import { MapPin, Phone, Clock, Heart } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useCityBySlug, useDistributorsByCity, useCities } from "@/hooks/useCities";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isDistributorOpen } from "@/lib/businessHoursUtils";
 const CityDistributors = () => {
   const {
     citySlug
@@ -136,7 +137,21 @@ const CityDistributors = () => {
                       <CardHeader>
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <CardTitle className="text-2xl mb-2">{dist.name}</CardTitle>
+                            <div className="flex items-center gap-2 mb-2">
+                              <CardTitle className="text-2xl">{dist.name}</CardTitle>
+                              <Badge 
+                                variant={isDistributorOpen(dist.business_hours) ? "default" : "secondary"}
+                                className={cn(
+                                  "flex items-center gap-1",
+                                  isDistributorOpen(dist.business_hours) 
+                                    ? "bg-green-500 hover:bg-green-600 text-white" 
+                                    : "bg-gray-400 hover:bg-gray-500 text-white"
+                                )}
+                              >
+                                <Clock className="h-3 w-3" />
+                                {isDistributorOpen(dist.business_hours) ? "Aberta" : "Fechada"}
+                              </Badge>
+                            </div>
                             <CardDescription className="text-base">
                               {dist.meta_description || 'Distribuidora de água mineral'}
                             </CardDescription>
