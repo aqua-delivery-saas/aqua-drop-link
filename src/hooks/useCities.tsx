@@ -110,11 +110,21 @@ export function useDistributorsByCity(cityId: string | undefined) {
         `)
         .eq('city_id', cityId)
         .eq('is_active', true)
-        .eq('subscriptions.status', 'active')
-        .gte('subscriptions.expires_at', new Date().toISOString());
+        .eq('subscriptions.status', 'active');
 
       if (error) throw error;
-      return data || [];
+      
+      // Filter in JS to handle NULL expires_at as valid (no expiration set = valid)
+      const now = new Date();
+      const validDistributors = data?.filter(d => {
+        const sub = d.subscriptions?.[0];
+        if (!sub) return false;
+        // NULL expires_at = subscription without expiration = valid
+        if (!sub.expires_at) return true;
+        return new Date(sub.expires_at) >= now;
+      }) || [];
+
+      return validDistributors;
     },
     enabled: !!cityId,
   });
@@ -165,10 +175,20 @@ export function useDistributorBySlug(slug: string) {
         .eq('slug', slug)
         .eq('is_active', true)
         .eq('subscriptions.status', 'active')
-        .gte('subscriptions.expires_at', new Date().toISOString())
         .maybeSingle();
 
       if (error) throw error;
+      
+      // Validate expiration in JS to handle NULL expires_at as valid
+      if (data) {
+        const sub = data.subscriptions?.[0];
+        if (!sub) return null;
+        // NULL expires_at = subscription without expiration = valid
+        if (sub.expires_at && new Date(sub.expires_at) < new Date()) {
+          return null; // Expired
+        }
+      }
+      
       return data;
     },
     enabled: !!slug,
