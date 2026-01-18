@@ -249,6 +249,8 @@ serve(async (req) => {
           invoiceId: invoice.id,
           customerId: invoice.customer,
           amountPaid: invoice.amount_paid,
+          subscriptionId: invoice.subscription,
+          periodEnd: invoice.period_end,
         });
 
         // Get customer to find user
@@ -288,20 +290,42 @@ serve(async (req) => {
         }
 
         // Get subscription for this distributor
-        const { data: subscription } = await supabase
+        const { data: dbSubscription } = await supabase
           .from("subscriptions")
           .select("id")
           .eq("distributor_id", distributor.id)
           .single();
 
-        if (!subscription) {
+        if (!dbSubscription) {
           logStep("Subscription not found", { distributorId: distributor.id });
           break;
         }
 
+        // Update expires_at from invoice period_end (ensures renewal date is always correct)
+        if (invoice.period_end) {
+          const newExpiresAt = new Date(invoice.period_end * 1000).toISOString();
+          const { error: updateError } = await supabase
+            .from("subscriptions")
+            .update({
+              expires_at: newExpiresAt,
+              status: "active",
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", dbSubscription.id);
+
+          if (updateError) {
+            logStep("ERROR: Failed to update subscription expires_at", { error: updateError.message });
+          } else {
+            logStep("Subscription expires_at updated", { 
+              subscriptionId: dbSubscription.id, 
+              newExpiresAt 
+            });
+          }
+        }
+
         // Record payment
         const { error: paymentError } = await supabase.from("payments").insert({
-          subscription_id: subscription.id,
+          subscription_id: dbSubscription.id,
           amount: invoice.amount_paid / 100, // Convert from cents
           status: "paid",
           payment_method: "Stripe",
@@ -317,7 +341,7 @@ serve(async (req) => {
         if (paymentError) {
           logStep("ERROR: Failed to record payment", { error: paymentError.message });
         } else {
-          logStep("Payment recorded", { subscriptionId: subscription.id });
+          logStep("Payment recorded", { subscriptionId: dbSubscription.id });
         }
         break;
       }
