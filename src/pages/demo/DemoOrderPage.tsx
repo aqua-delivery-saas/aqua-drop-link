@@ -71,6 +71,8 @@ const DemoOrderPage = () => {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [notes, setNotes] = useState("");
+  const [containerYearStart, setContainerYearStart] = useState("");
+  const [containerYearEnd, setContainerYearEnd] = useState("");
 
   // Calculate discount based on quantity
   const calculateDiscount = (qty: number): number => {
@@ -223,6 +225,44 @@ const DemoOrderPage = () => {
                 {discountPercentage === 0 && quantity >= 2 && <div className="bg-muted/50 rounded-lg p-3 text-center text-sm text-muted-foreground">
                     <span>💡 Compre {3 - quantity} ou mais para ganhar 5% de desconto!</span>
                   </div>}
+              </CardContent>
+            </Card>
+
+            {/* Container Year */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Ano do Vasilhame</CardTitle>
+                <CardDescription>
+                  Informe o ano de fabricação do seu galão (geralmente gravado no fundo)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="containerYearStart">Ano Inicial</Label>
+                    <Input
+                      id="containerYearStart"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={4}
+                      placeholder="Ex: 2018"
+                      value={containerYearStart}
+                      onChange={(e) => setContainerYearStart(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="containerYearEnd">Ano Final</Label>
+                    <Input
+                      id="containerYearEnd"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={4}
+                      placeholder="Ex: 2023"
+                      value={containerYearEnd}
+                      onChange={(e) => setContainerYearEnd(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    />
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
