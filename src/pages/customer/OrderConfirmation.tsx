@@ -25,6 +25,10 @@ const OrderConfirmation = () => {
   const [pixCopied, setPixCopied] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (!orderData) {
       navigate("/");
     }
