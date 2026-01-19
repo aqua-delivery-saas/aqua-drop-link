@@ -115,9 +115,10 @@ export function useDistributorsByCity(cityId: string | undefined) {
       if (error) throw error;
       
       // Filter in JS to handle NULL expires_at as valid (no expiration set = valid)
+      // Normalize subscriptions: can be array (many-to-one) or object (one-to-one)
       const now = new Date();
       const validDistributors = data?.filter(d => {
-        const sub = d.subscriptions?.[0];
+        const sub = Array.isArray(d.subscriptions) ? d.subscriptions[0] : d.subscriptions;
         if (!sub) return false;
         // NULL expires_at = subscription without expiration = valid
         if (!sub.expires_at) return true;
@@ -180,8 +181,9 @@ export function useDistributorBySlug(slug: string) {
       if (error) throw error;
       
       // Validate expiration in JS to handle NULL expires_at as valid
+      // Normalize subscriptions: can be array (many-to-one) or object (one-to-one)
       if (data) {
-        const sub = data.subscriptions?.[0];
+        const sub = Array.isArray(data.subscriptions) ? data.subscriptions[0] : data.subscriptions;
         if (!sub) return null;
         // NULL expires_at = subscription without expiration = valid
         if (sub.expires_at && new Date(sub.expires_at) < new Date()) {
