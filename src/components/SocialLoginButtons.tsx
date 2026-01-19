@@ -10,10 +10,10 @@ interface SocialLoginButtonsProps {
   enabledProviders?: ("google" | "facebook")[];
 }
 
-export const SocialLoginButtons = ({ 
-  redirectPath = "/", 
+export const SocialLoginButtons = ({
+  redirectPath = "/",
   accountType = "customer",
-  enabledProviders = ["google", "facebook"]
+  enabledProviders = ["google", "facebook"],
 }: SocialLoginButtonsProps) => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [facebookLoading, setFacebookLoading] = useState(false);
@@ -63,11 +63,11 @@ export const SocialLoginButtons = ({
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-muted-foreground">Cadastre-se com</span>
+          <span className="bg-card px-2 text-muted-foreground">Faça login com</span>
         </div>
       </div>
 
-      <div className={`grid gap-3 ${singleProvider ? 'grid-cols-1' : 'grid-cols-2'}`}>
+      <div className={`grid gap-3 ${singleProvider ? "grid-cols-1" : "grid-cols-2"}`}>
         {showGoogle && (
           <Button
             type="button"
