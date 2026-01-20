@@ -248,7 +248,7 @@ const SignupCustomer = () => {
           </Form>
 
           <div className="mt-6">
-            <SocialLoginButtons redirectPath="/customer/history" />
+            <SocialLoginButtons redirectPath="/customer/history" enabledProviders={["google"]} />
           </div>
 
           <div className="text-center text-sm mt-4">
