@@ -129,7 +129,7 @@ const LoginCustomer = () => {
             </form>
 
             <div className="mt-6">
-              <SocialLoginButtons redirectPath="/customer/history" />
+              <SocialLoginButtons redirectPath="/customer/history" enabledProviders={["google"]} />
             </div>
 
             <div className="text-center space-y-2 mt-4">
