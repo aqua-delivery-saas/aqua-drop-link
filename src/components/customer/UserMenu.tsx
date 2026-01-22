@@ -18,11 +18,17 @@ import {
 } from "@/components/ui/sheet";
 import { User, LogOut, ClipboardList, UserCircle, Menu, LogIn, UserPlus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
 
-export const UserMenu = () => {
+interface UserMenuProps {
+  variant?: 'light' | 'dark';
+}
+
+export const UserMenu = ({ variant = 'light' }: UserMenuProps) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const isDark = variant === 'dark';
 
   const handleLogout = async () => {
     await logout();
@@ -39,7 +45,7 @@ export const UserMenu = () => {
   const MobileMenu = () => (
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="icon" className={cn("md:hidden", isDark && "text-white hover:bg-white/10")}>
           <Menu className="h-6 w-6" />
           <span className="sr-only">Menu</span>
         </Button>
@@ -132,7 +138,7 @@ export const UserMenu = () => {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="hidden md:flex rounded-full">
+          <Button variant="ghost" size="icon" className={cn("hidden md:flex rounded-full", isDark && "text-white hover:bg-white/10")}>
             <UserCircle className="h-6 w-6" />
           </Button>
         </DropdownMenuTrigger>
