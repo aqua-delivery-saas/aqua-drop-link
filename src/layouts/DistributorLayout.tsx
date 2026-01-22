@@ -20,7 +20,7 @@ import { useDistributor } from "@/hooks/useDistributor";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const bottomNavItems = [
-  { title: "Dashboard", path: "/distributor/dashboard", icon: LayoutDashboard },
+  { title: "Início", path: "/distributor/dashboard", icon: LayoutDashboard },
   { title: "Pedidos", path: "/distributor/orders", icon: ShoppingCart },
   { title: "Produtos", path: "/distributor/products", icon: Package },
   { title: "Config", path: "/distributor/settings", icon: Settings },

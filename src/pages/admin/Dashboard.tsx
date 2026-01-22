@@ -83,12 +83,12 @@ export default function AdminDashboard() {
   return (
     <>
       <Helmet>
-        <title>Admin - Dashboard</title>
+        <title>Admin - Início</title>
       </Helmet>
       <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-heading-1 text-foreground">Dashboard Administrativo</h1>
+          <h1 className="text-heading-1 text-foreground">Início Administrativo</h1>
           <p className="text-body-lg text-muted-foreground mt-2">
             Visão geral do sistema Aqua Delivery
           </p>

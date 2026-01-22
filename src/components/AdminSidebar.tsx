@@ -11,7 +11,7 @@ export function AdminSidebar() {
   const criticalAlerts = getCriticalAlerts();
 
   const navItems = [
-    { title: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+    { title: 'Início', path: '/admin/dashboard', icon: LayoutDashboard },
     { title: 'Usuários', path: '/admin/users', icon: Users },
     { title: 'Distribuidoras', path: '/admin/distributors', icon: Building2, badge: criticalAlerts.length },
     { title: 'Marcas', path: '/admin/brands', icon: Tags },
