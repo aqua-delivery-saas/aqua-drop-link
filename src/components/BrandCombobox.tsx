@@ -96,14 +96,20 @@ export function BrandCombobox({ value, selectedBrandId, onChange, disabled }: Br
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+      <PopoverContent 
+        className="w-[--radix-popover-trigger-width] p-0" 
+        align="start"
+        side="bottom"
+        avoidCollisions={true}
+        collisionPadding={16}
+      >
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Buscar ou criar marca..."
             value={searchValue}
             onValueChange={setSearchValue}
           />
-          <CommandList>
+          <CommandList className="max-h-[180px] sm:max-h-[300px]">
             {isLoading ? (
               <div className="py-6 text-center text-sm text-muted-foreground">
                 Carregando marcas...
