@@ -2,14 +2,14 @@ import { AdminSidebar } from '@/components/AdminSidebar';
 import { BottomNav } from '@/components/BottomNav';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Users, Building2, DollarSign, Tags } from 'lucide-react';
+import { Home, Users, Building2, DollarSign, Tags } from 'lucide-react';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
 const adminNavItems = [
-  { title: 'Início', path: '/admin/dashboard', icon: LayoutDashboard },
+  { title: 'Início', path: '/admin/dashboard', icon: Home },
   { title: 'Usuários', path: '/admin/users', icon: Users },
   { title: 'Distribuidoras', path: '/admin/distributors', icon: Building2 },
   { title: 'Marcas', path: '/admin/brands', icon: Tags },

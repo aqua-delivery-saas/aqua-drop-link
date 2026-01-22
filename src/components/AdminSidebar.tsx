@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Building2, DollarSign, LogOut, Tags } from 'lucide-react';
+import { Home, Users, Building2, DollarSign, LogOut, Tags } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Logo } from '@/components/Logo';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,7 @@ export function AdminSidebar() {
   const criticalAlerts = getCriticalAlerts();
 
   const navItems = [
-    { title: 'Início', path: '/admin/dashboard', icon: LayoutDashboard },
+    { title: 'Início', path: '/admin/dashboard', icon: Home },
     { title: 'Usuários', path: '/admin/users', icon: Users },
     { title: 'Distribuidoras', path: '/admin/distributors', icon: Building2, badge: criticalAlerts.length },
     { title: 'Marcas', path: '/admin/brands', icon: Tags },
