@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+// IDs de usuários/distribuidoras de teste que devem ser excluídos das métricas
+const TEST_USER_IDS = ['cd6cf668-0e69-46f4-89e0-05504275ef92'];
+const TEST_DISTRIBUTOR_IDS = ['c3ff25c9-9f86-4e6b-9222-f9af242bf5e9'];
+
 export function useAdminUsers() {
   return useQuery({
     queryKey: ['admin-users'],
@@ -8,6 +12,7 @@ export function useAdminUsers() {
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
+        .not('id', 'in', `(${TEST_USER_IDS.join(',')})`)
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -74,6 +79,7 @@ export function useAdminDistributors() {
           cities (*),
           subscriptions (*)
         `)
+        .not('id', 'in', `(${TEST_DISTRIBUTOR_IDS.join(',')})`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -88,29 +94,35 @@ export function useAdminMetrics() {
     queryFn: async () => {
       const { count: totalDistributors } = await supabase
         .from('distributors')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .not('id', 'in', `(${TEST_DISTRIBUTOR_IDS.join(',')})`);
 
       const { count: activeDistributors } = await supabase
         .from('distributors')
         .select('*', { count: 'exact', head: true })
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .not('id', 'in', `(${TEST_DISTRIBUTOR_IDS.join(',')})`);
 
       const { count: totalProfiles } = await supabase
         .from('profiles')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .not('id', 'in', `(${TEST_USER_IDS.join(',')})`);
 
       const { data: subscriptions } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('status', 'active');
+        .eq('status', 'active')
+        .not('distributor_id', 'in', `(${TEST_DISTRIBUTOR_IDS.join(',')})`);
 
       const { count: totalOrders } = await supabase
         .from('orders')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .not('distributor_id', 'in', `(${TEST_DISTRIBUTOR_IDS.join(',')})`);
 
       const { data: allOrders } = await supabase
         .from('orders')
-        .select('total');
+        .select('total')
+        .not('distributor_id', 'in', `(${TEST_DISTRIBUTOR_IDS.join(',')})`);
 
       const totalRevenue = (allOrders || []).reduce((sum, order) => sum + Number(order.total), 0);
       const monthlyRevenue = (subscriptions || []).reduce((sum, sub) => sum + Number(sub.price), 0);
@@ -128,7 +140,8 @@ export function useAdminMetrics() {
       const { count: newUsersThisMonth } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true })
-        .gte('created_at', startOfMonth.toISOString());
+        .gte('created_at', startOfMonth.toISOString())
+        .not('id', 'in', `(${TEST_USER_IDS.join(',')})`);
 
       return {
         totalUsers: totalProfiles || 0,
@@ -152,7 +165,8 @@ export function useAdminFinancialData() {
     queryFn: async () => {
       const { data: subscriptions, error } = await supabase
         .from('subscriptions')
-        .select('*');
+        .select('*')
+        .not('distributor_id', 'in', `(${TEST_DISTRIBUTOR_IDS.join(',')})`);
 
       if (error) throw error;
 
@@ -187,6 +201,7 @@ export function useAllOrders() {
       const { data, error } = await supabase
         .from('orders')
         .select('*')
+        .not('distributor_id', 'in', `(${TEST_DISTRIBUTOR_IDS.join(',')})`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
