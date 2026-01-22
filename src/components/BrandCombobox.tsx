@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Check, ChevronsUpDown, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useBrands } from '@/hooks/useBrands';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Brand {
   id: string;
@@ -39,6 +40,7 @@ export function BrandCombobox({ value, selectedBrandId, onChange, disabled }: Br
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const { data: brands, isLoading } = useBrands();
+  const isMobile = useIsMobile();
 
   // Filter only active brands
   const activeBrands = brands?.filter(b => b.is_active) || [];
@@ -99,9 +101,11 @@ export function BrandCombobox({ value, selectedBrandId, onChange, disabled }: Br
       <PopoverContent 
         className="w-[--radix-popover-trigger-width] p-0" 
         align="start"
-        side="bottom"
+        side={isMobile ? "top" : "bottom"}
+        sideOffset={isMobile ? 8 : 4}
         avoidCollisions={true}
-        collisionPadding={16}
+        collisionPadding={{ top: 16, bottom: 100 }}
+        sticky="always"
       >
         <Command shouldFilter={false}>
           <CommandInput
@@ -109,7 +113,7 @@ export function BrandCombobox({ value, selectedBrandId, onChange, disabled }: Br
             value={searchValue}
             onValueChange={setSearchValue}
           />
-          <CommandList className="max-h-[180px] sm:max-h-[300px]">
+          <CommandList className={cn("max-h-[300px]", isMobile && "max-h-[150px]")}>
             {isLoading ? (
               <div className="py-6 text-center text-sm text-muted-foreground">
                 Carregando marcas...
