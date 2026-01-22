@@ -4,7 +4,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { BottomNav } from "@/components/BottomNav";
 import { SubscriptionGuard } from "@/components/SubscriptionGuard";
 import { useNavigate } from "react-router-dom";
-import { UserCircle, User, LogOut, LayoutDashboard, ShoppingCart, Package, Settings } from "lucide-react";
+import { UserCircle, User, LogOut, Home, ShoppingCart, Package, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +20,7 @@ import { useDistributor } from "@/hooks/useDistributor";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const bottomNavItems = [
-  { title: "Início", path: "/distributor/dashboard", icon: LayoutDashboard },
+  { title: "Início", path: "/distributor/dashboard", icon: Home },
   { title: "Pedidos", path: "/distributor/orders", icon: ShoppingCart },
   { title: "Produtos", path: "/distributor/products", icon: Package },
   { title: "Config", path: "/distributor/settings", icon: Settings },
