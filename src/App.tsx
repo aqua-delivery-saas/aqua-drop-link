@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminLayout } from "@/layouts/AdminLayout";
+import { MetaPixelTracker } from "@/hooks/useMetaPixel";
 import { DistributorLayout } from "./layouts/DistributorLayout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -65,6 +66,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <MetaPixelTracker />
           <Routes>
             <Route path="/" element={<Index />} />
             
