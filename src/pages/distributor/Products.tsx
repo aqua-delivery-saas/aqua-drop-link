@@ -5,7 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from "@/components/ui/responsive-dialog";
 import { Plus, Edit, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useDistributorProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, ProductWithBrand } from "@/hooks/useDistributor";
@@ -28,6 +35,7 @@ const Products = () => {
   const [selectedBrand, setSelectedBrand] = useState<SelectedBrand>({ id: null, name: '' });
   const [newProduct, setNewProduct] = useState({ price: "", liters: "", available: true });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<{ 
     id: string; 
     name: string; 
@@ -102,6 +110,7 @@ const Products = () => {
 
       setEditingProduct(null);
       setEditingBrand({ id: null, name: '' });
+      setEditDialogOpen(false);
     } catch (error) {
       // Error handled by mutation
     }
@@ -131,6 +140,7 @@ const Products = () => {
       id: product.brand?.id || null,
       name: product.brand?.name || product.name,
     });
+    setEditDialogOpen(true);
   };
 
   if (isLoading) {
@@ -166,31 +176,31 @@ const Products = () => {
         <title>Produtos - AquaDelivery</title>
       </Helmet>
       <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold mb-2">Produtos</h1>
             <p className="text-muted-foreground text-sm sm:text-base">Gerencie as marcas de água disponíveis e seus preços</p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          <ResponsiveDialog open={isDialogOpen} onOpenChange={(open) => {
             setIsDialogOpen(open);
             if (!open) {
               setSelectedBrand({ id: null, name: '' });
               setNewProduct({ price: "", liters: "", available: true });
             }
           }}>
-            <DialogTrigger asChild>
+            <ResponsiveDialogTrigger asChild>
               <Button size="lg" className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" />
                 Adicionar Produto
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Adicionar Produto</DialogTitle>
-                <DialogDescription>
+            </ResponsiveDialogTrigger>
+            <ResponsiveDialogContent>
+              <ResponsiveDialogHeader>
+                <ResponsiveDialogTitle>Adicionar Produto</ResponsiveDialogTitle>
+                <ResponsiveDialogDescription>
                   Selecione uma marca existente ou crie uma nova
-                </DialogDescription>
-              </DialogHeader>
+                </ResponsiveDialogDescription>
+              </ResponsiveDialogHeader>
               <div className="space-y-4 pt-4">
                 <div className="space-y-2">
                   <Label>Marca</Label>
@@ -247,8 +257,8 @@ const Products = () => {
                   Salvar Produto
                 </Button>
               </div>
-            </DialogContent>
-          </Dialog>
+            </ResponsiveDialogContent>
+          </ResponsiveDialog>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -277,70 +287,13 @@ const Products = () => {
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => openEditDialog(product)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Editar Produto</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 pt-4">
-                          <div className="space-y-2">
-                            <Label>Marca</Label>
-                            <BrandCombobox
-                              value={editingBrand.name}
-                              selectedBrandId={editingBrand.id}
-                              onChange={(brandName, brand) => {
-                                setEditingBrand({
-                                  id: brand?.id || null,
-                                  name: brandName
-                                });
-                              }}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Litros</Label>
-                            <Input
-                              type="number"
-                              step="0.5"
-                              value={editingProduct?.liters || ""}
-                              onChange={(e) => setEditingProduct(prev => prev ? { ...prev, liters: e.target.value } : null)}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Preço (R$)</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={editingProduct?.price || ""}
-                              onChange={(e) => setEditingProduct(prev => prev ? { ...prev, price: e.target.value } : null)}
-                            />
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              checked={editingProduct?.available || false}
-                              onCheckedChange={(checked) => setEditingProduct(prev => prev ? { ...prev, available: checked } : null)}
-                            />
-                            <Label>Disponível</Label>
-                          </div>
-                          <Button 
-                            onClick={handleEditProduct} 
-                            className="w-full"
-                            disabled={updateProduct.isPending || createBrand.isPending}
-                          >
-                            {(updateProduct.isPending || createBrand.isPending) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                            Salvar Alterações
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => openEditDialog(product)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
                     <Button 
                       variant="ghost" 
                       size="icon" 
@@ -367,18 +320,81 @@ const Products = () => {
           ))}
         </div>
 
-      {products.length === 0 && (
-        <Card className="text-center py-12">
-          <CardContent>
-            <p className="text-muted-foreground mb-4">Nenhum produto cadastrado ainda.</p>
-            <Button onClick={() => setIsDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Primeiro Produto
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+        {/* Edit Product Dialog */}
+        <ResponsiveDialog open={editDialogOpen} onOpenChange={(open) => {
+          setEditDialogOpen(open);
+          if (!open) {
+            setEditingProduct(null);
+            setEditingBrand({ id: null, name: '' });
+          }
+        }}>
+          <ResponsiveDialogContent>
+            <ResponsiveDialogHeader>
+              <ResponsiveDialogTitle>Editar Produto</ResponsiveDialogTitle>
+            </ResponsiveDialogHeader>
+            <div className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label>Marca</Label>
+                <BrandCombobox
+                  value={editingBrand.name}
+                  selectedBrandId={editingBrand.id}
+                  onChange={(brandName, brand) => {
+                    setEditingBrand({
+                      id: brand?.id || null,
+                      name: brandName
+                    });
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Litros</Label>
+                <Input
+                  type="number"
+                  step="0.5"
+                  value={editingProduct?.liters || ""}
+                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, liters: e.target.value } : null)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Preço (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editingProduct?.price || ""}
+                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, price: e.target.value } : null)}
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={editingProduct?.available || false}
+                  onCheckedChange={(checked) => setEditingProduct(prev => prev ? { ...prev, available: checked } : null)}
+                />
+                <Label>Disponível</Label>
+              </div>
+              <Button 
+                onClick={handleEditProduct} 
+                className="w-full"
+                disabled={updateProduct.isPending || createBrand.isPending}
+              >
+                {(updateProduct.isPending || createBrand.isPending) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Salvar Alterações
+              </Button>
+            </div>
+          </ResponsiveDialogContent>
+        </ResponsiveDialog>
+
+        {products.length === 0 && (
+          <Card className="text-center py-12">
+            <CardContent>
+              <p className="text-muted-foreground mb-4">Nenhum produto cadastrado ainda.</p>
+              <Button onClick={() => setIsDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Adicionar Primeiro Produto
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </>
   );
 };
