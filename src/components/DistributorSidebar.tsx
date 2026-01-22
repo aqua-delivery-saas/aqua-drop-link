@@ -20,7 +20,7 @@ import {
 import { Logo } from "./Logo";
 
   const menuItems = [
-    { title: "Dashboard", url: "/distributor/dashboard", icon: LayoutDashboard },
+    { title: "Início", url: "/distributor/dashboard", icon: LayoutDashboard },
     { title: "Pedidos", url: "/distributor/orders", icon: ShoppingCart },
     { title: "Produtos", url: "/distributor/products", icon: Package },
     { title: "Relatórios", url: "/distributor/reports", icon: BarChart3 },

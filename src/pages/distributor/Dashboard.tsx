@@ -58,11 +58,11 @@ export default function Dashboard() {
   return (
     <>
       <Helmet>
-        <title>Dashboard - AquaDelivery</title>
+        <title>Início - AquaDelivery</title>
       </Helmet>
       <div className="space-y-6">
       <div>
-        <h1 className="text-heading-1 text-foreground">Dashboard</h1>
+        <h1 className="text-heading-1 text-foreground">Início</h1>
         <p className="text-body-md text-muted-foreground mt-1">
           Bem-vindo ao painel da sua distribuidora
         </p>

@@ -9,7 +9,7 @@ interface AdminLayoutProps {
 }
 
 const adminNavItems = [
-  { title: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+  { title: 'Início', path: '/admin/dashboard', icon: LayoutDashboard },
   { title: 'Usuários', path: '/admin/users', icon: Users },
   { title: 'Distribuidoras', path: '/admin/distributors', icon: Building2 },
   { title: 'Marcas', path: '/admin/brands', icon: Tags },

@@ -92,7 +92,7 @@ export const OnboardingStep4 = ({ onFinish, onBack, distributorData }: Onboardin
         <ul className="space-y-2 text-sm text-muted-foreground">
           <li>• Personalize seu perfil e adicione mais produtos</li>
           <li>• Configure promoções e programas de fidelidade</li>
-          <li>• Acompanhe seus pedidos em tempo real no dashboard</li>
+          <li>• Acompanhe seus pedidos em tempo real no painel</li>
           <li>• Configure notificações para não perder nenhum pedido</li>
         </ul>
       </Card>
@@ -103,7 +103,7 @@ export const OnboardingStep4 = ({ onFinish, onBack, distributorData }: Onboardin
           Voltar
         </Button>
         <Button onClick={onFinish} size="lg">
-          Ir para o Dashboard
+          Ir para o Início
         </Button>
       </div>
     </div>
