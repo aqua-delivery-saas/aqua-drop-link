@@ -49,7 +49,7 @@ const Index = () => {
                     </Button>
                   </> : isDistributor() ? <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10" onClick={() => navigate("/distributor/dashboard")}>
                     Meu Painel
-                  </Button> : <UserMenu />}
+                  </Button> : <UserMenu variant="dark" />}
               </div>
             </div>
           </header>
