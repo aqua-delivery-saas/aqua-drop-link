@@ -126,7 +126,7 @@ export default function AdminDashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="text-body-md text-muted-foreground font-normal flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
-              Receita Total
+              Receita de Assinaturas
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -135,7 +135,7 @@ export default function AdminDashboard() {
             </p>
             <p className="text-body-sm text-accent-green mt-1 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" />
-              {metrics?.totalOrders || 0} pedidos
+              receita de planos SaaS
             </p>
           </CardContent>
         </Card>
