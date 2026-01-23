@@ -74,13 +74,13 @@ export const AdvancedMetricsCards = () => {
         </CardContent>
       </Card>
 
-      {/* Receita Total */}
+      {/* Receita de Assinaturas */}
       <Card className="border-border hover:shadow-lg transition-shadow cursor-pointer animate-fade-in" style={{ animationDelay: '200ms' }}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-body-md text-muted-foreground font-normal flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
-              Receita Total
+              Receita de Assinaturas
             </CardTitle>
             <TrendingUp className="text-accent-green w-5 h-5" />
           </div>
@@ -90,7 +90,7 @@ export const AdvancedMetricsCards = () => {
             R$ {(metrics?.totalRevenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </div>
           <p className="text-body-sm text-muted-foreground mt-1">
-            receita acumulada
+            receita de planos SaaS
           </p>
         </CardContent>
       </Card>

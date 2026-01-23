@@ -119,12 +119,25 @@ export function useAdminMetrics() {
         .select('*', { count: 'exact', head: true })
         .not('distributor_id', 'in', `(${TEST_DISTRIBUTOR_IDS.join(',')})`);
 
-      const { data: allOrders } = await supabase
-        .from('orders')
-        .select('total')
-        .not('distributor_id', 'in', `(${TEST_DISTRIBUTOR_IDS.join(',')})`);
+      // Buscar pagamentos realizados (receita real do SaaS)
+      const { data: payments } = await supabase
+        .from('payments')
+        .select('amount, subscription_id')
+        .eq('status', 'paid');
 
-      const totalRevenue = (allOrders || []).reduce((sum, order) => sum + Number(order.total), 0);
+      // Buscar assinaturas de distribuidoras de teste para filtrar
+      const { data: testSubscriptions } = await supabase
+        .from('subscriptions')
+        .select('id')
+        .in('distributor_id', TEST_DISTRIBUTOR_IDS);
+
+      const testSubIds = (testSubscriptions || []).map(s => s.id);
+
+      // Calcular receita total de assinaturas (excluindo testes)
+      const totalRevenue = (payments || [])
+        .filter(p => !testSubIds.includes(p.subscription_id))
+        .reduce((sum, payment) => sum + Number(payment.amount), 0);
+
       const monthlyRevenue = (subscriptions || []).reduce((sum, sub) => sum + Number(sub.price), 0);
       const activeSubscriptions = subscriptions?.length || 0;
 
