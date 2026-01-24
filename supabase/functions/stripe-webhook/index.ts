@@ -142,8 +142,8 @@ serve(async (req) => {
 
         // Determine plan type based on product ID (from check-subscription)
         const PRODUCTS = {
-          monthly: "prod_SMTfWfq7TlJx98",
-          annual: "prod_SMTgC8sOD0Whoh",
+          monthly: "prod_TqAFFxWyxmFWVD",
+          annual: "prod_TqAF37YWaZVbO8",
         };
 
         let plan: "monthly" | "annual" = "monthly";
