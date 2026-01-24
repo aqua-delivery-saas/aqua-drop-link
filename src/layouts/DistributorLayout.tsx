@@ -4,7 +4,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { BottomNav } from "@/components/BottomNav";
 import { SubscriptionGuard } from "@/components/SubscriptionGuard";
 import { useNavigate } from "react-router-dom";
-import { UserCircle, User, LogOut, Home, ShoppingCart, Package, Settings } from "lucide-react";
+import { UserCircle, User, LogOut, Home, ShoppingCart, Package, Settings, HelpCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -80,6 +80,10 @@ export function DistributorLayout({ children }: DistributorLayoutProps) {
                     <DropdownMenuItem onClick={() => navigate("/distributor/profile")}>
                       <User className="mr-2 h-4 w-4" />
                       Perfil do Usuário
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/help")}>
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      FAQ e Dúvidas
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>

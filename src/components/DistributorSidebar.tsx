@@ -1,4 +1,4 @@
-import { Home, Package, Settings, ShoppingCart, ChevronDown, Search, Clock, Percent, Gift, CreditCard, BarChart3 } from "lucide-react";
+import { Home, Package, Settings, ShoppingCart, ChevronDown, Search, Clock, Percent, Gift, CreditCard, BarChart3, HelpCircle } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -110,6 +110,22 @@ export function DistributorSidebar() {
               </SidebarGroupContent>
             </CollapsibleContent>
           </Collapsible>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Suporte</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink to="/help" className={getNavClass} onClick={handleNavClick}>
+                    <HelpCircle className="h-4 w-4" />
+                    <span>FAQ e Dúvidas</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
