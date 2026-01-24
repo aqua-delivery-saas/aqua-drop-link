@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -112,22 +113,20 @@ export function DistributorSidebar() {
           </Collapsible>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Suporte</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink to="/help" className={getNavClass} onClick={handleNavClick}>
-                    <HelpCircle className="h-4 w-4" />
-                    <span>FAQ e Dúvidas</span>
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="border-t">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <NavLink to="/help" className={getNavClass} onClick={handleNavClick}>
+                <HelpCircle className="h-4 w-4" />
+                <span>FAQ e Dúvidas</span>
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
