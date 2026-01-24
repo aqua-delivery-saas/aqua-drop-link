@@ -254,22 +254,30 @@ const Products = () => {
                     <Label htmlFor="productLiters">Litros</Label>
                     <Input
                       id="productLiters"
-                      type="number"
-                      step="0.5"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="[0-9]*[.,]?[0-9]*"
                       placeholder="20"
                       value={newProduct.liters}
-                      onChange={(e) => setNewProduct({ ...newProduct, liters: e.target.value })}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9.,]/g, '');
+                        setNewProduct({ ...newProduct, liters: value });
+                      }}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="productPrice">Preço (R$)</Label>
                     <Input
                       id="productPrice"
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="[0-9]*[.,]?[0-9]*"
                       placeholder="0.00"
                       value={newProduct.price}
-                      onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9.,]/g, '');
+                        setNewProduct({ ...newProduct, price: value });
+                      }}
                     />
                   </div>
                   <div className="flex items-center space-x-2">
@@ -296,7 +304,7 @@ const Products = () => {
 
         {/* Mobile: Inline Add Form */}
         {isMobile && showAddForm && (
-          <Card className="animate-fade-in border-primary/50">
+          <Card className="animate-fade-in border-primary/50 max-w-md mx-auto w-full">
             <CardHeader>
               <CardTitle className="text-lg">Adicionar Produto</CardTitle>
               <CardDescription>
@@ -324,22 +332,30 @@ const Products = () => {
                 <Label htmlFor="mobileProductLiters">Litros</Label>
                 <Input
                   id="mobileProductLiters"
-                  type="number"
-                  step="0.5"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*[.,]?[0-9]*"
                   placeholder="20"
                   value={newProduct.liters}
-                  onChange={(e) => setNewProduct({ ...newProduct, liters: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9.,]/g, '');
+                    setNewProduct({ ...newProduct, liters: value });
+                  }}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="mobileProductPrice">Preço (R$)</Label>
                 <Input
                   id="mobileProductPrice"
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*[.,]?[0-9]*"
                   placeholder="0.00"
                   value={newProduct.price}
-                  onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9.,]/g, '');
+                    setNewProduct({ ...newProduct, price: value });
+                  }}
                 />
               </div>
               <div className="flex items-center space-x-2">
@@ -463,19 +479,27 @@ const Products = () => {
               <div className="space-y-2">
                 <Label>Litros</Label>
                 <Input
-                  type="number"
-                  step="0.5"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*[.,]?[0-9]*"
                   value={editingProduct?.liters || ""}
-                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, liters: e.target.value } : null)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9.,]/g, '');
+                    setEditingProduct(prev => prev ? { ...prev, liters: value } : null);
+                  }}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Preço (R$)</Label>
                 <Input
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*[.,]?[0-9]*"
                   value={editingProduct?.price || ""}
-                  onChange={(e) => setEditingProduct(prev => prev ? { ...prev, price: e.target.value } : null)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9.,]/g, '');
+                    setEditingProduct(prev => prev ? { ...prev, price: value } : null);
+                  }}
                 />
               </div>
               <div className="flex items-center space-x-2">
