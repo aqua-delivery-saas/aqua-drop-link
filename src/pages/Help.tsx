@@ -125,12 +125,12 @@ export default function Help() {
 
           <Card>
             <CardHeader className="text-center border-b px-4 sm:px-6">
-              <div className="flex justify-center mb-4">
+              <div className="flex justify-center mb-2">
                 <div className="p-3 bg-primary/10 rounded-full">
                   <HelpCircle className="w-8 h-8 text-primary" />
                 </div>
               </div>
-              <CardTitle className="text-2xl sm:text-3xl mb-4">Central de Ajuda</CardTitle>
+              <CardTitle className="text-2xl sm:text-3xl mb-3">Central de Ajuda</CardTitle>
 
               <div className="relative max-w-md mx-auto">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -143,7 +143,7 @@ export default function Help() {
               </div>
             </CardHeader>
 
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               {filteredFaq.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">
@@ -155,10 +155,10 @@ export default function Help() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-8">
+                <div className="space-y-6">
                   {filteredFaq.map((category, idx) => (
                     <div key={idx}>
-                      <h2 className="text-xl font-semibold mb-4 text-primary">{category.category}</h2>
+                      <h2 className="text-xl font-semibold mb-2 text-primary">{category.category}</h2>
                       <Accordion type="single" collapsible className="w-full">
                         {category.items.map((item, itemIdx) => (
                           <AccordionItem key={itemIdx} value={`item-${idx}-${itemIdx}`}>
@@ -172,8 +172,8 @@ export default function Help() {
                 </div>
               )}
 
-              <div className="mt-8 pt-8 border-t text-center">
-                <p className="text-muted-foreground mb-4">Não encontrou o que procurava?</p>
+              <div className="mt-6 pt-6 border-t text-center">
+                <p className="text-muted-foreground mb-3">Não encontrou o que procurava?</p>
                 <Button onClick={() => navigate("/support")}>Entrar em Contato com Suporte</Button>
               </div>
             </CardContent>
