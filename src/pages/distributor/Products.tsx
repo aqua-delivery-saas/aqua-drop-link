@@ -13,12 +13,13 @@ import {
   ResponsiveDialogTitle,
   ResponsiveDialogTrigger,
 } from "@/components/ui/responsive-dialog";
-import { Plus, Edit, Trash2, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useDistributorProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, ProductWithBrand } from "@/hooks/useDistributor";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BrandCombobox } from "@/components/BrandCombobox";
 import { useCreateBrand } from "@/hooks/useBrands";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SelectedBrand {
   id: string | null;
@@ -31,10 +32,12 @@ const Products = () => {
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
   const createBrand = useCreateBrand();
+  const isMobile = useIsMobile();
 
   const [selectedBrand, setSelectedBrand] = useState<SelectedBrand>({ id: null, name: '' });
   const [newProduct, setNewProduct] = useState({ price: "", liters: "", available: true });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<{ 
     id: string; 
@@ -77,6 +80,7 @@ const Products = () => {
       setSelectedBrand({ id: null, name: '' });
       setNewProduct({ price: "", liters: "", available: true });
       setIsDialogOpen(false);
+      setShowAddForm(false);
     } catch (error) {
       // Error handled by mutation
     }
@@ -181,85 +185,195 @@ const Products = () => {
             <h1 className="text-2xl sm:text-3xl font-bold mb-2">Produtos</h1>
             <p className="text-muted-foreground text-sm sm:text-base">Gerencie as marcas de água disponíveis e seus preços</p>
           </div>
-          <ResponsiveDialog open={isDialogOpen} onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) {
-              setSelectedBrand({ id: null, name: '' });
-              setNewProduct({ price: "", liters: "", available: true });
-            }
-          }}>
-            <ResponsiveDialogTrigger asChild>
-              <Button size="lg" className="w-full sm:w-auto">
-                <Plus className="mr-2 h-4 w-4" />
-                Adicionar Produto
-              </Button>
-            </ResponsiveDialogTrigger>
-            <ResponsiveDialogContent>
-              <ResponsiveDialogHeader>
-                <ResponsiveDialogTitle>Adicionar Produto</ResponsiveDialogTitle>
-                <ResponsiveDialogDescription>
-                  Selecione uma marca existente ou crie uma nova
-                </ResponsiveDialogDescription>
-              </ResponsiveDialogHeader>
-              <div className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label>Marca</Label>
-                  <BrandCombobox
-                    value={selectedBrand.name}
-                    selectedBrandId={selectedBrand.id}
-                    onChange={(brandName, brand) => {
-                      setSelectedBrand({
-                        id: brand?.id || null,
-                        name: brandName
-                      });
-                    }}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Digite para buscar ou criar uma nova marca
-                  </p>
+          {/* Mobile: Toggle inline form */}
+          {isMobile ? (
+            <Button 
+              size="lg" 
+              className="w-full"
+              variant={showAddForm ? "outline" : "default"}
+              onClick={() => {
+                setShowAddForm(!showAddForm);
+                if (showAddForm) {
+                  setSelectedBrand({ id: null, name: '' });
+                  setNewProduct({ price: "", liters: "", available: true });
+                }
+              }}
+            >
+              {showAddForm ? (
+                <>
+                  <X className="mr-2 h-4 w-4" />
+                  Cancelar
+                </>
+              ) : (
+                <>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar Produto
+                </>
+              )}
+            </Button>
+          ) : (
+            /* Desktop: Keep ResponsiveDialog */
+            <ResponsiveDialog open={isDialogOpen} onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) {
+                setSelectedBrand({ id: null, name: '' });
+                setNewProduct({ price: "", liters: "", available: true });
+              }
+            }}>
+              <ResponsiveDialogTrigger asChild>
+                <Button size="lg" className="w-full sm:w-auto">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar Produto
+                </Button>
+              </ResponsiveDialogTrigger>
+              <ResponsiveDialogContent>
+                <ResponsiveDialogHeader>
+                  <ResponsiveDialogTitle>Adicionar Produto</ResponsiveDialogTitle>
+                  <ResponsiveDialogDescription>
+                    Selecione uma marca existente ou crie uma nova
+                  </ResponsiveDialogDescription>
+                </ResponsiveDialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Label>Marca</Label>
+                    <BrandCombobox
+                      value={selectedBrand.name}
+                      selectedBrandId={selectedBrand.id}
+                      onChange={(brandName, brand) => {
+                        setSelectedBrand({
+                          id: brand?.id || null,
+                          name: brandName
+                        });
+                      }}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Digite para buscar ou criar uma nova marca
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="productLiters">Litros</Label>
+                    <Input
+                      id="productLiters"
+                      type="number"
+                      step="0.5"
+                      placeholder="20"
+                      value={newProduct.liters}
+                      onChange={(e) => setNewProduct({ ...newProduct, liters: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="productPrice">Preço (R$)</Label>
+                    <Input
+                      id="productPrice"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={newProduct.price}
+                      onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="productAvailable"
+                      checked={newProduct.available}
+                      onCheckedChange={(checked) => setNewProduct({ ...newProduct, available: checked })}
+                    />
+                    <Label htmlFor="productAvailable">Disponível</Label>
+                  </div>
+                  <Button 
+                    onClick={handleAddProduct} 
+                    className="w-full"
+                    disabled={createProduct.isPending || createBrand.isPending}
+                  >
+                    {(createProduct.isPending || createBrand.isPending) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Salvar Produto
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="productLiters">Litros</Label>
-                  <Input
-                    id="productLiters"
-                    type="number"
-                    step="0.5"
-                    placeholder="20"
-                    value={newProduct.liters}
-                    onChange={(e) => setNewProduct({ ...newProduct, liters: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="productPrice">Preço (R$)</Label>
-                  <Input
-                    id="productPrice"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={newProduct.price}
-                    onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                  />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="productAvailable"
-                    checked={newProduct.available}
-                    onCheckedChange={(checked) => setNewProduct({ ...newProduct, available: checked })}
-                  />
-                  <Label htmlFor="productAvailable">Disponível</Label>
-                </div>
+              </ResponsiveDialogContent>
+            </ResponsiveDialog>
+          )}
+        </div>
+
+        {/* Mobile: Inline Add Form */}
+        {isMobile && showAddForm && (
+          <Card className="animate-fade-in border-primary/50">
+            <CardHeader>
+              <CardTitle className="text-lg">Adicionar Produto</CardTitle>
+              <CardDescription>
+                Selecione uma marca existente ou crie uma nova
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Marca</Label>
+                <BrandCombobox
+                  value={selectedBrand.name}
+                  selectedBrandId={selectedBrand.id}
+                  onChange={(brandName, brand) => {
+                    setSelectedBrand({
+                      id: brand?.id || null,
+                      name: brandName
+                    });
+                  }}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Digite para buscar ou criar uma nova marca
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="mobileProductLiters">Litros</Label>
+                <Input
+                  id="mobileProductLiters"
+                  type="number"
+                  step="0.5"
+                  placeholder="20"
+                  value={newProduct.liters}
+                  onChange={(e) => setNewProduct({ ...newProduct, liters: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="mobileProductPrice">Preço (R$)</Label>
+                <Input
+                  id="mobileProductPrice"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={newProduct.price}
+                  onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="mobileProductAvailable"
+                  checked={newProduct.available}
+                  onCheckedChange={(checked) => setNewProduct({ ...newProduct, available: checked })}
+                />
+                <Label htmlFor="mobileProductAvailable">Disponível</Label>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setSelectedBrand({ id: null, name: '' });
+                    setNewProduct({ price: "", liters: "", available: true });
+                  }}
+                >
+                  Cancelar
+                </Button>
                 <Button 
                   onClick={handleAddProduct} 
-                  className="w-full"
+                  className="flex-1"
                   disabled={createProduct.isPending || createBrand.isPending}
                 >
                   {(createProduct.isPending || createBrand.isPending) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Salvar Produto
+                  Salvar
                 </Button>
               </div>
-            </ResponsiveDialogContent>
-          </ResponsiveDialog>
-        </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
