@@ -179,7 +179,7 @@ const Products = () => {
       <Helmet>
         <title>Produtos - AquaDelivery</title>
       </Helmet>
-      <div className="space-y-6">
+      <div className="space-y-6 w-full overflow-x-hidden">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold mb-2">Produtos</h1>
@@ -304,15 +304,15 @@ const Products = () => {
 
         {/* Mobile: Inline Add Form */}
         {isMobile && showAddForm && (
-          <Card className="animate-fade-in border-primary/50 max-w-md mx-auto w-full">
+          <Card className="animate-fade-in border-primary/50 max-w-md mx-auto">
             <CardHeader>
               <CardTitle className="text-lg">Adicionar Produto</CardTitle>
               <CardDescription>
                 Selecione uma marca existente ou crie uma nova
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
+            <CardContent className="space-y-4 min-w-0">
+              <div className="space-y-2 min-w-0">
                 <Label>Marca</Label>
                 <BrandCombobox
                   value={selectedBrand.name}
@@ -328,7 +328,7 @@ const Products = () => {
                   Digite para buscar ou criar uma nova marca
                 </p>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <Label htmlFor="mobileProductLiters">Litros</Label>
                 <Input
                   id="mobileProductLiters"
@@ -343,7 +343,7 @@ const Products = () => {
                   }}
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 min-w-0">
                 <Label htmlFor="mobileProductPrice">Preço (R$)</Label>
                 <Input
                   id="mobileProductPrice"

@@ -82,10 +82,10 @@ export function BrandCombobox({ value, selectedBrandId, onChange, disabled }: Br
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between font-normal"
+          className="w-full justify-between font-normal min-w-0 overflow-hidden"
           disabled={disabled}
         >
-          <span className="flex items-center gap-2 truncate">
+          <span className="flex items-center gap-2 truncate min-w-0 overflow-hidden">
             {selectedBrand?.logo_url && (
               <img 
                 src={selectedBrand.logo_url} 
