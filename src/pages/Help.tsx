@@ -117,7 +117,7 @@ export default function Help() {
         />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-6 px-3 sm:py-12 sm:px-4">
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-4 px-3 sm:py-6 sm:px-4">
         <div className="container max-w-4xl mx-auto">
           <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4 sm:mb-6">
             ← Voltar
