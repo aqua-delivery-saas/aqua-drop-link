@@ -304,14 +304,14 @@ const Products = () => {
 
         {/* Mobile: Inline Add Form */}
         {isMobile && showAddForm && (
-          <Card className="animate-fade-in border-primary/50 max-w-md mx-auto">
+          <Card className="animate-fade-in border-primary/50">
             <CardHeader>
               <CardTitle className="text-lg">Adicionar Produto</CardTitle>
               <CardDescription>
                 Selecione uma marca existente ou crie uma nova
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 min-w-0">
+            <CardContent className="space-y-4 min-w-0 px-4 sm:px-6">
               <div className="space-y-2 min-w-0">
                 <Label>Marca</Label>
                 <BrandCombobox
