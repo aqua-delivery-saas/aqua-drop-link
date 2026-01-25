@@ -51,7 +51,7 @@ export function DistributorLayout({ children }: DistributorLayoutProps) {
       <SubscriptionGuard>
         <div className="min-h-screen flex w-full">
           <DistributorSidebar />
-          <main className="flex-1 flex flex-col">
+          <main className="flex-1 flex flex-col min-w-0">
             <header className="h-14 border-b flex items-center justify-between px-4 bg-background sticky top-0 z-10">
               <SidebarTrigger />
               
@@ -94,7 +94,7 @@ export function DistributorLayout({ children }: DistributorLayoutProps) {
                 </DropdownMenu>
               </div>
             </header>
-            <div className="flex-1 overflow-auto pb-mobile-nav p-4 sm:p-6">
+            <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden pb-mobile-nav p-4 sm:p-6">
               {children}
             </div>
           </main>
