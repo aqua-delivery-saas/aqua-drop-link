@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, ShoppingCart, Package, Settings } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useKeyboardVisible } from "@/hooks/useKeyboardVisible";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -15,11 +16,17 @@ interface BottomNavProps {
 
 export function BottomNav({ items }: BottomNavProps) {
   const isMobile = useIsMobile();
+  const isKeyboardVisible = useKeyboardVisible();
 
   if (!isMobile) return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t shadow-lg">
+    <nav
+      className={cn(
+        "fixed bottom-0 left-0 right-0 z-50 bg-card border-t shadow-lg transition-transform duration-200",
+        isKeyboardVisible ? "translate-y-full" : "translate-y-0"
+      )}
+    >
       <div className="flex items-center justify-around h-16 px-2">
         {items.map((item) => (
           <NavLink
