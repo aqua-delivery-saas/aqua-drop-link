@@ -56,6 +56,7 @@ import AuthCallback from "./pages/AuthCallback";
 // Demo Pages
 import DemoOrderPage from "./pages/demo/DemoOrderPage";
 import DemoOrderConfirmation from "./pages/demo/DemoOrderConfirmation";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -198,6 +199,9 @@ const App = () => (
             {/* Demo Routes */}
             <Route path="/demo/order" element={<DemoOrderPage />} />
             <Route path="/demo/confirmation" element={<DemoOrderConfirmation />} />
+            
+            {/* Landing Page */}
+            <Route path="/landingpage" element={<LandingPage />} />
             
             {/* Legal & Support Routes */}
             <Route path="/terms" element={<Terms />} />
