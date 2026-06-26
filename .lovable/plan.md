@@ -1,41 +1,25 @@
+## Diagnóstico
 
+Os e-mails de teste ainda chegam com template genérico do Supabase (remetente `noreply@mail.app.supabase.io`) porque:
 
-# Plano: Ajustar Placeholders dos Inputs
+1. **Domínio `notify.aquadelivery.com.br`:** já está **verificado** ✅
+2. **Configuração do projeto:** ainda em status **"Setting up"** — a ativação do hook de e-mails customizados ainda não foi concluída pelo backend da Lovable.
 
-## Problema
-Os textos de placeholder nos campos de formulário estão com cor muito forte, confundindo os usuários com texto real digitado.
+Enquanto o setup do projeto não termina, o Supabase continua enviando os e-mails pelo SMTP padrão dele (templates genéricos), ignorando o `auth-email-hook` que já deployamos.
 
-## Solução
-Aplicar duas mudanças globais:
-1. Reduzir a opacidade/clarear a cor dos placeholders
-2. Adicionar estilo itálico aos placeholders
+## Plano
 
-## Alterações
+Não é um bug de código — é uma etapa de provisionamento assíncrono. Caminho recomendado:
 
-### 1. `src/index.css`
-Adicionar regra global para placeholders:
-```css
-@layer base {
-  *::placeholder {
-    @apply italic;
-  }
-}
-```
+1. **Aguardar a finalização automática** do setup (geralmente poucos minutos após verificação de DNS). Acompanhar em **Cloud → Emails**.
+2. Quando o status mudar para **Ativo**, refazer o teste de "Esqueci minha senha" — o e-mail deve chegar do remetente `noreply@notify.aquadelivery.com.br` com o template AquaDelivery em azul.
+3. Se após ~15 minutos o status continuar travado em "Setting up", eu re-deploy o `auth-email-hook` para forçar o reconcile do backend (ele detecta automaticamente e completa a ativação).
+4. Validar entrega consultando `email_send_log` (tabela de auditoria) para confirmar que os e-mails passaram pela fila customizada e não pelo SMTP padrão.
 
-Ajustar a variável `--muted-foreground` para um cinza mais claro:
-- **Modo claro**: de `220 9% 38%` para `220 9% 65%`
-- **Modo escuro**: de `220 9% 60%` para `220 9% 50%`
+## Sem alterações de código nesta etapa
 
-### 2. `src/components/ui/input.tsx`
-Atualizar a classe do placeholder:
-- De: `placeholder:text-muted-foreground`
-- Para: `placeholder:text-muted-foreground/60 placeholder:italic`
+Os templates, o hook e o domínio já estão corretos. A ação é apenas aguardar/monitorar e, se necessário, redisparar o deploy do hook.
 
-### 3. `src/components/ui/textarea.tsx`
-Mesma alteração:
-- De: `placeholder:text-muted-foreground`
-- Para: `placeholder:text-muted-foreground/60 placeholder:italic`
-
-## Resultado
-Todos os campos de input e textarea do sistema terão placeholders em cinza claro e itálico, diferenciando claramente do texto digitado pelo usuário.
-
+<presentation-actions>
+<presentation-open-email>Abrir configurações de e-mail</presentation-open-email>
+</presentation-actions>
