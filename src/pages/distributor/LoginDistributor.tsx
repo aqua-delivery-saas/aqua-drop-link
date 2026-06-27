@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import heroWater from "@/assets/hero-water.jpg";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
+import { Helmet } from "react-helmet-async";
 const LoginDistributor = () => {
   const navigate = useNavigate();
   const {
@@ -90,7 +91,13 @@ const LoginDistributor = () => {
       setResetLoading(false);
     }
   };
-  return <div className="min-h-screen flex">
+  return <>
+      <Helmet>
+        <title>Login Distribuidora - AquaDelivery</title>
+        <meta name="description" content="Acesse o painel da sua distribuidora AquaDelivery para gerenciar pedidos, produtos, entregas e relatórios em um só lugar." />
+        <link rel="canonical" href="https://aqua-drop-link.lovable.app/distributor/login" />
+      </Helmet>
+      <div className="min-h-screen flex">
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <img src={heroWater} alt="Aqua Delivery" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-secondary/80 flex items-center justify-center">

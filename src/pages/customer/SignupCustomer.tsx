@@ -127,6 +127,12 @@ const SignupCustomer = () => {
   };
 
   return (
+    <>
+    <Helmet>
+      <title>Criar Conta de Cliente - AquaDelivery</title>
+      <meta name="description" content="Crie sua conta gratuita de cliente AquaDelivery e peça água mineral das melhores distribuidoras da sua cidade em poucos cliques." />
+      <link rel="canonical" href="https://aqua-drop-link.lovable.app/customer/signup" />
+    </Helmet>
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center space-y-2">
