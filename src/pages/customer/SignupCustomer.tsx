@@ -13,6 +13,7 @@ import { nameSchema, phoneSchema, emailSchema, simplePasswordSchema, formatPhone
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
+import { Helmet } from "react-helmet-async";
 
 const formSchema = z.object({
   name: nameSchema,
