@@ -157,7 +157,7 @@ const CityDistributors = () => {
                             </CardDescription>
                           </div>
                           <div className="flex items-center gap-2 ml-4">
-                            <Button variant="ghost" size="icon" onClick={() => handleToggleFavorite(dist.id, dist.name)} className={cn("transition-colors", favorited && "text-destructive hover:text-destructive")}>
+                            <Button variant="ghost" size="icon" aria-label={favorited ? `Remover ${dist.name} dos favoritos` : `Adicionar ${dist.name} aos favoritos`} onClick={() => handleToggleFavorite(dist.id, dist.name)} className={cn("transition-colors", favorited && "text-destructive hover:text-destructive")}>
                               <Heart className={cn("h-5 w-5 transition-all", favorited && "fill-current scale-110")} />
                             </Button>
                             

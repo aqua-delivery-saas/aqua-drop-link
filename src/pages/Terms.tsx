@@ -10,8 +10,12 @@ export default function Terms() {
   return (
     <>
       <Helmet>
-        <title>Termos de Uso - Distribuidora de Água</title>
-        <meta name="description" content="Leia nossos termos de uso e condições de serviço" />
+        <title>Termos de Uso - AquaDelivery</title>
+        <meta name="description" content="Leia os termos de uso, direitos, deveres e condições de serviço da plataforma AquaDelivery para clientes e distribuidoras." />
+        <meta property="og:title" content="Termos de Uso - AquaDelivery" />
+        <meta property="og:description" content="Termos de uso e condições de serviço da plataforma AquaDelivery." />
+        <meta property="og:url" content="https://aqua-drop-link.lovable.app/terms" />
+        <link rel="canonical" href="https://aqua-drop-link.lovable.app/terms" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-6 px-3 sm:py-12 sm:px-4">

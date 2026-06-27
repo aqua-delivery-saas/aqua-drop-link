@@ -13,6 +13,7 @@ import { emailSchema, simplePasswordSchema, nameSchema, whatsappSchema, formatPh
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
+import { Helmet } from "react-helmet-async";
 
 const formSchema = z.object({
   name: nameSchema,
@@ -134,6 +135,12 @@ const SignupDistributor = () => {
   };
 
   return (
+    <>
+    <Helmet>
+      <title>Cadastrar Distribuidora - AquaDelivery</title>
+      <meta name="description" content="Cadastre sua distribuidora de água no AquaDelivery, receba pedidos online e elimine o atendimento manual via WhatsApp." />
+      <link rel="canonical" href="https://aqua-drop-link.lovable.app/distributor/signup" />
+    </Helmet>
     <div className="min-h-screen flex items-center justify-center p-3 bg-gradient-to-br from-background to-muted">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center space-y-2">
@@ -265,6 +272,7 @@ const SignupDistributor = () => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 };
 

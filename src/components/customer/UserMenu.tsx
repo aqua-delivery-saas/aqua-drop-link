@@ -45,7 +45,7 @@ export const UserMenu = ({ variant = 'light' }: UserMenuProps) => {
   const MobileMenu = () => (
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className={cn("md:hidden", isDark && "text-white hover:bg-white/10")}>
+        <Button variant="ghost" size="icon" aria-label="Abrir menu da conta" className={cn("md:hidden", isDark && "text-white hover:bg-white/10")}>
           <Menu className="h-6 w-6" />
           <span className="sr-only">Menu</span>
         </Button>
@@ -138,7 +138,7 @@ export const UserMenu = ({ variant = 'light' }: UserMenuProps) => {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className={cn("hidden md:flex rounded-full", isDark && "text-white hover:bg-white/10")}>
+          <Button variant="ghost" size="icon" aria-label="Abrir menu da conta" className={cn("hidden md:flex rounded-full", isDark && "text-white hover:bg-white/10")}>
             <UserCircle className="h-6 w-6" />
           </Button>
         </DropdownMenuTrigger>

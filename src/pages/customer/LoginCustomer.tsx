@@ -76,7 +76,8 @@ const LoginCustomer = () => {
     <>
       <Helmet>
         <title>Login Cliente - AquaDelivery</title>
-        <meta name="description" content="Faça login para agendar suas entregas de água" />
+        <meta name="description" content="Acesse sua conta de cliente AquaDelivery para fazer pedidos de água mineral, acompanhar entregas e ver seu histórico." />
+        <link rel="canonical" href="https://aqua-drop-link.lovable.app/customer/login" />
       </Helmet>
 
       <div className="min-h-screen flex items-center justify-center bg-background p-4">

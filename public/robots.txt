@@ -12,3 +12,22 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /distributor/dashboard
+Disallow: /distributor/products
+Disallow: /distributor/settings
+Disallow: /distributor/orders
+Disallow: /distributor/reports
+Disallow: /distributor/profile
+Disallow: /distributor/subscription
+Disallow: /distributor/onboarding
+Disallow: /customer/history
+Disallow: /customer/profile
+Disallow: /schedule/
+Disallow: /order/confirmation
+Disallow: /auth/callback
+Disallow: /403
+Disallow: /500
+Disallow: /session-expired
+
+Sitemap: https://aqua-drop-link.lovable.app/sitemap.xml

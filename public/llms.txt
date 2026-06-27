@@ -1,0 +1,19 @@
+# AquaDelivery
+
+> Plataforma de pedidos online de água mineral que conecta clientes a distribuidoras locais no Brasil.
+
+AquaDelivery permite que clientes encontrem distribuidoras de água em sua cidade e façam pedidos de forma rápida e simples, eliminando o atendimento manual via WhatsApp. Distribuidoras assinam um plano para gerenciar produtos, pedidos, horários, descontos e fidelidade.
+
+## Pages
+
+- [Início](/): Busca de distribuidoras por cidade.
+- [Para Distribuidoras](/landingpage): Benefícios, preços e cadastro do plano AquaDelivery.
+- [Central de Ajuda](/help): Perguntas frequentes sobre pedidos, pagamento e contas.
+- [Suporte](/support): Como entrar em contato com a equipe.
+- [Cadastrar Distribuidora](/distributor/signup): Formulário de criação de conta da distribuidora.
+- [Cadastrar Cliente](/customer/signup): Formulário de criação de conta do cliente.
+
+## Optional
+
+- [Termos de Uso](/terms): Termos e condições de uso da plataforma.
+- [Política de Privacidade](/privacy): Tratamento de dados pessoais.
