@@ -408,7 +408,6 @@ const OrderPage = () => {
             url: `https://aqua-drop-link.lovable.app/order/${distribuidora.slug}`,
             image: distribuidora.logo_url || undefined,
             telephone: distribuidora.whatsapp || undefined,
-            telephone: distribuidora.whatsapp || undefined,
           })}
         </script>
       </Helmet>
