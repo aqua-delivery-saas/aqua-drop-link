@@ -179,6 +179,7 @@ const LoginDistributor = () => {
           </form>
         </DialogContent>
       </Dialog>
-    </div>;
+    </div>
+    </>;
 };
 export default LoginDistributor;

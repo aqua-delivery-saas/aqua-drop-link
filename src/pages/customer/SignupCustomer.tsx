@@ -271,6 +271,7 @@ const SignupCustomer = () => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 };
 
