@@ -17,12 +17,12 @@ const corsHeaders = {
 }
 
 const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'AquaDelivery - Confirme seu e-mail',
-  invite: 'AquaDelivery - Você foi convidado',
-  magiclink: 'AquaDelivery - Seu link de acesso',
-  recovery: 'AquaDelivery - Redefinição de senha solicitada',
-  email_change: 'AquaDelivery - Confirme seu novo e-mail',
-  reauthentication: 'AquaDelivery - Seu código de verificação',
+  signup: 'Confirm your email',
+  invite: "You've been invited",
+  magiclink: 'Your login link',
+  recovery: 'Reset your password',
+  email_change: 'Confirm your new email',
+  reauthentication: 'Your verification code',
 }
 
 // Template mapping
@@ -36,7 +36,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "AquaDelivery"
+const SITE_NAME = "aqua-drop-link"
 const SENDER_DOMAIN = "notify.aquadelivery.com.br"
 const ROOT_DOMAIN = "aquadelivery.com.br"
 const FROM_DOMAIN = "notify.aquadelivery.com.br" // Domain shown in From address (may be root or sender subdomain)

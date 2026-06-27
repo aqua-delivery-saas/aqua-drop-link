@@ -8,10 +8,8 @@ import {
   Container,
   Head,
   Heading,
-  Hr,
   Html,
   Preview,
-  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
@@ -24,32 +22,22 @@ export const MagicLinkEmail = ({
   siteName,
   confirmationUrl,
 }: MagicLinkEmailProps) => (
-  <Html lang="pt-BR" dir="ltr">
+  <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Seu link de acesso ao {siteName}</Preview>
+    <Preview>Your login link for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Section style={header}>
-          <Text style={brand}>💧 AquaDelivery</Text>
-        </Section>
-        <Section style={card}>
-          <Heading style={h1}>Seu link de acesso</Heading>
-          <Text style={text}>
-            Clique no botão abaixo para entrar no <strong>{siteName}</strong>.
-            Este link expira em breve.
-          </Text>
-          <Section style={{ textAlign: 'center', margin: '32px 0' }}>
-            <Button style={button} href={confirmationUrl}>
-              Entrar agora
-            </Button>
-          </Section>
-          <Hr style={hr} />
-          <Text style={footer}>
-            Se você não solicitou este link, pode ignorar este e-mail com
-            segurança.
-          </Text>
-        </Section>
-        <Text style={signature}>Equipe AquaDelivery</Text>
+        <Heading style={h1}>Your login link</Heading>
+        <Text style={text}>
+          Click the button below to log in to {siteName}. This link will expire
+          shortly.
+        </Text>
+        <Button style={button} href={confirmationUrl}>
+          Log In
+        </Button>
+        <Text style={footer}>
+          If you didn't request this link, you can safely ignore this email.
+        </Text>
       </Container>
     </Body>
   </Html>
@@ -57,58 +45,26 @@ export const MagicLinkEmail = ({
 
 export default MagicLinkEmail
 
-const main = {
-  backgroundColor: '#ffffff',
-  fontFamily: 'Poppins, Arial, sans-serif',
-  padding: '20px 0',
-}
-const container = { maxWidth: '560px', margin: '0 auto', padding: '0 16px' }
-const header = { textAlign: 'center' as const, padding: '8px 0 16px' }
-const brand = {
-  fontSize: '24px',
-  fontWeight: 'bold' as const,
-  color: '#007BFF',
-  margin: '0',
-  letterSpacing: '-0.5px',
-}
-const card = {
-  backgroundColor: '#F8FAFC',
-  borderRadius: '12px',
-  padding: '32px 28px',
-  border: '1px solid #E2E8F0',
-}
+const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
+const container = { padding: '20px 25px' }
 const h1 = {
   fontSize: '22px',
-  fontWeight: '600' as const,
-  color: '#0F172A',
+  fontWeight: 'bold' as const,
+  color: '#000000',
   margin: '0 0 20px',
 }
 const text = {
-  fontSize: '15px',
-  color: '#334155',
-  lineHeight: '1.6',
-  margin: '0 0 16px',
+  fontSize: '14px',
+  color: '#55575d',
+  lineHeight: '1.5',
+  margin: '0 0 25px',
 }
 const button = {
-  backgroundColor: '#007BFF',
+  backgroundColor: '#000000',
   color: '#ffffff',
-  fontSize: '15px',
-  fontWeight: '600' as const,
-  borderRadius: '12px',
-  padding: '14px 28px',
+  fontSize: '14px',
+  borderRadius: '8px',
+  padding: '12px 20px',
   textDecoration: 'none',
-  display: 'inline-block',
 }
-const hr = { borderColor: '#E2E8F0', margin: '24px 0' }
-const footer = {
-  fontSize: '13px',
-  color: '#64748B',
-  lineHeight: '1.6',
-  margin: '0',
-}
-const signature = {
-  fontSize: '13px',
-  color: '#94A3B8',
-  textAlign: 'center' as const,
-  margin: '24px 0 0',
-}
+const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }

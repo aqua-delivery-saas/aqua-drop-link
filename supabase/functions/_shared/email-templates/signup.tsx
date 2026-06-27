@@ -8,10 +8,9 @@ import {
   Container,
   Head,
   Heading,
-  Hr,
   Html,
+  Link,
   Preview,
-  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
@@ -24,36 +23,36 @@ interface SignupEmailProps {
 
 export const SignupEmail = ({
   siteName,
+  siteUrl,
   recipient,
   confirmationUrl,
 }: SignupEmailProps) => (
-  <Html lang="pt-BR" dir="ltr">
+  <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Confirme seu e-mail no {siteName}</Preview>
+    <Preview>Confirm your email for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Section style={header}>
-          <Text style={brand}>💧 AquaDelivery</Text>
-        </Section>
-        <Section style={card}>
-          <Heading style={h1}>Bem-vindo(a) ao AquaDelivery!</Heading>
-          <Text style={text}>Olá, {recipient}!</Text>
-          <Text style={text}>
-            Obrigado por se cadastrar no <strong>{siteName}</strong>. Para
-            ativar sua conta, confirme seu e-mail clicando no botão abaixo:
-          </Text>
-          <Section style={{ textAlign: 'center', margin: '32px 0' }}>
-            <Button style={button} href={confirmationUrl}>
-              Confirmar meu e-mail
-            </Button>
-          </Section>
-          <Hr style={hr} />
-          <Text style={footer}>
-            Se você não criou esta conta, pode ignorar este e-mail com
-            segurança.
-          </Text>
-        </Section>
-        <Text style={signature}>Equipe AquaDelivery</Text>
+        <Heading style={h1}>Confirm your email</Heading>
+        <Text style={text}>
+          Thanks for signing up for{' '}
+          <Link href={siteUrl} style={link}>
+            <strong>{siteName}</strong>
+          </Link>
+          !
+        </Text>
+        <Text style={text}>
+          Please confirm your email address (
+          <Link href={`mailto:${recipient}`} style={link}>
+            {recipient}
+          </Link>
+          ) by clicking the button below:
+        </Text>
+        <Button style={button} href={confirmationUrl}>
+          Verify Email
+        </Button>
+        <Text style={footer}>
+          If you didn't create an account, you can safely ignore this email.
+        </Text>
       </Container>
     </Body>
   </Html>
@@ -61,58 +60,27 @@ export const SignupEmail = ({
 
 export default SignupEmail
 
-const main = {
-  backgroundColor: '#ffffff',
-  fontFamily: 'Poppins, Arial, sans-serif',
-  padding: '20px 0',
-}
-const container = { maxWidth: '560px', margin: '0 auto', padding: '0 16px' }
-const header = { textAlign: 'center' as const, padding: '8px 0 16px' }
-const brand = {
-  fontSize: '24px',
-  fontWeight: 'bold' as const,
-  color: '#007BFF',
-  margin: '0',
-  letterSpacing: '-0.5px',
-}
-const card = {
-  backgroundColor: '#F8FAFC',
-  borderRadius: '12px',
-  padding: '32px 28px',
-  border: '1px solid #E2E8F0',
-}
+const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
+const container = { padding: '20px 25px' }
 const h1 = {
   fontSize: '22px',
-  fontWeight: '600' as const,
-  color: '#0F172A',
+  fontWeight: 'bold' as const,
+  color: '#000000',
   margin: '0 0 20px',
 }
 const text = {
-  fontSize: '15px',
-  color: '#334155',
-  lineHeight: '1.6',
-  margin: '0 0 16px',
+  fontSize: '14px',
+  color: '#55575d',
+  lineHeight: '1.5',
+  margin: '0 0 25px',
 }
+const link = { color: 'inherit', textDecoration: 'underline' }
 const button = {
-  backgroundColor: '#007BFF',
+  backgroundColor: '#000000',
   color: '#ffffff',
-  fontSize: '15px',
-  fontWeight: '600' as const,
-  borderRadius: '12px',
-  padding: '14px 28px',
+  fontSize: '14px',
+  borderRadius: '8px',
+  padding: '12px 20px',
   textDecoration: 'none',
-  display: 'inline-block',
 }
-const hr = { borderColor: '#E2E8F0', margin: '24px 0' }
-const footer = {
-  fontSize: '13px',
-  color: '#64748B',
-  lineHeight: '1.6',
-  margin: '0',
-}
-const signature = {
-  fontSize: '13px',
-  color: '#94A3B8',
-  textAlign: 'center' as const,
-  margin: '24px 0 0',
-}
+const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
