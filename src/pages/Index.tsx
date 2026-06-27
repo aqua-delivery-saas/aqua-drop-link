@@ -21,7 +21,11 @@ const Index = () => {
   return <>
       <Helmet>
         <title>AquaDelivery - Encontre água mineral na sua cidade</title>
-        <meta name="description" content="Encontre distribuidoras de água mineral perto de você. Peça água de forma rápida e simples." />
+        <meta name="description" content="Encontre distribuidoras de água mineral perto de você. Peça água de forma rápida e simples, sem WhatsApp manual." />
+        <link rel="canonical" href="https://aqua-drop-link.lovable.app/" />
+        <meta property="og:title" content="AquaDelivery - Encontre água mineral na sua cidade" />
+        <meta property="og:description" content="Encontre distribuidoras de água mineral perto de você. Peça água de forma rápida e simples." />
+        <meta property="og:url" content="https://aqua-drop-link.lovable.app/" />
       </Helmet>
 
       <div className="min-h-[100dvh] relative overflow-hidden">

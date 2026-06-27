@@ -396,6 +396,10 @@ const OrderPage = () => {
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={`https://aqua-drop-link.lovable.app/order/${distribuidora.slug}`} />
+        <link rel="canonical" href={`https://aqua-drop-link.lovable.app/order/${distribuidora.slug}`} />
       </Helmet>
 
       <LoginRequiredModal open={showLoginModal} onOpenChange={setShowLoginModal} distributorClosed={!isOpen} />
@@ -403,6 +407,7 @@ const OrderPage = () => {
       <div className="min-h-screen bg-background">
         <header className="border-b bg-card shadow-sm">
           <div className="container mx-auto px-4 py-4">
+            <h1 className="sr-only">Fazer pedido na {distribuidora.name}</h1>
             <div className="flex justify-between items-center">
               <div>
                 <Logo size="md" />
@@ -528,11 +533,11 @@ const OrderPage = () => {
                   <div className="space-y-2">
                     <Label className="text-base">Quantidade</Label>
                     <div className="flex items-center justify-center gap-4">
-                      <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(-1)}>
+                      <Button type="button" variant="outline" size="icon" aria-label="Diminuir quantidade" onClick={() => handleQuantityChange(-1)}>
                         <Minus className="h-4 w-4" />
                       </Button>
                       <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
-                      <Button type="button" variant="outline" size="icon" onClick={() => handleQuantityChange(1)}>
+                      <Button type="button" variant="outline" size="icon" aria-label="Aumentar quantidade" onClick={() => handleQuantityChange(1)}>
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>

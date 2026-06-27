@@ -110,11 +110,28 @@ export default function Help() {
   return (
     <>
       <Helmet>
-        <title>Central de Ajuda - FAQ</title>
+        <title>Central de Ajuda - FAQ - AquaDelivery</title>
         <meta
           name="description"
-          content="Encontre respostas para as perguntas mais frequentes sobre nossa plataforma"
+          content="Encontre respostas para perguntas frequentes sobre pedidos, pagamento, cadastro e gestão de distribuidoras na plataforma AquaDelivery."
         />
+        <link rel="canonical" href="https://aqua-drop-link.lovable.app/help" />
+        <meta property="og:title" content="Central de Ajuda - AquaDelivery" />
+        <meta property="og:description" content="Perguntas frequentes sobre a plataforma AquaDelivery." />
+        <meta property="og:url" content="https://aqua-drop-link.lovable.app/help" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqData.flatMap((cat) =>
+              cat.items.map((it) => ({
+                "@type": "Question",
+                name: it.question,
+                acceptedAnswer: { "@type": "Answer", text: it.answer },
+              }))
+            ),
+          })}
+        </script>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-4 px-3 sm:py-6 sm:px-4">
