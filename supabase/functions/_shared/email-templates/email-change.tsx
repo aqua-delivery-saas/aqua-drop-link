@@ -8,18 +8,16 @@ import {
   Container,
   Head,
   Heading,
+  Hr,
   Html,
   Link,
   Preview,
+  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
 interface EmailChangeEmailProps {
   siteName: string
-  // oldEmail is the user's current address (HookData.OldEmail). For the
-  // NEW-recipient half of a secure email_change fanout, `email` equals the
-  // recipient (NEW), so the "from" line must render oldEmail to read
-  // "from OLD to NEW" instead of "from NEW to NEW".
   oldEmail: string
   email: string
   newEmail: string
@@ -32,33 +30,35 @@ export const EmailChangeEmail = ({
   newEmail,
   confirmationUrl,
 }: EmailChangeEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="pt-BR" dir="ltr">
     <Head />
-    <Preview>Confirm your email change for {siteName}</Preview>
+    <Preview>Confirme a alteração do seu e-mail no {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Confirm your email change</Heading>
-        <Text style={text}>
-          You requested to change your email address for {siteName} from{' '}
-          <Link href={`mailto:${oldEmail}`} style={link}>
-            {oldEmail}
-          </Link>{' '}
-          to{' '}
-          <Link href={`mailto:${newEmail}`} style={link}>
-            {newEmail}
-          </Link>
-          .
-        </Text>
-        <Text style={text}>
-          Click the button below to confirm this change:
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Confirm Email Change
-        </Button>
-        <Text style={footer}>
-          If you didn't request this change, please secure your account
-          immediately.
-        </Text>
+        <Section style={header}>
+          <Heading style={brand}>AquaDelivery</Heading>
+        </Section>
+        <Section style={card}>
+          <Heading style={h1}>Confirmar alteração de e-mail</Heading>
+          <Text style={text}>
+            Recebemos uma solicitação para alterar o e-mail da sua conta no {siteName} de{' '}
+            <Link href={`mailto:${oldEmail}`} style={link}>{oldEmail}</Link>{' '}
+            para{' '}
+            <Link href={`mailto:${newEmail}`} style={link}>{newEmail}</Link>.
+          </Text>
+          <Section style={{ textAlign: 'center', margin: '32px 0' }}>
+            <Button style={button} href={confirmationUrl}>
+              Confirmar alteração
+            </Button>
+          </Section>
+          <Text style={text}>
+            Se você não solicitou esta alteração, proteja sua conta imediatamente.
+          </Text>
+          <Hr style={hr} />
+          <Text style={footer}>
+            © {new Date().getFullYear()} AquaDelivery. Todos os direitos reservados.
+          </Text>
+        </Section>
       </Container>
     </Body>
   </Html>
@@ -66,27 +66,23 @@ export const EmailChangeEmail = ({
 
 export default EmailChangeEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const link = { color: 'inherit', textDecoration: 'underline' }
+const main = { backgroundColor: '#ffffff', fontFamily: "'Poppins', Arial, sans-serif" }
+const container = { maxWidth: '560px', margin: '0 auto', padding: '24px' }
+const header = { textAlign: 'center' as const, padding: '16px 0' }
+const brand = { color: '#007BFF', fontSize: '24px', fontWeight: 'bold' as const, margin: 0 }
+const card = { backgroundColor: '#F8FAFC', borderRadius: '12px', padding: '32px 24px' }
+const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: '#0F172A', margin: '0 0 16px' }
+const text = { fontSize: '14px', color: '#475569', lineHeight: '1.6', margin: '0 0 16px' }
+const link = { color: '#007BFF', textDecoration: 'underline' }
 const button = {
-  backgroundColor: '#000000',
+  backgroundColor: '#007BFF',
   color: '#ffffff',
   fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
+  fontWeight: 'bold' as const,
+  borderRadius: '12px',
+  padding: '14px 28px',
   textDecoration: 'none',
+  display: 'inline-block',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const hr = { borderColor: '#E2E8F0', margin: '24px 0' }
+const footer = { fontSize: '12px', color: '#94A3B8', textAlign: 'center' as const, margin: 0 }
