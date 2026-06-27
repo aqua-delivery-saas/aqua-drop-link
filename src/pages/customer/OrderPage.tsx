@@ -400,6 +400,16 @@ const OrderPage = () => {
         <meta property="og:description" content={pageDescription} />
         <meta property="og:url" content={`https://aqua-drop-link.lovable.app/order/${distribuidora.slug}`} />
         <link rel="canonical" href={`https://aqua-drop-link.lovable.app/order/${distribuidora.slug}`} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            name: distribuidora.name,
+            url: `https://aqua-drop-link.lovable.app/order/${distribuidora.slug}`,
+            image: distribuidora.logo_url || undefined,
+            telephone: distribuidora.whatsapp || undefined,
+          })}
+        </script>
       </Helmet>
 
       <LoginRequiredModal open={showLoginModal} onOpenChange={setShowLoginModal} distributorClosed={!isOpen} />
