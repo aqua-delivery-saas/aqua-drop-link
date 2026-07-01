@@ -23,7 +23,7 @@ export function BottomNav({ items }: BottomNavProps) {
   return (
     <nav
       className={cn(
-        "fixed bottom-3 left-3 right-3 z-50 bg-card/95 backdrop-blur-md border border-border rounded-2xl shadow-[0_8px_24px_-4px_hsl(214_65%_11%/0.15)] transition-transform duration-200",
+        "fixed bottom-3 left-3 right-3 z-50 bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-[var(--shadow-elevated)] transition-transform duration-200",
         isKeyboardVisible ? "translate-y-[150%]" : "translate-y-0"
       )}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
@@ -35,7 +35,7 @@ export function BottomNav({ items }: BottomNavProps) {
             to={item.path}
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all min-w-[60px]",
+                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all min-w-[60px] water-press",
                 isActive
                   ? "text-primary bg-accent/15"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"

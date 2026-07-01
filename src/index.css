@@ -36,6 +36,11 @@ All colors MUST be HSL.
     --accent: 187 100% 50%;
     --accent-foreground: 214 65% 11%;
 
+    --success: 162 100% 38%;
+    --success-foreground: 0 0% 100%;
+    --closed: 214 16% 48%;
+    --closed-foreground: 0 0% 100%;
+
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
@@ -124,6 +129,61 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .customer-page {
+    background: var(--gradient-subtle);
+  }
+
+  .customer-topbar {
+    background: hsl(var(--card) / 0.92);
+    border-bottom: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(18px);
+  }
+
+  .customer-hero {
+    background: var(--gradient-water);
+    color: hsl(var(--primary-foreground));
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .customer-card {
+    border-color: hsl(var(--border));
+    box-shadow: var(--shadow-soft);
+  }
+
+  .customer-product-option {
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    box-shadow: var(--shadow-soft);
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+
+  .customer-product-option-selected {
+    border-color: hsl(var(--accent));
+    background: hsl(var(--accent) / 0.12);
+    box-shadow: 0 8px 22px -10px hsl(var(--accent) / 0.8);
+  }
+
+  .water-press {
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .water-press:active {
+    transform: scale(0.98);
+  }
+
+  .status-open {
+    background: hsl(var(--success));
+    color: hsl(var(--success-foreground));
+  }
+
+  .status-closed {
+    background: hsl(var(--closed));
+    color: hsl(var(--closed-foreground));
   }
 }
 

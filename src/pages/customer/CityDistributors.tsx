@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Phone, Clock, Heart } from "lucide-react";
+import { Droplets } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
@@ -10,6 +11,9 @@ import { cn } from "@/lib/utils";
 import { useCityBySlug, useDistributorsByCity, useCities } from "@/hooks/useCities";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isDistributorOpen } from "@/lib/businessHoursUtils";
+import { Logo } from "@/components/Logo";
+import { UserMenu } from "@/components/customer/UserMenu";
+import { CustomerBottomNav } from "@/components/customer/CustomerBottomNav";
 const CityDistributors = () => {
   const {
     citySlug
@@ -34,8 +38,8 @@ const CityDistributors = () => {
   } = useCities();
   const isLoading = cityLoading || distributorsLoading;
   if (isLoading) {
-    return <div className="min-h-screen bg-background">
-        <div className="bg-gradient-to-br from-primary to-secondary py-16">
+    return <div className="customer-page min-h-screen pb-mobile-nav">
+        <div className="customer-hero py-14">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <Skeleton className="h-12 w-96 mx-auto mb-4 bg-primary-foreground/20" />
@@ -59,7 +63,7 @@ const CityDistributors = () => {
       </div>;
   }
   if (!cidade) {
-    return <div className="min-h-screen flex items-center justify-center bg-background">
+    return <div className="customer-page min-h-screen flex items-center justify-center p-4">
         <Card className="max-w-md">
           <CardHeader>
             <CardTitle>Cidade não encontrada</CardTitle>
@@ -97,12 +101,18 @@ const CityDistributors = () => {
         <link rel="canonical" href={`/distribuidoras/${cidade.slug}`} />
       </Helmet>
       
-      <div className="min-h-screen bg-background">
+      <div className="customer-page min-h-screen pb-mobile-nav">
+        <header className="customer-topbar sticky top-0 z-20">
+          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+            <Logo size="md" />
+            <UserMenu />
+          </div>
+        </header>
         {/* Hero Section */}
-        <div className="bg-gradient-to-br from-primary to-secondary text-primary-foreground py-16">
+        <div className="customer-hero rounded-b-[2rem] py-8 sm:py-14">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              <h1 className="text-3xl md:text-5xl font-bold mb-3 leading-tight">
                 Distribuidoras de Água em {cidade.name}
               </h1>
               <p className="text-xl opacity-90 mb-2">
@@ -116,9 +126,9 @@ const CityDistributors = () => {
         </div>
         
         {/* Distribuidoras List */}
-        <div className="container mx-auto px-4 py-12">
+        <div className="container mx-auto px-4 py-8 sm:py-12">
           <div className="max-w-5xl mx-auto">
-            {(distribuidoras || []).length === 0 ? <Card>
+            {(distribuidoras || []).length === 0 ? <Card className="customer-card">
                 <CardHeader>
                   <CardTitle>Nenhuma distribuidora encontrada</CardTitle>
                   <CardDescription>
@@ -130,31 +140,35 @@ const CityDistributors = () => {
                     Ver outras cidades
                   </Button>
                 </CardContent>
-              </Card> : <div className="space-y-6">
+              </Card> : <div className="space-y-4 sm:space-y-6">
                 {(distribuidoras || []).map(dist => {
               const favorited = isFavorite(dist.id);
-              return <Card key={dist.id} className="hover:shadow-lg transition-shadow">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <CardTitle className="text-2xl">{dist.name}</CardTitle>
+              const open = isDistributorOpen(dist.business_hours);
+              return <Card key={dist.id} className="customer-card water-press overflow-hidden">
+                      <CardHeader className="p-4 sm:p-6">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 flex-1 gap-3">
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary-light">
+                              {dist.logo_url ? <img src={dist.logo_url} alt={`Logo ${dist.name}`} className="h-full w-full object-cover" loading="lazy" /> : <Droplets className="h-7 w-7 text-primary" />}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              <CardTitle className="text-xl sm:text-2xl leading-tight">{dist.name}</CardTitle>
                               <Badge 
-                                variant={isDistributorOpen(dist.business_hours) ? "default" : "secondary"}
+                                variant="secondary"
                                 className={cn(
-                                  "flex items-center gap-1",
-                                  isDistributorOpen(dist.business_hours) 
-                                    ? "bg-green-500 hover:bg-green-600 text-white" 
-                                    : "bg-gray-400 hover:bg-gray-500 text-white"
+                                  "flex items-center gap-1 rounded-lg",
+                                  open ? "status-open" : "status-closed"
                                 )}
                               >
                                 <Clock className="h-3 w-3" />
-                                {isDistributorOpen(dist.business_hours) ? "Aberta" : "Fechada"}
+                                {open ? "Aberta" : "Fechada"}
                               </Badge>
                             </div>
                             <CardDescription className="text-base">
                               {dist.meta_description || 'Distribuidora de água mineral'}
                             </CardDescription>
+                            </div>
                           </div>
                           <div className="flex items-center gap-2 ml-4">
                             <Button variant="ghost" size="icon" aria-label={favorited ? `Remover ${dist.name} dos favoritos` : `Adicionar ${dist.name} aos favoritos`} onClick={() => handleToggleFavorite(dist.id, dist.name)} className={cn("transition-colors", favorited && "text-destructive hover:text-destructive")}>
@@ -164,7 +178,7 @@ const CityDistributors = () => {
                           </div>
                         </div>
                       </CardHeader>
-                      <CardContent className="space-y-4">
+                      <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
                         {/* Address */}
                         {dist.street && <div className="flex items-start gap-3">
                             <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -187,7 +201,7 @@ const CityDistributors = () => {
                         
                         {/* Actions */}
                         <div className="flex gap-3 pt-2">
-                          <Button asChild className="flex-1">
+                          <Button asChild variant="accent" className="flex-1">
                             <Link to={`/order/${dist.slug}`}>
                               Fazer Pedido
                             </Link>
@@ -201,7 +215,7 @@ const CityDistributors = () => {
         </div>
         
         {/* Other Cities Section */}
-        {otherCities.length > 0 && <div className="bg-muted py-12">
+        {otherCities.length > 0 && <div className="py-10 sm:py-12">
             <div className="container mx-auto px-4">
               <div className="max-w-5xl mx-auto">
                 <h2 className="text-2xl font-bold mb-6">Outras Cidades</h2>
@@ -219,6 +233,7 @@ const CityDistributors = () => {
             </div>
           </div>}
       </div>
+      <CustomerBottomNav />
     </>;
 };
 export default CityDistributors;

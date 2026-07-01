@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { UserMenu } from "@/components/customer/UserMenu";
+import { CustomerBottomNav } from "@/components/customer/CustomerBottomNav";
 
 const OrderHistory = () => {
   const navigate = useNavigate();
@@ -136,8 +137,8 @@ const OrderHistory = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card shadow-sm">
+    <div className="customer-page min-h-screen pb-mobile-nav">
+      <header className="customer-topbar sticky top-0 z-20">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Logo size="md" />
           <UserMenu />
@@ -145,15 +146,17 @@ const OrderHistory = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-3xl">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="customer-hero rounded-b-[2rem] -mx-4 -mt-8 mb-8 px-4 py-8 sm:mx-0 sm:mt-0 sm:rounded-lg sm:px-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold mb-2">Meus Pedidos</h1>
-            <p className="text-muted-foreground">Histórico completo de seus pedidos</p>
+            <p className="text-primary-foreground/80">Histórico completo de seus pedidos</p>
           </div>
-          <Button onClick={() => navigate("/")} className="w-full sm:w-auto">
+          <Button onClick={() => navigate("/")} variant="accent" className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             Novo Pedido
           </Button>
+        </div>
         </div>
 
         {isLoading ? (
@@ -178,7 +181,7 @@ const OrderHistory = () => {
             <TabsContent value="all" className="space-y-4 mt-6">
               {orders.length > 0 ? (
                 orders.map((order, index) => (
-                  <Card key={order.id} className="hover-lift animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+                  <Card key={order.id} className="customer-card hover-lift animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div>
@@ -236,7 +239,7 @@ const OrderHistory = () => {
                   </Card>
                 ))
               ) : (
-                <Card className="text-center py-12">
+                <Card className="customer-card text-center py-12">
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Você ainda não fez pedidos.</p>
                     <Button onClick={() => navigate("/")}>
@@ -251,7 +254,7 @@ const OrderHistory = () => {
             <TabsContent value="scheduled" className="space-y-4 mt-6">
               {scheduledOrders.length > 0 ? (
                 scheduledOrders.map((order, index) => (
-                  <Card key={order.id} className="hover-lift animate-fade-in border-primary/30" style={{ animationDelay: `${index * 50}ms` }}>
+                  <Card key={order.id} className="customer-card hover-lift animate-fade-in border-primary/30" style={{ animationDelay: `${index * 50}ms` }}>
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div>
@@ -305,7 +308,7 @@ const OrderHistory = () => {
                   </Card>
                 ))
               ) : (
-                <Card className="text-center py-12">
+                <Card className="customer-card text-center py-12">
                   <CardContent>
                     <p className="text-muted-foreground mb-4">Nenhum agendamento encontrado.</p>
                     <Button onClick={() => navigate("/")}>
@@ -363,6 +366,7 @@ const OrderHistory = () => {
           </Tabs>
         )}
       </main>
+      <CustomerBottomNav />
     </div>
   );
 };
