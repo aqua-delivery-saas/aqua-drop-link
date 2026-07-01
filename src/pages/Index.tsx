@@ -64,7 +64,7 @@ const Index = () => {
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
                 Encontre água mineral{" "}
                 <br className="hidden sm:block" />
-                <span className="text-primary">na sua cidade</span>
+                <span className="text-accent">na sua cidade</span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-white/80 mb-6 sm:mb-8">
                 Peça água de forma rápida e simples
@@ -75,7 +75,7 @@ const Index = () => {
                 <div className="flex-1">
                   <CitySearchCombobox onSelect={handleCitySelect} />
                 </div>
-                <Button size="lg" className="h-12 sm:h-14 px-6 sm:w-auto" onClick={() => {}}>
+                <Button size="lg" variant="accent" className="h-12 sm:h-14 px-6 sm:w-auto" onClick={() => {}}>
                   <Search className="mr-2 h-5 w-5" />
                   Buscar
                 </Button>
@@ -84,7 +84,7 @@ const Index = () => {
               {/* CTA para distribuidoras */}
               <p className="mt-6 sm:mt-8 text-white/70 text-sm sm:text-base">
                 É distribuidora?{" "}
-                <Button variant="link" className="p-0 h-auto sm:text-base text-lg font-bold text-primary-foreground" onClick={() => navigate("/distributor/signup")}>
+                <Button variant="link" className="p-0 h-auto sm:text-base text-lg font-bold text-accent" onClick={() => navigate("/distributor/signup")}>
                   Cadastre-se gratuitamente
                 </Button>
               </p>
