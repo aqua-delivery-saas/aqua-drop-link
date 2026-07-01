@@ -8,9 +8,9 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Aqua Delivery — Navy + Cyan Water Theme */
-    /* Background: #E6FBFF (Azul Geada) */
-    --background: 190 100% 95%;
+    /* Aqua Delivery — Clean & Tech (SaaS) */
+    /* Surface #F8FAFC, Card #FFFFFF, Text #0A192F / #475569 */
+    --background: 210 40% 98%;
     --foreground: 214 65% 11%;
 
     --card: 0 0% 100%;
@@ -19,43 +19,43 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 214 65% 11%;
 
-    /* Primary — Azul Marinho #0A192F */
+    /* Primary — Azul Marinho Profundo #0A192F */
     --primary: 214 65% 11%;
     --primary-foreground: 0 0% 100%;
     --primary-hover: 214 65% 18%;
-    --primary-light: 190 100% 95%;
+    --primary-light: 210 40% 96%;
 
-    /* Secondary — Ciano #00E5FF (accent/CTA) */
+    /* Secondary/Accent — Ciano Atômico #00E5FF */
     --secondary: 187 100% 50%;
     --secondary-foreground: 214 65% 11%;
 
-    --muted: 200 40% 96%;
-    --muted-foreground: 214 20% 40%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 20% 47%; /* #64748B */
 
-    /* Accent — Ciano #00E5FF */
     --accent: 187 100% 50%;
     --accent-foreground: 214 65% 11%;
 
-    --success: 162 100% 38%;
+    /* Success #22C55E */
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
-    --closed: 214 16% 48%;
+    --closed: 215 16% 47%;
     --closed-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 200 30% 88%;
-    --input: 200 30% 88%;
+    --border: 214 32% 91%; /* #E2E8F0 */
+    --input: 214 32% 91%;
     --ring: 187 100% 50%;
 
-    /* 8px border radius per style guide */
-    --radius: 0.5rem;
+    /* 12px cards / 8px buttons */
+    --radius: 0.75rem;
 
-    /* Water-themed gradients & soft shadows */
-    --gradient-water: linear-gradient(135deg, hsl(214 65% 11%) 0%, hsl(187 100% 50%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(190 100% 97%) 0%, hsl(190 100% 95%) 100%);
-    --shadow-soft: 0 4px 12px -2px hsl(214 65% 11% / 0.08);
-    --shadow-elevated: 0 8px 24px -4px hsl(214 65% 11% / 0.12);
+    /* Gradients & soft shadows */
+    --gradient-water: linear-gradient(135deg, hsl(214 65% 11%) 0%, hsl(210 90% 40%) 60%, hsl(187 100% 50%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(210 40% 99%) 0%, hsl(210 40% 97%) 100%);
+    --shadow-soft: 0 4px 6px -1px hsl(214 65% 11% / 0.08), 0 2px 4px -2px hsl(214 65% 11% / 0.05);
+    --shadow-elevated: 0 10px 25px -5px hsl(214 65% 11% / 0.10), 0 4px 10px -4px hsl(214 65% 11% / 0.08);
 
     --sidebar-background: 0 0% 98%;
 
