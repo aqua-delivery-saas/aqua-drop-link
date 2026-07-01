@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Poppins', 'sans-serif'],
+        sans: ['Montserrat', 'Roboto', 'sans-serif'],
       },
       fontSize: {
         'heading-1': ['32px', { lineHeight: '120%', fontWeight: '600' }],
