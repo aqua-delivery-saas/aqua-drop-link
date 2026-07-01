@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { UserMenu } from "@/components/customer/UserMenu";
+import { CustomerBottomNav } from "@/components/customer/CustomerBottomNav";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -134,8 +135,8 @@ const Profile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b bg-card shadow-sm">
+      <div className="customer-page min-h-screen pb-mobile-nav">
+        <header className="customer-topbar sticky top-0 z-20">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <Logo size="md" />
             <UserMenu />
@@ -165,8 +166,8 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card shadow-sm">
+    <div className="customer-page min-h-screen pb-mobile-nav">
+      <header className="customer-topbar sticky top-0 z-20">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Logo size="md" />
           <div className="flex items-center gap-2">
@@ -180,13 +181,13 @@ const Profile = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="mb-8">
+        <div className="customer-hero rounded-b-[2rem] -mx-4 -mt-8 mb-8 px-4 py-8 sm:mx-0 sm:mt-0 sm:rounded-lg sm:px-6">
           <h1 className="text-3xl font-bold mb-2">Meu Perfil</h1>
-          <p className="text-muted-foreground">Gerencie suas informações pessoais</p>
+          <p className="text-primary-foreground/80">Gerencie suas informações pessoais</p>
         </div>
 
         <div className="space-y-6">
-          <Card>
+          <Card className="customer-card">
             <CardHeader>
               <CardTitle>Informações Pessoais</CardTitle>
               <CardDescription>
@@ -229,7 +230,7 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="customer-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-5 w-5" />
@@ -255,7 +256,7 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="customer-card">
             <CardHeader>
               <CardTitle>Alterar Senha</CardTitle>
               <CardDescription>
@@ -291,6 +292,7 @@ const Profile = () => {
           </Button>
         </div>
       </main>
+      <CustomerBottomNav />
     </div>
   );
 };
