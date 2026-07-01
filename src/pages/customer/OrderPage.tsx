@@ -24,6 +24,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCreateOrder } from "@/hooks/useDistributor";
 import { useCustomerLoyaltyPoints, useRedeemLoyaltyPoints } from "@/hooks/useCustomerLoyalty";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
