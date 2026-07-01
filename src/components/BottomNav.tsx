@@ -23,7 +23,7 @@ export function BottomNav({ items }: BottomNavProps) {
   return (
     <nav
       className={cn(
-        "fixed bottom-3 left-3 right-3 z-50 bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-[var(--shadow-elevated)] transition-transform duration-200",
+        "fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md transition-transform duration-200",
         isKeyboardVisible ? "translate-y-[150%]" : "translate-y-0"
       )}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
@@ -33,17 +33,22 @@ export function BottomNav({ items }: BottomNavProps) {
           <NavLink
             key={item.path}
             to={item.path}
+            end
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-all min-w-[60px] water-press",
-                isActive
-                  ? "text-primary bg-accent/15"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                "flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 min-w-[60px] transition-colors water-press",
+                isActive ? "text-primary" : "text-muted-foreground hover:text-primary"
               )
             }
           >
-            <item.icon className="w-5 h-5" />
-            <span className="text-[11px] font-semibold tracking-wide">{item.title}</span>
+            {({ isActive }) => (
+              <>
+                <item.icon className="w-5 h-5" strokeWidth={isActive ? 2.2 : 1.6} fill={isActive ? "currentColor" : "none"} />
+                <span className={cn("text-[11px]", isActive ? "font-bold italic" : "font-medium")}>
+                  {item.title}
+                </span>
+              </>
+            )}
           </NavLink>
         ))}
       </div>
