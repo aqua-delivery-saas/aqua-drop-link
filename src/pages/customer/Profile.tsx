@@ -166,7 +166,7 @@ const Profile = () => {
                 <UserRound className="h-6 w-6 text-primary-foreground" strokeWidth={1.8} />
               </div>
               <div className="min-w-0">
-                <h1 className="truncate font-display text-xl font-bold text-primary-foreground">
+                <h1 className="truncate font-display text-[16px] font-bold text-primary-foreground">
                   {formData.name || 'Meu Perfil'}
                 </h1>
                 <p className="truncate text-xs text-primary-foreground/85">{formData.email}</p>
