@@ -1,17 +1,47 @@
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
-import { Bell, MapPin, ChevronRight, ShieldCheck, Truck, CreditCard, Droplets } from "lucide-react";
+import { Bell, MapPin, ChevronRight, ShieldCheck, Truck, CreditCard, Droplets, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { UserMenu } from "@/components/customer/UserMenu";
 import { CustomerBottomNav } from "@/components/customer/CustomerBottomNav";
 import { CitySearchCombobox } from "@/components/CitySearchCombobox";
 import type { City } from "@/hooks/useCities";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import gallonHero from "@/assets/gallon-hero.png";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, isDistributor } = useAuth();
+  const { isAuthenticated, isDistributor, user } = useAuth();
+  const [preferredCity, setPreferredCity] = useState<Pick<City, "id" | "name" | "state" | "slug"> | null>(null);
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      setPreferredCity(null);
+      setRecentOrders([]);
+      return;
+    }
+    (async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("cities:preferred_city_id (id, name, state, slug)")
+        .eq("id", user.id)
+        .maybeSingle();
+      setPreferredCity((profile?.cities as any) || null);
+
+      const { data: orders } = await supabase
+        .from("orders")
+        .select("id, order_number, total, status, created_at, order_items (product_name), distributors:distributor_id (slug, name)")
+        .eq("customer_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(3);
+      setRecentOrders(orders || []);
+    })();
+  }, [user]);
 
   const handleCitySelect = (city: City) => {
     navigate(`/distribuidoras/${city.slug}`);
@@ -70,18 +100,28 @@ const Index = () => {
 
         {/* Address / Search card */}
         <section className="px-5">
-          <div className="flex items-center gap-3 rounded-xl bg-card p-3.5 shadow-[var(--shadow-soft)]">
+          <button
+            type="button"
+            onClick={() => preferredCity && navigate(`/distribuidoras/${preferredCity.slug}`)}
+            className="flex w-full items-center gap-3 rounded-xl bg-card p-3.5 text-left shadow-[var(--shadow-soft)] transition-transform active:scale-[0.99]"
+          >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/5">
               <MapPin className="h-5 w-5 text-primary" strokeWidth={1.8} />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-muted-foreground">Entrega para</p>
+            <div className="min-w-0 flex-1" onClick={(e) => e.stopPropagation()}>
+              <p className="text-[11px] font-medium text-muted-foreground">
+                {preferredCity ? "Sua cidade" : "Entrega para"}
+              </p>
               <div className="[&_button]:!h-auto [&_button]:!border-0 [&_button]:!bg-transparent [&_button]:!p-0 [&_button]:!shadow-none [&_button]:!text-[15px] [&_button]:!font-semibold [&_button]:!text-primary">
-                <CitySearchCombobox onSelect={handleCitySelect} />
+                <CitySearchCombobox
+                  onSelect={handleCitySelect}
+                  selectedCity={preferredCity}
+                  placeholder="Digite sua cidade..."
+                />
               </div>
             </div>
             <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
-          </div>
+          </button>
         </section>
 
         {/* Promo hero */}
@@ -180,6 +220,53 @@ const Index = () => {
             ))}
           </div>
         </section>
+
+        {/* Últimos pedidos */}
+        {isAuthenticated && recentOrders.length > 0 && (
+          <section className="mt-6 px-5">
+            <div className="flex items-baseline justify-between">
+              <h2 className="font-display text-lg font-bold text-primary">Últimos pedidos</h2>
+              <button
+                type="button"
+                onClick={() => navigate("/customer/history")}
+                className="text-xs font-semibold text-accent hover:underline"
+              >
+                Ver todos
+              </button>
+            </div>
+            <div className="mt-3 space-y-2">
+              {recentOrders.map((o) => {
+                const first = o.order_items?.[0]?.product_name || "Pedido";
+                const more = (o.order_items?.length || 0) - 1;
+                const distSlug = (o.distributors as any)?.slug;
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    onClick={() => distSlug && navigate(`/order/${distSlug}`)}
+                    className="flex w-full items-center gap-3 rounded-xl bg-card p-3 text-left shadow-[var(--shadow-soft)] transition-transform active:scale-[0.99]"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/5">
+                      <ClipboardList className="h-5 w-5 text-primary" strokeWidth={1.8} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-bold text-primary">
+                        {more > 0 ? `${first} +${more}` : first}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        #{o.order_number} • {format(new Date(o.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold text-primary">
+                      R$ {Number(o.total).toFixed(2)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
 
         {/* Signup nudge */}
         {!isAuthenticated && (

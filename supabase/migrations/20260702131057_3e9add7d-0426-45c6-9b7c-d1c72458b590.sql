@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS preferred_city_id uuid REFERENCES public.cities(id) ON DELETE SET NULL;

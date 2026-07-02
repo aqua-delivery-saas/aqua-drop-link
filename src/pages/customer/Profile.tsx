@@ -9,15 +9,20 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bell, Droplets, MapPin, UserRound, Lock } from "lucide-react";
+import { Bell, Droplets, MapPin, UserRound, Lock, LocateFixed, Loader2 } from "lucide-react";
 import { UserMenu } from "@/components/customer/UserMenu";
 import { CustomerBottomNav } from "@/components/customer/CustomerBottomNav";
+import { CitySearchCombobox } from "@/components/CitySearchCombobox";
+import { detectCityFromBrowser } from "@/lib/geoLocateCity";
+import type { City } from "@/hooks/useCities";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [preferredCity, setPreferredCity] = useState<Pick<City, "id" | "name" | "state" | "slug"> | null>(null);
   const [formData, setFormData] = useState({
     name: "", email: "", phone: "", address: "", newPassword: "", confirmPassword: "",
   });
@@ -28,7 +33,7 @@ const Profile = () => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('full_name, phone, street')
+          .select('full_name, phone, street, preferred_city_id, cities:preferred_city_id (id, name, state, slug)')
           .eq('id', user.id)
           .maybeSingle();
         if (error) throw error;
@@ -39,6 +44,7 @@ const Profile = () => {
           phone: data?.phone || "",
           address: data?.street || "",
         }));
+        setPreferredCity((data?.cities as any) || null);
       } catch (error) {
         console.error('Erro ao buscar perfil:', error);
         toast.error('Erro ao carregar dados do perfil');
@@ -48,6 +54,29 @@ const Profile = () => {
     }
     fetchProfile();
   }, [user]);
+
+  const handleCitySelect = async (city: City) => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('profiles')
+      .update({ preferred_city_id: city.id })
+      .eq('id', user.id);
+    if (error) return toast.error("Erro ao salvar cidade");
+    setPreferredCity(city);
+    toast.success(`Cidade padrão: ${city.name} - ${city.state}`);
+  };
+
+  const handleUseLocation = async () => {
+    setIsLocating(true);
+    try {
+      const city = await detectCityFromBrowser();
+      await handleCitySelect(city as City);
+    } catch (e: any) {
+      toast.error(e?.message || "Não foi possível obter sua localização");
+    } finally {
+      setIsLocating(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -174,6 +203,43 @@ const Profile = () => {
                     <Label htmlFor="phone" className="text-xs">Telefone</Label>
                     <Input id="phone" value={formData.phone} onChange={handleChange} placeholder="21 98765-4321" />
                   </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Preferred city */}
+            <section className="mt-4 px-5">
+              <div className="rounded-xl bg-card p-4 shadow-[var(--shadow-soft)]">
+                <div className="mb-1 flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  <h2 className="text-sm font-bold text-primary">Cidade Padrão</h2>
+                </div>
+                <p className="mb-3 text-[11px] text-muted-foreground">
+                  Usada como cidade inicial na home para buscar distribuidoras.
+                </p>
+                <div className="space-y-2">
+                  <div className="[&_button]:!h-11 [&_button]:!shadow-none [&_button]:!border [&_button]:!border-border">
+                    <CitySearchCombobox
+                      onSelect={handleCitySelect}
+                      selectedCity={preferredCity}
+                      placeholder="Selecione sua cidade"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={handleUseLocation}
+                    disabled={isLocating}
+                  >
+                    {isLocating ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <LocateFixed className="mr-2 h-4 w-4" />
+                    )}
+                    Usar minha localização
+                  </Button>
                 </div>
               </div>
             </section>
