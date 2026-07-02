@@ -18,9 +18,11 @@ import { useCities, type City } from "@/hooks/useCities";
 
 interface CitySearchComboboxProps {
   onSelect: (city: City) => void;
+  selectedCity?: Pick<City, "name" | "state"> | null;
+  placeholder?: string;
 }
 
-export function CitySearchCombobox({ onSelect }: CitySearchComboboxProps) {
+export function CitySearchCombobox({ onSelect, selectedCity, placeholder = "Digite sua cidade..." }: CitySearchComboboxProps) {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const { data: cities = [], isLoading } = useCities();
@@ -39,8 +41,8 @@ export function CitySearchCombobox({ onSelect }: CitySearchComboboxProps) {
           className="w-full justify-start bg-white text-left font-normal h-12 sm:h-14 text-base border-0 shadow-lg hover:bg-white"
         >
           <Search className="mr-3 h-5 w-5 text-muted-foreground shrink-0" />
-          <span className="text-muted-foreground truncate">
-            Digite sua cidade...
+          <span className={selectedCity ? "truncate text-foreground" : "truncate text-muted-foreground"}>
+            {selectedCity ? `${selectedCity.name} - ${selectedCity.state}` : placeholder}
           </span>
         </Button>
       </PopoverTrigger>
