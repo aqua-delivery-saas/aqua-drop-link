@@ -207,6 +207,43 @@ const Profile = () => {
               </div>
             </section>
 
+            {/* Preferred city */}
+            <section className="mt-4 px-5">
+              <div className="rounded-xl bg-card p-4 shadow-[var(--shadow-soft)]">
+                <div className="mb-1 flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  <h2 className="text-sm font-bold text-primary">Cidade Padrão</h2>
+                </div>
+                <p className="mb-3 text-[11px] text-muted-foreground">
+                  Usada como cidade inicial na home para buscar distribuidoras.
+                </p>
+                <div className="space-y-2">
+                  <div className="[&_button]:!h-11 [&_button]:!shadow-none [&_button]:!border [&_button]:!border-border">
+                    <CitySearchCombobox
+                      onSelect={handleCitySelect}
+                      selectedCity={preferredCity}
+                      placeholder="Selecione sua cidade"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={handleUseLocation}
+                    disabled={isLocating}
+                  >
+                    {isLocating ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <LocateFixed className="mr-2 h-4 w-4" />
+                    )}
+                    Usar minha localização
+                  </Button>
+                </div>
+              </div>
+            </section>
+
             {/* Address */}
             <section className="mt-4 px-5">
               <div className="rounded-xl bg-card p-4 shadow-[var(--shadow-soft)]">
