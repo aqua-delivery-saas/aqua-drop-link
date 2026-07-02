@@ -774,6 +774,7 @@ export type Database = {
           neighborhood: string | null
           number: string | null
           phone: string | null
+          preferred_city_id: string | null
           state: string | null
           street: string | null
           updated_at: string
@@ -788,6 +789,7 @@ export type Database = {
           neighborhood?: string | null
           number?: string | null
           phone?: string | null
+          preferred_city_id?: string | null
           state?: string | null
           street?: string | null
           updated_at?: string
@@ -802,12 +804,21 @@ export type Database = {
           neighborhood?: string | null
           number?: string | null
           phone?: string | null
+          preferred_city_id?: string | null
           state?: string | null
           street?: string | null
           updated_at?: string
           zip_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_preferred_city_id_fkey"
+            columns: ["preferred_city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscriptions: {
         Row: {
