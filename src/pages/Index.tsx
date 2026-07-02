@@ -1,17 +1,47 @@
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
-import { Bell, MapPin, ChevronRight, ShieldCheck, Truck, CreditCard, Droplets } from "lucide-react";
+import { Bell, MapPin, ChevronRight, ShieldCheck, Truck, CreditCard, Droplets, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { UserMenu } from "@/components/customer/UserMenu";
 import { CustomerBottomNav } from "@/components/customer/CustomerBottomNav";
 import { CitySearchCombobox } from "@/components/CitySearchCombobox";
 import type { City } from "@/hooks/useCities";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import gallonHero from "@/assets/gallon-hero.png";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, isDistributor } = useAuth();
+  const { isAuthenticated, isDistributor, user } = useAuth();
+  const [preferredCity, setPreferredCity] = useState<Pick<City, "id" | "name" | "state" | "slug"> | null>(null);
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      setPreferredCity(null);
+      setRecentOrders([]);
+      return;
+    }
+    (async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("cities:preferred_city_id (id, name, state, slug)")
+        .eq("id", user.id)
+        .maybeSingle();
+      setPreferredCity((profile?.cities as any) || null);
+
+      const { data: orders } = await supabase
+        .from("orders")
+        .select("id, order_number, total, status, created_at, order_items (product_name), distributors:distributor_id (slug, name)")
+        .eq("customer_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(3);
+      setRecentOrders(orders || []);
+    })();
+  }, [user]);
 
   const handleCitySelect = (city: City) => {
     navigate(`/distribuidoras/${city.slug}`);
