@@ -100,18 +100,28 @@ const Index = () => {
 
         {/* Address / Search card */}
         <section className="px-5">
-          <div className="flex items-center gap-3 rounded-xl bg-card p-3.5 shadow-[var(--shadow-soft)]">
+          <button
+            type="button"
+            onClick={() => preferredCity && navigate(`/distribuidoras/${preferredCity.slug}`)}
+            className="flex w-full items-center gap-3 rounded-xl bg-card p-3.5 text-left shadow-[var(--shadow-soft)] transition-transform active:scale-[0.99]"
+          >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/5">
               <MapPin className="h-5 w-5 text-primary" strokeWidth={1.8} />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-muted-foreground">Entrega para</p>
+            <div className="min-w-0 flex-1" onClick={(e) => e.stopPropagation()}>
+              <p className="text-[11px] font-medium text-muted-foreground">
+                {preferredCity ? "Sua cidade" : "Entrega para"}
+              </p>
               <div className="[&_button]:!h-auto [&_button]:!border-0 [&_button]:!bg-transparent [&_button]:!p-0 [&_button]:!shadow-none [&_button]:!text-[15px] [&_button]:!font-semibold [&_button]:!text-primary">
-                <CitySearchCombobox onSelect={handleCitySelect} />
+                <CitySearchCombobox
+                  onSelect={handleCitySelect}
+                  selectedCity={preferredCity}
+                  placeholder="Digite sua cidade..."
+                />
               </div>
             </div>
             <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
-          </div>
+          </button>
         </section>
 
         {/* Promo hero */}
