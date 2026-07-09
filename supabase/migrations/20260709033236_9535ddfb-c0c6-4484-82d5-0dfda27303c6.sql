@@ -1,0 +1,1 @@
+ALTER TABLE public.distributors ADD COLUMN IF NOT EXISTS accepts_scheduling boolean NOT NULL DEFAULT true;

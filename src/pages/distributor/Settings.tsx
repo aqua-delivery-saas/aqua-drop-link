@@ -46,6 +46,7 @@ const Settings = () => {
       card: true,
       pix: true,
     },
+    accepts_scheduling: true,
   });
 
   useEffect(() => {
@@ -88,6 +89,7 @@ const Settings = () => {
             card: distributor.accepts_card ?? true,
             pix: distributor.accepts_pix ?? true,
           },
+          accepts_scheduling: (distributor as any).accepts_scheduling ?? true,
         });
         setLogoPreview(distributor.logo_url || null);
       }
@@ -204,6 +206,7 @@ const Settings = () => {
       accepts_cash: settings.paymentMethods.cash,
       accepts_card: settings.paymentMethods.card,
       accepts_pix: settings.paymentMethods.pix,
+      accepts_scheduling: settings.accepts_scheduling,
       logo_url: logoUrl,
     } as any);
     toast.success("Configurações salvas com sucesso!");
@@ -513,6 +516,30 @@ const Settings = () => {
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Agendamento de Entregas</CardTitle>
+          <CardDescription>
+            Permita que clientes agendem pedidos para outros dias/horários. Quando desativado, a opção de agendar não aparecerá para o cliente enquanto a loja estiver fechada.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="accepts_scheduling"
+              checked={settings.accepts_scheduling}
+              onCheckedChange={(checked) =>
+                setSettings({ ...settings, accepts_scheduling: checked === true })
+              }
+            />
+            <Label htmlFor="accepts_scheduling" className="cursor-pointer">
+              Aceitar agendamento de entregas
+            </Label>
+          </div>
+        </CardContent>
+      </Card>
+
 
       <Button 
         onClick={handleSave} 

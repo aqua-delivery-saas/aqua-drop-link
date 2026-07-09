@@ -485,35 +485,44 @@ const OrderPage = () => {
               </CardContent>
             </Card>}
 
-          {/* When closed: show only schedule CTA */}
-          {!isOpen ? <Card className="customer-card">
-              <CardHeader className="text-center">
-                <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
-                  <AlertTriangle className="h-8 w-8 text-destructive" />
-                </div>
-                <CardTitle className="text-2xl">Distribuidora Fechada</CardTitle>
-                <CardDescription className="text-base">
-                  {distribuidora.name} não está atendendo no momento, mas você pode agendar seu pedido para quando estivermos abertos.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Button size="lg" className="w-full" onClick={() => {
-              if (!mockCustomer.isLoggedIn) {
-                setShowLoginModal(true);
-              } else {
-                navigate(`/schedule/${distributorSlug}`);
-              }
-            }}>
-                  <CalendarDays className="mr-2 h-5 w-5" />
-                  Agendar Entrega
-                </Button>
-                <div className="text-center">
-                  <Button type="button" variant="ghost" onClick={() => navigate(-1)}>
-                    Voltar
-                  </Button>
-                </div>
-              </CardContent>
-            </Card> : (/* When open: show full order form */
+          {/* When closed: show only schedule CTA (if scheduling is enabled) */}
+          {!isOpen ? (() => {
+            const acceptsScheduling = (distribuidora as any).accepts_scheduling !== false;
+            return (
+              <Card className="customer-card">
+                <CardHeader className="text-center">
+                  <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                    <AlertTriangle className="h-8 w-8 text-destructive" />
+                  </div>
+                  <CardTitle className="text-2xl">Distribuidora Fechada</CardTitle>
+                  <CardDescription className="text-base">
+                    {acceptsScheduling
+                      ? `${distribuidora.name} não está atendendo no momento, mas você pode agendar seu pedido para quando estivermos abertos.`
+                      : `${distribuidora.name} não está atendendo no momento. Volte durante o horário de funcionamento para fazer seu pedido.`}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {acceptsScheduling && (
+                    <Button size="lg" className="w-full" onClick={() => {
+                      if (!mockCustomer.isLoggedIn) {
+                        setShowLoginModal(true);
+                      } else {
+                        navigate(`/schedule/${distributorSlug}`);
+                      }
+                    }}>
+                      <CalendarDays className="mr-2 h-5 w-5" />
+                      Agendar Entrega
+                    </Button>
+                  )}
+                  <div className="text-center">
+                    <Button type="button" variant="ghost" onClick={() => navigate(-1)}>
+                      Voltar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })() : (/* When open: show full order form */
         <Card className="customer-card">
               <CardHeader>
                 <CardTitle className="text-3xl">Fazer Pedido</CardTitle>

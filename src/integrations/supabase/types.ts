@@ -211,6 +211,7 @@ export type Database = {
           accepts_card: boolean | null
           accepts_cash: boolean | null
           accepts_pix: boolean | null
+          accepts_scheduling: boolean
           city_id: string | null
           cnpj: string | null
           complement: string | null
@@ -241,6 +242,7 @@ export type Database = {
           accepts_card?: boolean | null
           accepts_cash?: boolean | null
           accepts_pix?: boolean | null
+          accepts_scheduling?: boolean
           city_id?: string | null
           cnpj?: string | null
           complement?: string | null
@@ -271,6 +273,7 @@ export type Database = {
           accepts_card?: boolean | null
           accepts_cash?: boolean | null
           accepts_pix?: boolean | null
+          accepts_scheduling?: boolean
           city_id?: string | null
           cnpj?: string | null
           complement?: string | null
