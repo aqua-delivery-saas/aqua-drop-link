@@ -203,6 +203,7 @@ const App = () => (
             
             {/* Landing Page */}
             <Route path="/landingpage" element={<LandingPage />} />
+            <Route path="/design-system" element={<DesignSystem />} />
             
             {/* Legal & Support Routes */}
             <Route path="/terms" element={<Terms />} />
