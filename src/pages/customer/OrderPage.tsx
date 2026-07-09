@@ -659,12 +659,24 @@ const OrderPage = () => {
                     {createOrder.isPending ? "Processando..." : "Finalizar Pedido"}
                   </Button>
 
-                  <div className="text-center">
-                    <Button type="button" variant="ghost" onClick={() => navigate(-1)}>
-                      Voltar
+                  {(distribuidora as any).accepts_scheduling !== false && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="lg"
+                      className="w-full"
+                      onClick={() => {
+                        if (!mockCustomer.isLoggedIn) {
+                          setShowLoginModal(true);
+                        } else {
+                          navigate(`/schedule/${distributorSlug}`);
+                        }
+                      }}
+                    >
+                      <CalendarDays className="mr-2 h-5 w-5" />
+                      Agendar Entrega
                     </Button>
-                  </div>
-                </form>
+                  )}
               </CardContent>
             </Card>)}
         </main>
