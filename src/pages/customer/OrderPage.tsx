@@ -677,6 +677,13 @@ const OrderPage = () => {
                       Agendar Entrega
                     </Button>
                   )}
+
+                  <div className="text-center">
+                    <Button type="button" variant="ghost" onClick={() => navigate(-1)}>
+                      Voltar
+                    </Button>
+                  </div>
+                </form>
               </CardContent>
             </Card>)}
         </main>
