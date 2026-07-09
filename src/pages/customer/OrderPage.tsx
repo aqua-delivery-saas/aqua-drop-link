@@ -487,7 +487,7 @@ const OrderPage = () => {
 
           {/* When closed: show only schedule CTA (if scheduling is enabled) */}
           {!isOpen ? (() => {
-            const acceptsScheduling = (distribuidora as any).accepts_scheduling !== false;
+            const acceptsScheduling = (distribuidora as any).accepts_scheduling === true;
             return (
               <Card className="customer-card">
                 <CardHeader className="text-center">
