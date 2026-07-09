@@ -158,6 +158,7 @@ export function useDistributorBySlug(slug: string) {
           accepts_pix,
           accepts_card,
           accepts_cash,
+          accepts_scheduling,
           pix_key,
           is_active,
           is_verified,
