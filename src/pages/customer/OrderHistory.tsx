@@ -163,7 +163,6 @@ const OrderHistory = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <UserMenu />
             <button
               type="button"
               aria-label="Notificações"
@@ -171,6 +170,7 @@ const OrderHistory = () => {
             >
               <Bell className="h-5 w-5 text-primary" strokeWidth={1.8} />
             </button>
+            <UserMenu />
           </div>
         </header>
 
