@@ -72,6 +72,16 @@ const Index = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="Notificações"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-[var(--shadow-soft)] transition-transform active:scale-95"
+            >
+              <Bell className="h-5 w-5 text-primary" strokeWidth={1.8} />
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-primary">
+                2
+              </span>
+            </button>
             {isAuthenticated ? (
               isDistributor() ? (
                 <Button variant="ghost" size="sm" onClick={() => navigate("/distributor/dashboard")}>
@@ -85,16 +95,6 @@ const Index = () => {
                 Entrar
               </Button>
             )}
-            <button
-              type="button"
-              aria-label="Notificações"
-              className="relative flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-[var(--shadow-soft)] transition-transform active:scale-95"
-            >
-              <Bell className="h-5 w-5 text-primary" strokeWidth={1.8} />
-              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-primary">
-                2
-              </span>
-            </button>
           </div>
         </header>
 
