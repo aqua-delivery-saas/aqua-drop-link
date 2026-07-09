@@ -160,72 +160,11 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Products section (teaser to search) */}
+        {/* Últimos pedidos */}
         <section className="mt-6 px-5">
           <div className="flex items-baseline justify-between">
-            <h2 className="font-display text-lg font-bold text-primary">Nossos produtos</h2>
-            <button
-              type="button"
-              onClick={() => navigate("/distribuidoras")}
-              className="text-xs font-semibold text-accent hover:underline"
-            >
-              Ver todos
-            </button>
-          </div>
-
-          <div className="mt-3 grid grid-cols-3 gap-3">
-            {[
-              { label: "Mais pedido", price: "R$ 18,00" },
-              { label: null, price: "R$ 18,00" },
-              { label: null, price: "R$ 18,00" },
-            ].map((p, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => navigate("/distribuidoras")}
-                className="relative flex flex-col rounded-xl bg-card p-3 text-left shadow-[var(--shadow-soft)] transition-transform active:scale-[0.98]"
-              >
-                {p.label && (
-                  <span className="absolute left-2 top-2 rounded-md bg-accent px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary">
-                    {p.label}
-                  </span>
-                )}
-                <div className="flex h-20 items-center justify-center">
-                  <img src={gallonHero} alt="Galão 20L" className="h-20 w-auto object-contain" loading="lazy" />
-                </div>
-                <p className="mt-2 text-[13px] font-bold text-primary">Galão 20L</p>
-                <p className="text-[10px] text-muted-foreground">Água Mineral Natural</p>
-                <p className="mt-1 text-xs font-bold text-primary">{p.price}</p>
-                <span className="mt-2 flex h-8 items-center justify-center gap-1 rounded-lg bg-primary text-[11px] font-semibold text-primary-foreground">
-                  Pedir
-                </span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* Trust bar */}
-        <section className="mt-6 px-5">
-          <div className="grid grid-cols-3 divide-x divide-border rounded-xl bg-card p-3 shadow-[var(--shadow-soft)]">
-            {[
-              { icon: ShieldCheck, title: "Qualidade garantida", sub: "Água 100% pura" },
-              { icon: Truck, title: "Entrega rápida", sub: "No mesmo dia" },
-              { icon: CreditCard, title: "Pagamento seguro", sub: "Diversas formas" },
-            ].map((t, i) => (
-              <div key={i} className="flex flex-col items-center gap-1 px-2 text-center">
-                <t.icon className="h-4 w-4 text-primary" strokeWidth={1.8} />
-                <p className="text-[10px] font-bold leading-tight text-primary">{t.title}</p>
-                <p className="text-[9px] leading-tight text-muted-foreground">{t.sub}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Últimos pedidos */}
-        {isAuthenticated && recentOrders.length > 0 && (
-          <section className="mt-6 px-5">
-            <div className="flex items-baseline justify-between">
-              <h2 className="font-display text-lg font-bold text-primary">Últimos pedidos</h2>
+            <h2 className="font-display text-lg font-bold text-primary">Últimos pedidos</h2>
+            {isAuthenticated && recentOrders.length > 0 && (
               <button
                 type="button"
                 onClick={() => navigate("/customer/history")}
@@ -233,7 +172,29 @@ const Index = () => {
               >
                 Ver todos
               </button>
+            )}
+          </div>
+
+          {!isAuthenticated ? (
+            <div className="mt-3 rounded-xl bg-card p-4 text-center shadow-[var(--shadow-soft)]">
+              <p className="text-xs text-muted-foreground">
+                Entre na sua conta para ver seus últimos pedidos.
+              </p>
+              <Button
+                size="sm"
+                className="mt-3"
+                onClick={() => navigate("/customer/login")}
+              >
+                Entrar
+              </Button>
             </div>
+          ) : recentOrders.length === 0 ? (
+            <div className="mt-3 rounded-xl bg-card p-4 text-center shadow-[var(--shadow-soft)]">
+              <p className="text-xs text-muted-foreground">
+                Você ainda não fez pedidos. Escolha uma cidade acima para começar.
+              </p>
+            </div>
+          ) : (
             <div className="mt-3 space-y-2">
               {recentOrders.map((o) => {
                 const first = o.order_items?.[0]?.product_name || "Pedido";
@@ -264,8 +225,9 @@ const Index = () => {
                 );
               })}
             </div>
-          </section>
-        )}
+          )}
+        </section>
+
 
 
         {/* Signup nudge */}
