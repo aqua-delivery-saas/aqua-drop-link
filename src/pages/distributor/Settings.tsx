@@ -46,6 +46,7 @@ const Settings = () => {
       card: true,
       pix: true,
     },
+    accepts_scheduling: true,
   });
 
   useEffect(() => {
