@@ -57,6 +57,7 @@ import AuthCallback from "./pages/AuthCallback";
 import DemoOrderPage from "./pages/demo/DemoOrderPage";
 import DemoOrderConfirmation from "./pages/demo/DemoOrderConfirmation";
 import LandingPage from "./pages/LandingPage";
+import DesignSystem from "./pages/DesignSystem";
 
 const queryClient = new QueryClient();
 
