@@ -78,6 +78,19 @@ export function CitySearchCombobox({ onSelect, selectedCity, placeholder = "Digi
             value={searchValue}
             onValueChange={setSearchValue}
           />
+          <button
+            type="button"
+            onClick={handleUseLocation}
+            disabled={locating}
+            className="flex w-full items-center gap-2 border-b border-border px-3 py-2 text-left text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-60"
+          >
+            {locating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <LocateFixed className="h-4 w-4" />
+            )}
+            {locating ? "Detectando localização..." : "Usar minha localização"}
+          </button>
           <CommandList>
             {isLoading ? (
               <div className="py-6 text-center">
