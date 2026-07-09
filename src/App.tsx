@@ -57,6 +57,7 @@ import AuthCallback from "./pages/AuthCallback";
 import DemoOrderPage from "./pages/demo/DemoOrderPage";
 import DemoOrderConfirmation from "./pages/demo/DemoOrderConfirmation";
 import LandingPage from "./pages/LandingPage";
+import DesignSystem from "./pages/DesignSystem";
 
 const queryClient = new QueryClient();
 
@@ -202,6 +203,7 @@ const App = () => (
             
             {/* Landing Page */}
             <Route path="/landingpage" element={<LandingPage />} />
+            <Route path="/design-system" element={<DesignSystem />} />
             
             {/* Legal & Support Routes */}
             <Route path="/terms" element={<Terms />} />
