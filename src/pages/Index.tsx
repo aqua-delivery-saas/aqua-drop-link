@@ -268,7 +268,7 @@ const Index = () => {
           © 2025 Aqua Delivery
         </footer>
 
-        <CustomerBottomNav />
+        {isAuthenticated && <CustomerBottomNav />}
       </div>
     </>
   );
