@@ -13,15 +13,23 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import gallonHero from "@/assets/gallon-hero.png";
 
+const LAST_CITY_KEY = "aqua:lastCity";
+
 const Index = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isDistributor, user } = useAuth();
-  const [preferredCity, setPreferredCity] = useState<Pick<City, "id" | "name" | "state" | "slug"> | null>(null);
+  const [preferredCity, setPreferredCity] = useState<Pick<City, "id" | "name" | "state" | "slug"> | null>(() => {
+    try {
+      const raw = sessionStorage.getItem(LAST_CITY_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) {
-      setPreferredCity(null);
       setRecentOrders([]);
       return;
     }
@@ -31,7 +39,11 @@ const Index = () => {
         .select("cities:preferred_city_id (id, name, state, slug)")
         .eq("id", user.id)
         .maybeSingle();
-      setPreferredCity((profile?.cities as any) || null);
+      const city = (profile?.cities as any) || null;
+      if (city) {
+        setPreferredCity(city);
+        try { sessionStorage.setItem(LAST_CITY_KEY, JSON.stringify(city)); } catch {}
+      }
 
       const { data: orders } = await supabase
         .from("orders")
@@ -44,8 +56,12 @@ const Index = () => {
   }, [user]);
 
   const handleCitySelect = (city: City) => {
+    const compact = { id: city.id, name: city.name, state: city.state, slug: city.slug };
+    setPreferredCity(compact);
+    try { sessionStorage.setItem(LAST_CITY_KEY, JSON.stringify(compact)); } catch {}
     navigate(`/distribuidoras/${city.slug}`);
   };
+
 
   return (
     <>
