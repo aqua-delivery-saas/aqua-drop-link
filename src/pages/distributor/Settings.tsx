@@ -206,6 +206,7 @@ const Settings = () => {
       accepts_cash: settings.paymentMethods.cash,
       accepts_card: settings.paymentMethods.card,
       accepts_pix: settings.paymentMethods.pix,
+      accepts_scheduling: settings.accepts_scheduling,
       logo_url: logoUrl,
     } as any);
     toast.success("Configurações salvas com sucesso!");
