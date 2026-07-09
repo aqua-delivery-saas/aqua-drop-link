@@ -163,72 +163,61 @@ const Index = () => {
         </section>
 
         {/* Últimos pedidos */}
-        <section className="mt-6 px-5">
-          <div className="flex items-baseline justify-between">
-            <h2 className="font-display text-lg font-bold text-primary">Últimos pedidos</h2>
-            {isAuthenticated && recentOrders.length > 0 && (
-              <button
-                type="button"
-                onClick={() => navigate("/customer/history")}
-                className="text-xs font-semibold text-accent hover:underline"
-              >
-                Ver todos
-              </button>
-            )}
-          </div>
+        {isAuthenticated && (
+          <section className="mt-6 px-5">
+            <div className="flex items-baseline justify-between">
+              <h2 className="font-display text-lg font-bold text-primary">Últimos pedidos</h2>
+              {recentOrders.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => navigate("/customer/history")}
+                  className="text-xs font-semibold text-accent hover:underline"
+                >
+                  Ver todos
+                </button>
+              )}
+            </div>
 
-          {!isAuthenticated ? (
-            <div className="mt-3 rounded-xl bg-card p-4 text-center shadow-[var(--shadow-soft)]">
-              <p className="text-xs text-muted-foreground">
-                Entre na sua conta para ver seus últimos pedidos.
-              </p>
-              <Button
-                size="sm"
-                className="mt-3"
-                onClick={() => navigate("/customer/login")}
-              >
-                Entrar
-              </Button>
-            </div>
-          ) : recentOrders.length === 0 ? (
-            <div className="mt-3 rounded-xl bg-card p-4 text-center shadow-[var(--shadow-soft)]">
-              <p className="text-xs text-muted-foreground">
-                Você ainda não fez pedidos. Escolha uma cidade acima para começar.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-3 space-y-2">
-              {recentOrders.map((o) => {
-                const first = o.order_items?.[0]?.product_name || "Pedido";
-                const more = (o.order_items?.length || 0) - 1;
-                const distSlug = (o.distributors as any)?.slug;
-                return (
-                  <button
-                    key={o.id}
-                    type="button"
-                    onClick={() => distSlug && navigate(`/order/${distSlug}`)}
-                    className="flex w-full items-center gap-3 rounded-xl bg-card p-3 text-left shadow-[var(--shadow-soft)] transition-transform active:scale-[0.99]"
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/5">
-                      <ClipboardList className="h-5 w-5 text-primary" strokeWidth={1.8} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-bold text-primary">
-                        {more > 0 ? `${first} +${more}` : first}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground">
-                        #{o.order_number} • {format(new Date(o.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                      </p>
-                    </div>
-                    <span className="text-sm font-bold text-primary">
-                      R$ {Number(o.total).toFixed(2)}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </section>
+            {recentOrders.length === 0 ? (
+              <div className="mt-3 rounded-xl bg-card p-4 text-center shadow-[var(--shadow-soft)]">
+                <p className="text-xs text-muted-foreground">
+                  Você ainda não fez pedidos. Escolha uma cidade acima para começar.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-3 space-y-2">
+                {recentOrders.map((o) => {
+                  const first = o.order_items?.[0]?.product_name || "Pedido";
+                  const more = (o.order_items?.length || 0) - 1;
+                  const distSlug = (o.distributors as any)?.slug;
+                  return (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onClick={() => distSlug && navigate(`/order/${distSlug}`)}
+                      className="flex w-full items-center gap-3 rounded-xl bg-card p-3 text-left shadow-[var(--shadow-soft)] transition-transform active:scale-[0.99]"
+                    >
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/5">
+                        <ClipboardList className="h-5 w-5 text-primary" strokeWidth={1.8} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[13px] font-bold text-primary">
+                          {more > 0 ? `${first} +${more}` : first}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          #{o.order_number} • {format(new Date(o.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                        </p>
+                      </div>
+                      <span className="text-sm font-bold text-primary">
+                        R$ {Number(o.total).toFixed(2)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Trust bar */}
         <section className="mt-6 px-5">
