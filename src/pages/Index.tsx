@@ -228,6 +228,22 @@ const Index = () => {
           )}
         </section>
 
+        {/* Trust bar */}
+        <section className="mt-6 px-5">
+          <div className="grid grid-cols-3 divide-x divide-border rounded-xl bg-card p-3 shadow-[var(--shadow-soft)]">
+            {[
+              { icon: ShieldCheck, title: "Qualidade garantida", sub: "Água 100% pura" },
+              { icon: Truck, title: "Entrega rápida", sub: "No mesmo dia" },
+              { icon: CreditCard, title: "Pagamento seguro", sub: "Diversas formas" },
+            ].map((t, i) => (
+              <div key={i} className="flex flex-col items-center gap-1 px-2 text-center">
+                <t.icon className="h-4 w-4 text-primary" strokeWidth={1.8} />
+                <p className="text-[10px] font-bold leading-tight text-primary">{t.title}</p>
+                <p className="text-[9px] leading-tight text-muted-foreground">{t.sub}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
 
         {/* Signup nudge */}
