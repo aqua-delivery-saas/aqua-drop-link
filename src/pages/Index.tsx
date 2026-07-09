@@ -186,103 +186,103 @@ const Index = () => {
           </section>
 
           {/* Últimos pedidos */}
+          {isAuthenticated && (
+            <section>
+              <div className="flex items-baseline justify-between">
+                <h2 className="font-display text-lg font-bold text-primary">Últimos pedidos</h2>
+                {recentOrders.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => navigate("/customer/history")}
+                    className="text-xs font-semibold text-accent hover:underline"
+                  >
+                    Ver todos
+                  </button>
+                )}
+              </div>
 
-        {isAuthenticated && (
-          <section className="mt-6 px-5">
-            <div className="flex items-baseline justify-between">
-              <h2 className="font-display text-lg font-bold text-primary">Últimos pedidos</h2>
-              {recentOrders.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => navigate("/customer/history")}
-                  className="text-xs font-semibold text-accent hover:underline"
-                >
-                  Ver todos
-                </button>
+              {recentOrders.length === 0 ? (
+                <div className="mt-3 rounded-xl bg-card p-4 text-center shadow-[var(--shadow-soft)]">
+                  <p className="text-xs text-muted-foreground">
+                    Você ainda não fez pedidos. Escolha uma cidade acima para começar.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-3 space-y-2">
+                  {recentOrders.map((o) => {
+                    const first = o.order_items?.[0]?.product_name || "Pedido";
+                    const more = (o.order_items?.length || 0) - 1;
+                    const distSlug = (o.distributors as any)?.slug;
+                    return (
+                      <button
+                        key={o.id}
+                        type="button"
+                        onClick={() => distSlug && navigate(`/order/${distSlug}`)}
+                        className="flex w-full items-center gap-3 rounded-xl bg-card p-3 text-left shadow-[var(--shadow-soft)] transition-transform active:scale-[0.99]"
+                      >
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/5">
+                          <ClipboardList className="h-5 w-5 text-primary" strokeWidth={1.8} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[13px] font-bold text-primary">
+                            {more > 0 ? `${first} +${more}` : first}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            #{o.order_number} • {format(new Date(o.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                          </p>
+                        </div>
+                        <span className="text-sm font-bold text-primary">
+                          R$ {Number(o.total).toFixed(2)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               )}
+            </section>
+          )}
+
+          {/* Trust bar */}
+          <section>
+            <div className="grid grid-cols-3 divide-x divide-border rounded-xl bg-card p-3 shadow-[var(--shadow-soft)]">
+              {[
+                { icon: ShieldCheck, title: "Qualidade garantida", sub: "Água 100% pura" },
+                { icon: Truck, title: "Entrega rápida", sub: "No mesmo dia" },
+                { icon: CreditCard, title: "Pagamento seguro", sub: "Diversas formas" },
+              ].map((t, i) => (
+                <div key={i} className="flex flex-col items-center gap-1 px-2 text-center">
+                  <t.icon className="h-4 w-4 text-primary" strokeWidth={1.8} />
+                  <p className="text-[10px] font-bold leading-tight text-primary">{t.title}</p>
+                  <p className="text-[9px] leading-tight text-muted-foreground">{t.sub}</p>
+                </div>
+              ))}
             </div>
-
-            {recentOrders.length === 0 ? (
-              <div className="mt-3 rounded-xl bg-card p-4 text-center shadow-[var(--shadow-soft)]">
-                <p className="text-xs text-muted-foreground">
-                  Você ainda não fez pedidos. Escolha uma cidade acima para começar.
-                </p>
-              </div>
-            ) : (
-              <div className="mt-3 space-y-2">
-                {recentOrders.map((o) => {
-                  const first = o.order_items?.[0]?.product_name || "Pedido";
-                  const more = (o.order_items?.length || 0) - 1;
-                  const distSlug = (o.distributors as any)?.slug;
-                  return (
-                    <button
-                      key={o.id}
-                      type="button"
-                      onClick={() => distSlug && navigate(`/order/${distSlug}`)}
-                      className="flex w-full items-center gap-3 rounded-xl bg-card p-3 text-left shadow-[var(--shadow-soft)] transition-transform active:scale-[0.99]"
-                    >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/5">
-                        <ClipboardList className="h-5 w-5 text-primary" strokeWidth={1.8} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13px] font-bold text-primary">
-                          {more > 0 ? `${first} +${more}` : first}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground">
-                          #{o.order_number} • {format(new Date(o.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                        </p>
-                      </div>
-                      <span className="text-sm font-bold text-primary">
-                        R$ {Number(o.total).toFixed(2)}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
           </section>
-        )}
 
-        {/* Trust bar */}
-        <section className="mt-6 px-5">
-          <div className="grid grid-cols-3 divide-x divide-border rounded-xl bg-card p-3 shadow-[var(--shadow-soft)]">
-            {[
-              { icon: ShieldCheck, title: "Qualidade garantida", sub: "Água 100% pura" },
-              { icon: Truck, title: "Entrega rápida", sub: "No mesmo dia" },
-              { icon: CreditCard, title: "Pagamento seguro", sub: "Diversas formas" },
-            ].map((t, i) => (
-              <div key={i} className="flex flex-col items-center gap-1 px-2 text-center">
-                <t.icon className="h-4 w-4 text-primary" strokeWidth={1.8} />
-                <p className="text-[10px] font-bold leading-tight text-primary">{t.title}</p>
-                <p className="text-[9px] leading-tight text-muted-foreground">{t.sub}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+          {/* Signup nudge */}
+          {!isAuthenticated && (
+            <section className="text-center">
+              <p className="text-xs text-muted-foreground">
+                É distribuidora?{" "}
+                <Button
+                  variant="link"
+                  className="h-auto p-0 text-xs font-bold text-accent"
+                  onClick={() => navigate("/distributor/signup")}
+                >
+                  Cadastre-se gratuitamente
+                </Button>
+              </p>
+            </section>
+          )}
 
-
-        {/* Signup nudge */}
-        {!isAuthenticated && (
-          <section className="mt-6 px-5 text-center">
-            <p className="text-xs text-muted-foreground">
-              É distribuidora?{" "}
-              <Button
-                variant="link"
-                className="h-auto p-0 text-xs font-bold text-accent"
-                onClick={() => navigate("/distributor/signup")}
-              >
-                Cadastre-se gratuitamente
-              </Button>
-            </p>
-          </section>
-        )}
-
-        <footer className="mt-6 pb-6 text-center text-[10px] text-muted-foreground">
-          © 2025 Aqua Delivery
-        </footer>
+          <footer className="text-center text-[10px] text-muted-foreground">
+            © 2025 Aqua Delivery
+          </footer>
+        </main>
 
         {isAuthenticated && <CustomerBottomNav />}
       </div>
+
     </>
   );
 };
