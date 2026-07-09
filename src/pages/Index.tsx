@@ -74,7 +74,7 @@ const Index = () => {
         <meta property="og:url" content="https://aqua-drop-link.lovable.app/" />
       </Helmet>
 
-      <div className="min-h-[100dvh] bg-background pb-mobile-nav">
+      <div className="flex min-h-[100dvh] flex-col bg-background pb-mobile-nav">
         {/* Header */}
         <header className="flex items-center justify-between px-5 pt-6 pb-4">
           <div className="flex items-center gap-2">
@@ -116,69 +116,77 @@ const Index = () => {
           </div>
         </header>
 
-        {/* Address / Search card */}
-        <section className="px-5">
-          <button
-            type="button"
-            onClick={() => preferredCity && navigate(`/distribuidoras/${preferredCity.slug}`)}
-            className="flex w-full items-center gap-3 rounded-xl bg-card p-3.5 text-left shadow-[var(--shadow-soft)] transition-transform active:scale-[0.99]"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/5">
-              <MapPin className="h-5 w-5 text-primary" strokeWidth={1.8} />
+        <main className="flex flex-1 flex-col justify-between gap-6 px-5 pb-6">
+          {/* Promo hero */}
+          <section>
+            <div
+              className="relative overflow-hidden rounded-2xl p-5 shadow-[var(--shadow-elevated)]"
+              style={{ background: "var(--gradient-water)" }}
+            >
+              <div className="relative z-10 max-w-[62%]">
+                <h1 className="font-display text-[22px] font-bold leading-tight text-primary-foreground">
+                  Água pura,
+                  <br /> qualidade que
+                  <br /> você sente!
+                </h1>
+                <div className="mt-4 flex items-start gap-2">
+                  <Droplets className="h-4 w-4 shrink-0 text-accent" />
+                  <p className="text-xs leading-snug text-primary-foreground/85">
+                    Hidratação e bem-estar
+                    <br /> todos os dias.
+                  </p>
+                </div>
+              </div>
+              <img
+                src={gallonHero}
+                alt="Galão AQUA DELIVERY 20 litros"
+                className="absolute -right-3 top-1/2 h-[190px] w-auto -translate-y-1/2 drop-shadow-2xl"
+                width={768}
+                height={768}
+              />
             </div>
-            <div className="min-w-0 flex-1" onClick={(e) => e.stopPropagation()}>
-              <p className="text-[11px] font-medium text-muted-foreground">
-                {preferredCity ? "Sua cidade" : "Entrega para"}
+          </section>
+
+          {/* Highlighted city search */}
+          <section className="flex flex-col items-center gap-3">
+            <div className="text-center">
+              <p className="font-display text-xl font-bold text-primary">
+                Onde vamos entregar hoje?
               </p>
-              <div className="[&_button]:!h-auto [&_button]:!border-0 [&_button]:!bg-transparent [&_button]:!p-0 [&_button]:!shadow-none [&_button]:!text-[15px] [&_button]:!font-semibold [&_button]:!text-primary">
-                <CitySearchCombobox
-                  onSelect={handleCitySelect}
-                  selectedCity={preferredCity}
-                  placeholder="Digite sua cidade..."
-                />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Busque sua cidade e veja as distribuidoras disponíveis
+              </p>
+            </div>
+            <div
+              className="w-full rounded-2xl bg-card p-2 ring-2 ring-accent/60 shadow-[var(--shadow-elevated)]"
+            >
+              <div className="flex items-center gap-2">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/5">
+                  <MapPin className="h-5 w-5 text-primary" strokeWidth={1.8} />
+                </div>
+                <div className="min-w-0 flex-1 [&_button]:!h-11 [&_button]:!w-full [&_button]:!border-0 [&_button]:!bg-transparent [&_button]:!px-0 [&_button]:!shadow-none [&_button]:!text-[15px] [&_button]:!font-semibold [&_button]:!text-primary">
+                  <CitySearchCombobox
+                    onSelect={handleCitySelect}
+                    selectedCity={preferredCity}
+                    placeholder="Digite sua cidade..."
+                  />
+                </div>
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
-          </button>
-        </section>
+            {preferredCity && (
+              <button
+                type="button"
+                onClick={() => navigate(`/distribuidoras/${preferredCity.slug}`)}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
+              >
+                Continuar em {preferredCity.name} - {preferredCity.state}
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            )}
+          </section>
 
-        {/* Promo hero */}
-        <section className="mt-5 px-5">
-          <div
-            className="relative overflow-hidden rounded-2xl p-5 shadow-[var(--shadow-elevated)]"
-            style={{ background: "var(--gradient-water)" }}
-          >
-            <div className="relative z-10 max-w-[62%]">
-              <h1 className="font-display text-[22px] font-bold leading-tight text-primary-foreground">
-                Água pura,
-                <br /> qualidade que
-                <br /> você sente!
-              </h1>
-              <div className="mt-4 flex items-start gap-2">
-                <Droplets className="h-4 w-4 shrink-0 text-accent" />
-                <p className="text-xs leading-snug text-primary-foreground/85">
-                  Hidratação e bem-estar
-                  <br /> todos os dias.
-                </p>
-              </div>
-              <div className="mt-5 flex items-center gap-1.5">
-                <span className="h-1.5 w-5 rounded-full bg-accent" />
-                <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground/40" />
-                <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground/40" />
-                <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground/40" />
-              </div>
-            </div>
-            <img
-              src={gallonHero}
-              alt="Galão AQUA DELIVERY 20 litros"
-              className="absolute -right-3 top-1/2 h-[190px] w-auto -translate-y-1/2 drop-shadow-2xl"
-              width={768}
-              height={768}
-            />
-          </div>
-        </section>
+          {/* Últimos pedidos */}
 
-        {/* Últimos pedidos */}
         {isAuthenticated && (
           <section className="mt-6 px-5">
             <div className="flex items-baseline justify-between">
