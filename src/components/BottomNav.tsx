@@ -44,7 +44,7 @@ export function BottomNav({ items }: BottomNavProps) {
             {({ isActive }) => (
               <>
                 <item.icon className="w-5 h-5" strokeWidth={isActive ? 2.2 : 1.6} fill={isActive ? "currentColor" : "none"} />
-                <span className={cn("text-[11px]", isActive ? "font-bold italic" : "font-medium")}>
+                <span className={cn("text-[11px]", isActive ? "font-bold" : "font-medium")}>
                   {item.title}
                 </span>
               </>
