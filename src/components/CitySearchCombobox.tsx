@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, MapPin, Loader2 } from "lucide-react";
+import { Search, MapPin, Loader2, LocateFixed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -15,6 +15,8 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useCities, type City } from "@/hooks/useCities";
+import { detectCityFromBrowser } from "@/lib/geoLocateCity";
+import { toast } from "@/hooks/use-toast";
 
 interface CitySearchComboboxProps {
   onSelect: (city: City) => void;
@@ -25,11 +27,30 @@ interface CitySearchComboboxProps {
 export function CitySearchCombobox({ onSelect, selectedCity, placeholder = "Digite sua cidade..." }: CitySearchComboboxProps) {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [locating, setLocating] = useState(false);
   const { data: cities = [], isLoading } = useCities();
 
   const filteredCities = cities.filter((city) =>
     `${city.name} ${city.state}`.toLowerCase().includes(searchValue.toLowerCase())
   );
+
+  const handleUseLocation = async () => {
+    setLocating(true);
+    try {
+      const city = await detectCityFromBrowser();
+      onSelect(city as City);
+      setOpen(false);
+    } catch (e: any) {
+      toast({
+        title: "Não foi possível detectar sua localização",
+        description: e?.message ?? "Tente novamente ou digite sua cidade.",
+        variant: "destructive",
+      });
+    } finally {
+      setLocating(false);
+    }
+  };
+
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
