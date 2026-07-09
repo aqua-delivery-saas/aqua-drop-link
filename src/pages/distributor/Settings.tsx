@@ -89,6 +89,7 @@ const Settings = () => {
             card: distributor.accepts_card ?? true,
             pix: distributor.accepts_pix ?? true,
           },
+          accepts_scheduling: (distributor as any).accepts_scheduling ?? true,
         });
         setLogoPreview(distributor.logo_url || null);
       }
