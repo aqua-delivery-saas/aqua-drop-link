@@ -33,6 +33,11 @@ export function Footer() {
                   Suporte
                 </Link>
               </li>
+              <li>
+                <Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Contato
+                </Link>
+              </li>
             </ul>
           </div>
 

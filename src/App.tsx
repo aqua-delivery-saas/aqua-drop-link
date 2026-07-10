@@ -17,6 +17,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Help from "./pages/Help";
 import Support from "./pages/Support";
+import Contact from "./pages/Contact";
 import LoginDistributor from "./pages/distributor/LoginDistributor";
 import SignupDistributor from "./pages/distributor/SignupDistributor";
 import Dashboard from "./pages/distributor/Dashboard";
@@ -210,6 +211,7 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/help" element={<Help />} />
             <Route path="/support" element={<Support />} />
+            <Route path="/contact" element={<Contact />} />
             
             {/* Admin Routes */}
             <Route path="/admin/login" element={<LoginAdmin />} />
