@@ -18,10 +18,10 @@ const buttonVariants = cva(
         accent: "bg-accent text-accent-foreground hover:bg-accent/90 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elevated)]",
       },
       size: {
-        default: "h-12 px-6 py-3 rounded-[0.5rem]",
+        default: "h-11 px-6 py-3 rounded-[0.5rem]",
         sm: "h-9 rounded-[0.5rem] px-3",
-        lg: "h-14 rounded-[0.5rem] px-8 text-base uppercase tracking-wider",
-        icon: "h-10 w-10",
+        lg: "h-11 rounded-[0.5rem] px-8 text-base uppercase tracking-wider",
+        icon: "h-11 w-11",
       },
     },
     defaultVariants: {
