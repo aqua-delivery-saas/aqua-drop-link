@@ -116,7 +116,7 @@ const Index = () => {
           </div>
         </header>
 
-        <main className="flex flex-1 flex-col justify-between gap-6 px-5 pb-6">
+        <main className="flex flex-1 flex-col justify-between gap-6 px-5 pb-6 w-full max-w-[800px] mx-auto">
           {/* Promo hero */}
           <section>
             <div
