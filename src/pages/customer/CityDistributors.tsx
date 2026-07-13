@@ -165,7 +165,7 @@ const CityDistributors = () => {
                                 {open ? "Aberta" : "Fechada"}
                               </Badge>
                             </div>
-                            <CardDescription className="text-base">
+                            <CardDescription className="text-sm w-full">
                               {dist.meta_description || 'Distribuidora de água mineral'}
                             </CardDescription>
                             </div>
