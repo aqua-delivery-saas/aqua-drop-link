@@ -152,22 +152,19 @@ const CityDistributors = () => {
                               {dist.logo_url ? <img src={dist.logo_url} alt={`Logo ${dist.name}`} className="h-full w-full object-cover" loading="lazy" /> : <Droplets className="h-7 w-7 text-primary" />}
                             </div>
                             <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2 mb-2">
-                              <CardTitle className="text-xl sm:text-2xl leading-tight">{dist.name}</CardTitle>
-                              <Badge 
-                                variant="secondary"
-                                className={cn(
-                                  "flex items-center gap-1 rounded-lg",
-                                  open ? "status-open" : "status-closed"
-                                )}
-                              >
-                                <Clock className="h-3 w-3" />
-                                {open ? "Aberta" : "Fechada"}
-                              </Badge>
-                            </div>
-                            <CardDescription className="text-sm w-full">
-                              {dist.meta_description || 'Distribuidora de água mineral'}
-                            </CardDescription>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <CardTitle className="text-xl sm:text-2xl leading-tight">{dist.name}</CardTitle>
+                                <Badge 
+                                  variant="secondary"
+                                  className={cn(
+                                    "flex items-center gap-1 rounded-lg",
+                                    open ? "status-open" : "status-closed"
+                                  )}
+                                >
+                                  <Clock className="h-3 w-3" />
+                                  {open ? "Aberta" : "Fechada"}
+                                </Badge>
+                              </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2 ml-4">
@@ -177,6 +174,9 @@ const CityDistributors = () => {
                             
                           </div>
                         </div>
+                        <CardDescription className="text-sm w-full mt-3">
+                          {dist.meta_description || 'Distribuidora de água mineral'}
+                        </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
                         {/* Address */}
