@@ -177,13 +177,15 @@ All colors MUST be HSL.
   }
 
   .status-open {
-    background: hsl(var(--success));
-    color: hsl(var(--success-foreground));
+    background: hsl(var(--success)) !important;
+    color: hsl(var(--success-foreground)) !important;
+    border-color: transparent !important;
   }
 
   .status-closed {
-    background: hsl(var(--closed));
-    color: hsl(var(--closed-foreground));
+    background: hsl(var(--destructive)) !important;
+    color: hsl(var(--destructive-foreground)) !important;
+    border-color: transparent !important;
   }
 }
 
