@@ -201,7 +201,7 @@ const CityDistributors = () => {
                         
                         {/* Actions */}
                         <div className="flex gap-3 pt-2">
-                          <Button asChild variant="accent" className="flex-1">
+                          <Button asChild className="flex-1">
                             <Link to={`/order/${dist.slug}`}>
                               Fazer Pedido
                             </Link>
