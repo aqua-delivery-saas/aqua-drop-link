@@ -8,6 +8,7 @@ import { Helmet } from "react-helmet-async";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { formatPhone } from "@/lib/validators";
 import { useCityBySlug, useDistributorsByCity, useCities } from "@/hooks/useCities";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isDistributorOpen } from "@/lib/businessHoursUtils";
@@ -182,7 +183,7 @@ const CityDistributors = () => {
                         {/* Address */}
                         {dist.street && <div className="flex items-start gap-3">
                             <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                            <div>
+                            <div className="text-sm">
                               <p className="font-medium">Endereço</p>
                               <p className="text-muted-foreground">
                                 {dist.street}, {dist.number} - {dist.neighborhood}
@@ -196,7 +197,7 @@ const CityDistributors = () => {
                         {/* Contact - WhatsApp is displayed publicly */}
                         {dist.whatsapp && <div className="flex items-center gap-2">
                             <Phone className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{dist.whatsapp}</span>
+                            <span className="text-sm">{formatPhone(dist.whatsapp)}</span>
                           </div>}
                         
                         {/* Actions */}
