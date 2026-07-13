@@ -8,6 +8,7 @@ import { Helmet } from "react-helmet-async";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { formatPhone } from "@/lib/validators";
 import { useCityBySlug, useDistributorsByCity, useCities } from "@/hooks/useCities";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isDistributorOpen } from "@/lib/businessHoursUtils";
