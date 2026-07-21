@@ -140,6 +140,36 @@ const OrderPage = () => {
   const [showRedeemDialog, setShowRedeemDialog] = useState(false);
   const createOrder = useCreateOrder();
 
+  const DRAFT_KEY = "aqua_guest_order_draft";
+
+  // Restore guest draft on mount (only once)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d.address) setAddress(d.address);
+      if (d.paymentMethod) setPaymentMethod(d.paymentMethod);
+      if (d.notes) setNotes(d.notes);
+      if (d.quantity) setQuantity(d.quantity);
+      if (!user) {
+        if (d.customerName) setCustomerName(d.customerName);
+        if (d.customerPhone) setCustomerPhone(d.customerPhone);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist draft on change
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({ address, paymentMethod, notes, quantity, customerName, customerPhone })
+      );
+    } catch {}
+  }, [address, paymentMethod, notes, quantity, customerName, customerPhone]);
+
   // Check if user can redeem points
   const canRedeem = useMemo(() => {
     if (!loyaltyData?.program || !loyaltyData?.points) return false;
