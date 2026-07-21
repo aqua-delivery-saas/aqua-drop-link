@@ -361,6 +361,7 @@ const OrderPage = () => {
           total_price: subtotalValue
         }]
       });
+      try { localStorage.removeItem(DRAFT_KEY); } catch {}
       navigate("/order/confirmation", {
         state: {
           orderId: createdOrder.id,
