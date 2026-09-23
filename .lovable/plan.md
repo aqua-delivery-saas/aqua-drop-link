@@ -1,25 +1,17 @@
-## Diagnóstico
+# Separar distribuidoras e assinaturas ativas
 
-Os e-mails de teste ainda chegam com template genérico do Supabase (remetente `noreply@mail.app.supabase.io`) porque:
+## Objetivo
+Corrigir os indicadores administrativos para que cadastro ativo e assinatura paga sejam métricas diferentes.
 
-1. **Domínio `notify.aquadelivery.com.br`:** já está **verificado** ✅
-2. **Configuração do projeto:** ainda em status **"Setting up"** — a ativação do hook de e-mails customizados ainda não foi concluída pelo backend da Lovable.
+## Alterações
+- Exibir **Distribuidoras** como o total de distribuidoras cadastradas, sem depender do campo de ativação.
+- Considerar **Assinaturas Ativas** somente quando a assinatura estiver ativa, dentro da vigência e possuir pagamento confirmado para o período vigente.
+- Calcular a **Taxa de Ativação** usando assinaturas realmente ativas e pagas sobre o total de distribuidoras.
+- Manter a exclusão das contas de teste já usada pelo painel.
+- Ajustar os textos auxiliares dos cartões para deixar clara a diferença entre cadastro e assinatura.
 
-Enquanto o setup do projeto não termina, o Supabase continua enviando os e-mails pelo SMTP padrão dele (templates genéricos), ignorando o `auth-email-hook` que já deployamos.
-
-## Plano
-
-Não é um bug de código — é uma etapa de provisionamento assíncrono. Caminho recomendado:
-
-1. **Aguardar a finalização automática** do setup (geralmente poucos minutos após verificação de DNS). Acompanhar em **Cloud → Emails**.
-2. Quando o status mudar para **Ativo**, refazer o teste de "Esqueci minha senha" — o e-mail deve chegar do remetente `noreply@notify.aquadelivery.com.br` com o template AquaDelivery em azul.
-3. Se após ~15 minutos o status continuar travado em "Setting up", eu re-deploy o `auth-email-hook` para forçar o reconcile do backend (ele detecta automaticamente e completa a ativação).
-4. Validar entrega consultando `email_send_log` (tabela de auditoria) para confirmar que os e-mails passaram pela fila customizada e não pelo SMTP padrão.
-
-## Sem alterações de código nesta etapa
-
-Os templates, o hook e o domínio já estão corretos. A ação é apenas aguardar/monitorar e, se necessário, redisparar o deploy do hook.
-
-<presentation-actions>
-<presentation-open-email>Abrir configurações de e-mail</presentation-open-email>
-</presentation-actions>
+## Detalhes técnicos
+- Cruzar `subscriptions` com pagamentos de status `paid` e validar `expires_at`.
+- Tratar assinatura sem vencimento como válida apenas quando houver pagamento confirmado.
+- Reutilizar o mesmo critério nos indicadores principais e avançados para evitar números divergentes.
+- Validar o resultado no painel administrativo e conferir erros de execução.
