@@ -227,11 +227,15 @@ const SignupDistributor = () => {
                 name="whatsapp"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Seu WhatsApp Pessoal</FormLabel>
+                    <FormLabel>
+                      Seu WhatsApp Pessoal <span className="text-destructive" aria-hidden="true">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input 
                         type="tel" 
                         placeholder="(11) 99999-9999" 
+                        required
+                        aria-required="true"
                         {...field}
                         onChange={(e) => {
                           const formatted = formatPhone(e.target.value);
