@@ -21,9 +21,9 @@ export default function FinancialReports() {
 
   // Calculate subscription distribution
   const planDistribution = useMemo(() => {
-    if (!financialData?.subscriptions) return [];
-    const monthly = financialData.subscriptions.filter(s => s.plan === 'monthly').length;
-    const annual = financialData.subscriptions.filter(s => s.plan === 'annual').length;
+    if (!financialData?.activeSubscriptionRecords) return [];
+    const monthly = financialData.activeSubscriptionRecords.filter(s => s.plan === 'monthly').length;
+    const annual = financialData.activeSubscriptionRecords.filter(s => s.plan === 'annual').length;
     return [
       { name: 'Mensal', value: monthly, color: '#007BFF' },
       { name: 'Anual', value: annual, color: '#00C48C' },
@@ -190,10 +190,10 @@ export default function FinancialReports() {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-body-sm text-muted-foreground mb-2">Distribuidoras Ativas</p>
-                <p className="text-heading-1 text-foreground mb-1">{metrics?.activeDistributors || 0}</p>
+                <p className="text-body-sm text-muted-foreground mb-2">Distribuidoras</p>
+                <p className="text-heading-1 text-foreground mb-1">{metrics?.totalDistributors || 0}</p>
                 <div className="flex items-center gap-1 text-muted-foreground text-body-sm">
-                  <span>de {metrics?.totalDistributors || 0} totais</span>
+                  <span>cadastros no sistema</span>
                 </div>
               </div>
               <div className="bg-primary/10 p-3 rounded-lg">

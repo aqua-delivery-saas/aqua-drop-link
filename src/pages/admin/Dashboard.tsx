@@ -111,13 +111,13 @@ export default function AdminDashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="text-body-md text-muted-foreground font-normal flex items-center gap-2">
               <Building2 className="w-4 h-4" />
-              Distribuidoras Ativas
+              Distribuidoras
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-heading-1 text-foreground">{metrics?.activeDistributors || 0}</p>
+            <p className="text-heading-1 text-foreground">{metrics?.totalDistributors || 0}</p>
             <p className="text-body-sm text-muted-foreground mt-1">
-              de {metrics?.totalDistributors || 0} totais
+              cadastros no sistema
             </p>
           </CardContent>
         </Card>
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
           <CardContent>
             <p className="text-heading-1 text-foreground">{metrics?.activeSubscriptions || 0}</p>
             <p className="text-body-sm text-muted-foreground mt-1">
-              assinaturas em vigor
+              pagamento em dia
             </p>
           </CardContent>
         </Card>
