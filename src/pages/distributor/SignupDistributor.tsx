@@ -240,7 +240,7 @@ const SignupDistributor = () => {
                       />
                     </FormControl>
                     <FormDescription>
-                      Você receberá notificações neste número
+                      Número pessoal do responsável. Os pedidos serão enviados ao WhatsApp comercial da distribuidora.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
