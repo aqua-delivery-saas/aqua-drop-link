@@ -5,6 +5,45 @@ import { supabase } from '@/integrations/supabase/client';
 const TEST_USER_IDS = ['cd6cf668-0e69-46f4-89e0-05504275ef92'];
 const TEST_DISTRIBUTOR_IDS = ['c3ff25c9-9f86-4e6b-9222-f9af242bf5e9'];
 
+type SubscriptionRecord = {
+  id: string;
+  status: string;
+  expires_at: string | null;
+};
+
+type PaymentRecord = {
+  subscription_id: string;
+  status: string;
+  paid_at: string | null;
+  reference_period_start: string | null;
+  reference_period_end: string | null;
+};
+
+const isPaidSubscriptionActive = (
+  subscription: SubscriptionRecord,
+  payments: PaymentRecord[],
+  now = new Date(),
+) => {
+  if (subscription.status !== 'active') return false;
+
+  if (subscription.expires_at && new Date(subscription.expires_at) <= now) {
+    return false;
+  }
+
+  return payments.some((payment) => {
+    if (payment.subscription_id !== subscription.id || payment.status !== 'paid') {
+      return false;
+    }
+
+    const periodStarted = !payment.reference_period_start
+      || new Date(payment.reference_period_start) <= now;
+    const periodIsCurrent = !payment.reference_period_end
+      || new Date(payment.reference_period_end) > now;
+
+    return Boolean(payment.paid_at) && periodStarted && periodIsCurrent;
+  });
+};
+
 export function useAdminUsers() {
   return useQuery({
     queryKey: ['admin-users'],
@@ -97,12 +136,6 @@ export function useAdminMetrics() {
         .select('*', { count: 'exact', head: true })
         .not('id', 'in', `(${TEST_DISTRIBUTOR_IDS.join(',')})`);
 
-      const { count: activeDistributors } = await supabase
-        .from('distributors')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_active', true)
-        .not('id', 'in', `(${TEST_DISTRIBUTOR_IDS.join(',')})`);
-
       const { count: totalProfiles } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true })
@@ -122,7 +155,7 @@ export function useAdminMetrics() {
       // Buscar pagamentos realizados (receita real do SaaS)
       const { data: payments } = await supabase
         .from('payments')
-        .select('amount, subscription_id')
+        .select('amount, subscription_id, status, paid_at, reference_period_start, reference_period_end')
         .eq('status', 'paid');
 
       // Buscar assinaturas de distribuidoras de teste para filtrar
@@ -138,8 +171,11 @@ export function useAdminMetrics() {
         .filter(p => !testSubIds.includes(p.subscription_id))
         .reduce((sum, payment) => sum + Number(payment.amount), 0);
 
-      const monthlyRevenue = (subscriptions || []).reduce((sum, sub) => sum + Number(sub.price), 0);
-      const activeSubscriptions = subscriptions?.length || 0;
+      const paidActiveSubscriptions = (subscriptions || []).filter(subscription =>
+        isPaidSubscriptionActive(subscription, payments || []),
+      );
+      const monthlyRevenue = paidActiveSubscriptions.reduce((sum, sub) => sum + Number(sub.price), 0);
+      const activeSubscriptions = paidActiveSubscriptions.length;
 
       const { count: activeCities } = await supabase
         .from('cities')
@@ -159,7 +195,7 @@ export function useAdminMetrics() {
       return {
         totalUsers: totalProfiles || 0,
         totalDistributors: totalDistributors || 0,
-        activeDistributors: activeDistributors || 0,
+        activeDistributors: totalDistributors || 0,
         monthlyRevenue,
         newUsersThisMonth: newUsersThisMonth || 0,
         monthlyGrowth: 12.5,
@@ -183,8 +219,19 @@ export function useAdminFinancialData() {
 
       if (error) throw error;
 
-      const activeSubscriptions = subscriptions?.filter(s => s.status === 'active') || [];
-      const inactiveSubscriptions = subscriptions?.filter(s => s.status !== 'active') || [];
+      const { data: payments, error: paymentsError } = await supabase
+        .from('payments')
+        .select('subscription_id, status, paid_at, reference_period_start, reference_period_end')
+        .eq('status', 'paid');
+
+      if (paymentsError) throw paymentsError;
+
+      const activeSubscriptions = subscriptions?.filter(subscription =>
+        isPaidSubscriptionActive(subscription, payments || []),
+      ) || [];
+      const inactiveSubscriptions = subscriptions?.filter(subscription =>
+        !isPaidSubscriptionActive(subscription, payments || []),
+      ) || [];
       const totalRevenue = activeSubscriptions.reduce((sum, sub) => sum + Number(sub.price), 0);
       
       const monthlyPlans = activeSubscriptions.filter(s => s.plan === 'monthly');
@@ -192,6 +239,7 @@ export function useAdminFinancialData() {
 
       return {
         subscriptions: subscriptions || [],
+        activeSubscriptionRecords: activeSubscriptions,
         totalSubscriptions: subscriptions?.length || 0,
         activeSubscriptions: activeSubscriptions.length,
         inactiveSubscriptions: inactiveSubscriptions.length,

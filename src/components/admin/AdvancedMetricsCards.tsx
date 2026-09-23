@@ -1,14 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Users, DollarSign, UserMinus, Repeat, Target } from 'lucide-react';
-import { useAdminMetrics, useAdminDistributors } from '@/hooks/useAdminData';
+import { TrendingUp, Users, DollarSign, Repeat, Target } from 'lucide-react';
+import { useAdminMetrics } from '@/hooks/useAdminData';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const AdvancedMetricsCards = () => {
   const { data: metrics, isLoading: metricsLoading } = useAdminMetrics();
-  const { data: distributors, isLoading: distributorsLoading } = useAdminDistributors();
-
-  const isLoading = metricsLoading || distributorsLoading;
+  const isLoading = metricsLoading;
 
   if (isLoading) {
     return (
@@ -28,9 +25,9 @@ export const AdvancedMetricsCards = () => {
     );
   }
 
-  const activeDistributors = distributors?.filter(d => d.is_active)?.length || 0;
-  const totalDistributors = distributors?.length || 0;
-  const conversionRate = totalDistributors > 0 ? ((activeDistributors / totalDistributors) * 100).toFixed(1) : '0';
+  const totalDistributors = metrics?.totalDistributors || 0;
+  const activeSubscriptions = metrics?.activeSubscriptions || 0;
+  const conversionRate = totalDistributors > 0 ? ((activeSubscriptions / totalDistributors) * 100).toFixed(1) : '0';
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -48,7 +45,7 @@ export const AdvancedMetricsCards = () => {
         <CardContent>
           <div className="text-heading-1 text-foreground">{conversionRate}%</div>
           <p className="text-body-sm text-muted-foreground mt-1">
-            {activeDistributors} de {totalDistributors} distribuidoras ativas
+            {activeSubscriptions} de {totalDistributors} com pagamento em dia
           </p>
         </CardContent>
       </Card>
@@ -95,21 +92,21 @@ export const AdvancedMetricsCards = () => {
         </CardContent>
       </Card>
 
-      {/* Distribuidoras Ativas */}
+      {/* Distribuidoras cadastradas */}
       <Card className="border-border hover:shadow-lg transition-shadow cursor-pointer animate-fade-in" style={{ animationDelay: '300ms' }}>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-body-md text-muted-foreground font-normal flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Distribuidoras Ativas
+              Distribuidoras
             </CardTitle>
             <TrendingUp className="text-accent-green w-5 h-5" />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-heading-1 text-foreground">{activeDistributors}</div>
+          <div className="text-heading-1 text-foreground">{totalDistributors}</div>
           <p className="text-body-sm text-muted-foreground mt-1">
-            de {totalDistributors} cadastradas
+            cadastros no sistema
           </p>
         </CardContent>
       </Card>
@@ -126,9 +123,9 @@ export const AdvancedMetricsCards = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-heading-1 text-foreground">{metrics?.activeSubscriptions || 0}</div>
+          <div className="text-heading-1 text-foreground">{activeSubscriptions}</div>
           <p className="text-body-sm text-muted-foreground mt-1">
-            assinaturas em vigor
+            pagamento em dia
           </p>
         </CardContent>
       </Card>
