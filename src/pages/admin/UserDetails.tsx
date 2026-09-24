@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useAdminUserById } from '@/hooks/useAdminData';
-import { ArrowLeft, Mail, Phone, Shield } from 'lucide-react';
+import { ArrowLeft, CircleDollarSign, Phone, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -86,9 +86,15 @@ export default function UserDetails() {
           <h1 className="text-heading-1 text-foreground">{user.full_name || 'Usuário'}</h1>
           <p className="text-body-lg text-muted-foreground mt-2">{user.phone || 'Sem telefone'}</p>
         </div>
-        <Badge className="bg-accent-green/10 text-accent-green">
-          Ativo
-        </Badge>
+        {user.distributorStatus && (
+          <Badge
+            className={user.distributorStatus.isPaid
+              ? 'bg-accent-green/10 text-accent-green'
+              : 'bg-accent-red/10 text-accent-red'}
+          >
+            {user.distributorStatus.isPaid ? 'Ativa (Pago)' : 'Inativa (Sem pagamento)'}
+          </Badge>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -147,6 +153,26 @@ export default function UserDetails() {
                 disabled 
               />
             </div>
+
+            {user.role === 'distributor' && (
+              <div>
+                <Label className="text-body-sm text-muted-foreground flex items-center gap-2">
+                  <CircleDollarSign className="w-4 h-4" />
+                  Status da Distribuidora
+                </Label>
+                <div className="mt-2">
+                  <Badge
+                    className={user.distributorStatus?.isPaid
+                      ? 'bg-accent-green/10 text-accent-green'
+                      : 'bg-accent-red/10 text-accent-red'}
+                  >
+                    {user.distributorStatus?.isPaid
+                      ? 'Ativa (Pago)'
+                      : 'Inativa (Sem pagamento)'}
+                  </Badge>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2 pt-4">
               <Button variant="outline" className="w-full touch-input" onClick={handleResetPassword}>

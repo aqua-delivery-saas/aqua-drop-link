@@ -97,10 +97,58 @@ export function useAdminUserById(userId: string) {
 
       if (roleError) throw roleError;
 
+      let distributorStatus: {
+        id: string;
+        name: string;
+        isPaid: boolean;
+      } | null = null;
+
+      if (role?.role === 'distributor') {
+        const { data: distributor, error: distributorError } = await supabase
+          .from('distributors')
+          .select('id, name')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (distributorError) throw distributorError;
+
+        if (distributor) {
+          const { data: subscriptions, error: subscriptionsError } = await supabase
+            .from('subscriptions')
+            .select('id, status, expires_at')
+            .eq('distributor_id', distributor.id);
+
+          if (subscriptionsError) throw subscriptionsError;
+
+          const subscriptionIds = (subscriptions || []).map(subscription => subscription.id);
+          let payments: PaymentRecord[] = [];
+
+          if (subscriptionIds.length > 0) {
+            const { data: paymentRecords, error: paymentsError } = await supabase
+              .from('payments')
+              .select('subscription_id, status, paid_at, reference_period_start, reference_period_end')
+              .in('subscription_id', subscriptionIds)
+              .eq('status', 'paid');
+
+            if (paymentsError) throw paymentsError;
+            payments = paymentRecords || [];
+          }
+
+          distributorStatus = {
+            id: distributor.id,
+            name: distributor.name,
+            isPaid: (subscriptions || []).some(subscription =>
+              isPaidSubscriptionActive(subscription, payments),
+            ),
+          };
+        }
+      }
+
       return {
         ...profile,
         role: role?.role || 'customer',
         is_active: true,
+        distributorStatus,
       };
     },
     enabled: !!userId,
