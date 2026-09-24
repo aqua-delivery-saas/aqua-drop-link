@@ -30,7 +30,8 @@ export default function DistributorList() {
   const { data: distributors, isLoading } = useAdminDistributors();
 
   const filteredDistributors = (distributors || []).filter((dist) => {
-    const cityName = (dist.cities as any)?.name || '';
+    const city = Array.isArray(dist.cities) ? dist.cities[0] : dist.cities;
+    const cityName = city?.name || '';
     const matchesSearch = dist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          cityName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || 
@@ -114,7 +115,7 @@ export default function DistributorList() {
           </TableHeader>
           <TableBody>
             {filteredDistributors.map((dist) => {
-              const city = dist.cities as any;
+              const city = Array.isArray(dist.cities) ? dist.cities[0] : dist.cities;
               return (
               <TableRow key={dist.id}>
                 <TableCell className="font-medium">{dist.name}</TableCell>

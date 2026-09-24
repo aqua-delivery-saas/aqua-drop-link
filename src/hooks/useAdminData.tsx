@@ -19,6 +19,11 @@ type PaymentRecord = {
   reference_period_end: string | null;
 };
 
+const asArray = <T,>(value: T | T[] | null | undefined): T[] => {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+};
+
 const isPaidSubscriptionActive = (
   subscription: SubscriptionRecord,
   payments: PaymentRecord[],
@@ -172,7 +177,7 @@ export function useAdminDistributors() {
       if (error) throw error;
 
       const subscriptionIds = (data || []).flatMap(distributor =>
-        (distributor.subscriptions || []).map(subscription => subscription.id),
+        asArray(distributor.subscriptions).map(subscription => subscription.id),
       );
       let payments: PaymentRecord[] = [];
 
@@ -189,7 +194,7 @@ export function useAdminDistributors() {
 
       return (data || []).map(distributor => ({
         ...distributor,
-        isPaid: (distributor.subscriptions || []).some(subscription =>
+        isPaid: asArray(distributor.subscriptions).some(subscription =>
           isPaidSubscriptionActive(subscription, payments),
         ),
       }));
