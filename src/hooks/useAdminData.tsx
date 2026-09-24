@@ -19,6 +19,11 @@ type PaymentRecord = {
   reference_period_end: string | null;
 };
 
+const asArray = <T,>(value: T | T[] | null | undefined): T[] => {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+};
+
 const isPaidSubscriptionActive = (
   subscription: SubscriptionRecord,
   payments: PaymentRecord[],
@@ -170,7 +175,29 @@ export function useAdminDistributors() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+
+      const subscriptionIds = (data || []).flatMap(distributor =>
+        asArray(distributor.subscriptions).map(subscription => subscription.id),
+      );
+      let payments: PaymentRecord[] = [];
+
+      if (subscriptionIds.length > 0) {
+        const { data: paymentRecords, error: paymentsError } = await supabase
+          .from('payments')
+          .select('subscription_id, status, paid_at, reference_period_start, reference_period_end')
+          .in('subscription_id', subscriptionIds)
+          .eq('status', 'paid');
+
+        if (paymentsError) throw paymentsError;
+        payments = paymentRecords || [];
+      }
+
+      return (data || []).map(distributor => ({
+        ...distributor,
+        isPaid: asArray(distributor.subscriptions).some(subscription =>
+          isPaidSubscriptionActive(subscription, payments),
+        ),
+      }));
     },
   });
 }

@@ -30,20 +30,21 @@ export default function DistributorList() {
   const { data: distributors, isLoading } = useAdminDistributors();
 
   const filteredDistributors = (distributors || []).filter((dist) => {
-    const cityName = (dist.cities as any)?.name || '';
+    const city = Array.isArray(dist.cities) ? dist.cities[0] : dist.cities;
+    const cityName = city?.name || '';
     const matchesSearch = dist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          cityName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'active' && dist.is_active) ||
-                         (statusFilter === 'inactive' && !dist.is_active);
+                         (statusFilter === 'active' && dist.isPaid) ||
+                         (statusFilter === 'inactive' && !dist.isPaid);
     return matchesSearch && matchesStatus;
   });
 
-  const getStatusBadge = (isActive: boolean) => {
-    if (isActive) {
-      return <Badge className="bg-accent-green/10 text-accent-green">Ativo</Badge>;
+  const getStatusBadge = (isPaid: boolean) => {
+    if (isPaid) {
+      return <Badge className="bg-accent-green/10 text-accent-green">Ativa (Pago)</Badge>;
     }
-    return <Badge className="bg-accent-red/10 text-accent-red">Inativo</Badge>;
+    return <Badge className="bg-accent-red/10 text-accent-red">Inativa (Sem pagamento)</Badge>;
   };
 
   if (isLoading) {
@@ -94,8 +95,8 @@ export default function DistributorList() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="active">Ativo</SelectItem>
-            <SelectItem value="inactive">Inativo</SelectItem>
+            <SelectItem value="active">Ativas (Pago)</SelectItem>
+            <SelectItem value="inactive">Inativas (Sem pagamento)</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -114,7 +115,7 @@ export default function DistributorList() {
           </TableHeader>
           <TableBody>
             {filteredDistributors.map((dist) => {
-              const city = dist.cities as any;
+              const city = Array.isArray(dist.cities) ? dist.cities[0] : dist.cities;
               return (
               <TableRow key={dist.id}>
                 <TableCell className="font-medium">{dist.name}</TableCell>
@@ -122,7 +123,7 @@ export default function DistributorList() {
                 <TableCell>
                   {city ? `${city.name}/${city.state}` : '-'}
                 </TableCell>
-                <TableCell>{getStatusBadge(dist.is_active)}</TableCell>
+                <TableCell>{getStatusBadge(dist.isPaid)}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     variant="ghost"
