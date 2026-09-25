@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { hasDeveloperPreviewAccess } from '@/lib/developerPreviewAccess';
 
 export type AppRole = 'admin' | 'distributor' | 'customer';
 
@@ -162,7 +163,8 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
 
   hasRole: (role: AppRole) => {
-    const { role: currentRole } = get();
+    const { role: currentRole, user } = get();
+    if (hasDeveloperPreviewAccess(user?.email)) return true;
     return currentRole === role;
   },
 

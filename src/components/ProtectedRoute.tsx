@@ -2,6 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth, AppRole } from '@/hooks/useAuth';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { hasDeveloperPreviewAccess } from '@/lib/developerPreviewAccess';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -9,7 +10,8 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const { isAuthenticated, hasRole, isLoading, initialize } = useAuth();
+  const { user, isAuthenticated, hasRole, isLoading, initialize } = useAuth();
+  const hasPreviewAccess = hasDeveloperPreviewAccess(user?.email);
 
   useEffect(() => {
     initialize();
@@ -42,7 +44,7 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
   const { role } = useAuth.getState();
 
   // If authenticated but role is still loading, show loading state
-  if (requiredRole && role === null) {
+  if (requiredRole && role === null && !hasPreviewAccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="space-y-4 w-full max-w-md p-6">
@@ -58,7 +60,7 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
   }
 
   // Only redirect to 403 if role is loaded and doesn't match
-  if (requiredRole && role !== null && !hasRole(requiredRole)) {
+  if (requiredRole && !hasPreviewAccess && role !== null && !hasRole(requiredRole)) {
     return <Navigate to="/403" replace />;
   }
 
