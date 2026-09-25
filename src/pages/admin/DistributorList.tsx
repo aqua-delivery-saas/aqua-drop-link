@@ -42,9 +42,9 @@ export default function DistributorList() {
 
   const getStatusBadge = (isPaid: boolean) => {
     if (isPaid) {
-      return <Badge className="bg-accent-green/10 text-accent-green">Ativa (Pago)</Badge>;
+      return <Badge variant="success">Ativa</Badge>;
     }
-    return <Badge className="bg-accent-red/10 text-accent-red">Inativa (Sem pagamento)</Badge>;
+    return <Badge variant="destructive">Inativa</Badge>;
   };
 
   if (isLoading) {
@@ -95,8 +95,8 @@ export default function DistributorList() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="active">Ativas (Pago)</SelectItem>
-            <SelectItem value="inactive">Inativas (Sem pagamento)</SelectItem>
+            <SelectItem value="active">Ativas</SelectItem>
+            <SelectItem value="inactive">Inativas</SelectItem>
           </SelectContent>
         </Select>
       </div>
