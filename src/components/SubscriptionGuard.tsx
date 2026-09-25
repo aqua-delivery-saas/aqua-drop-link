@@ -4,16 +4,20 @@ import { useStripeSubscription } from "@/hooks/useStripeSubscription";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useEffect, useRef } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { hasDeveloperPreviewAccess } from "@/lib/developerPreviewAccess";
 
 interface SubscriptionGuardProps {
   children: React.ReactNode;
 }
 
 export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
+  const user = useAuth((state) => state.user);
   const { data: distributor, isLoading: distributorLoading } = useDistributor();
   const { subscription, isLoading: subscriptionLoading } = useStripeSubscription();
   const location = useLocation();
   const hasShownOnboardingToast = useRef(false);
+  const hasPreviewAccess = hasDeveloperPreviewAccess(user?.email);
 
   // Páginas permitidas sem assinatura ativa
   const allowedPaths = [
@@ -28,7 +32,7 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
 
   // Show toast when redirecting to onboarding
   useEffect(() => {
-    if (!distributorLoading && !distributor && !hasShownOnboardingToast.current) {
+    if (!hasPreviewAccess && !distributorLoading && !distributor && !hasShownOnboardingToast.current) {
       // Only show toast once per session
       const hasShownInSession = sessionStorage.getItem('onboarding_redirect_toast');
       if (!hasShownInSession) {
@@ -40,7 +44,11 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
         hasShownOnboardingToast.current = true;
       }
     }
-  }, [distributorLoading, distributor]);
+  }, [distributorLoading, distributor, hasPreviewAccess]);
+
+  if (hasPreviewAccess) {
+    return <>{children}</>;
+  }
 
   // Se está carregando, mostrar skeleton
   if (distributorLoading || subscriptionLoading) {
