@@ -87,12 +87,8 @@ export default function UserDetails() {
           <p className="text-body-lg text-muted-foreground mt-2">{user.phone || 'Sem telefone'}</p>
         </div>
         {user.distributorStatus && (
-          <Badge
-            className={user.distributorStatus.isPaid
-              ? 'bg-accent-green/10 text-accent-green'
-              : 'bg-accent-red/10 text-accent-red'}
-          >
-            {user.distributorStatus.isPaid ? 'Ativa (Pago)' : 'Inativa (Sem pagamento)'}
+          <Badge variant={user.distributorStatus.isPaid ? 'success' : 'destructive'}>
+            {user.distributorStatus.isPaid ? 'Ativa' : 'Inativa'}
           </Badge>
         )}
       </div>
@@ -161,14 +157,8 @@ export default function UserDetails() {
                   Status da Distribuidora
                 </Label>
                 <div className="mt-2">
-                  <Badge
-                    className={user.distributorStatus?.isPaid
-                      ? 'bg-accent-green/10 text-accent-green'
-                      : 'bg-accent-red/10 text-accent-red'}
-                  >
-                    {user.distributorStatus?.isPaid
-                      ? 'Ativa (Pago)'
-                      : 'Inativa (Sem pagamento)'}
+                  <Badge variant={user.distributorStatus?.isPaid ? 'success' : 'destructive'}>
+                    {user.distributorStatus?.isPaid ? 'Ativa' : 'Inativa'}
                   </Badge>
                 </div>
               </div>
