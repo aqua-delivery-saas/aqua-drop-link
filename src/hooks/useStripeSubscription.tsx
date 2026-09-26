@@ -54,8 +54,9 @@ export function useStripeSubscription() {
   useEffect(() => {
     if (!distributor?.id) return;
 
+    // Each effect mount needs its own channel while a previous cleanup is still in flight.
     const channel = supabase
-      .channel("subscription-realtime")
+      .channel(`subscription-realtime-${distributor.id}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         {
