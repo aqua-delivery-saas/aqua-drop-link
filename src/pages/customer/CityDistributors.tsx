@@ -15,6 +15,7 @@ import { isDistributorOpen } from "@/lib/businessHoursUtils";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/customer/UserMenu";
 import { CustomerBottomNav } from "@/components/customer/CustomerBottomNav";
+import { useLastOrderDistributor } from "@/hooks/useLastOrderDistributor";
 const CityDistributors = () => {
   const {
     citySlug
@@ -22,6 +23,7 @@ const CityDistributors = () => {
     citySlug: string;
   }>();
   const navigate = useNavigate();
+  const lastOrderDistributor = useLastOrderDistributor();
   const {
     toggleFavorite,
     isFavorite
@@ -155,6 +157,9 @@ const CityDistributors = () => {
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-center gap-2">
                                 <CardTitle className="text-xl sm:text-2xl leading-tight">{dist.name}</CardTitle>
+                                 {lastOrderDistributor?.id === dist.id && (
+                                   <Badge variant="outline" className="border-accent text-primary">Último pedido</Badge>
+                                 )}
                                 <Badge 
                                   variant="secondary"
                                   className={cn(

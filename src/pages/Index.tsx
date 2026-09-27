@@ -7,6 +7,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { UserMenu } from "@/components/customer/UserMenu";
 import { CustomerBottomNav } from "@/components/customer/CustomerBottomNav";
 import { CitySearchCombobox } from "@/components/CitySearchCombobox";
+import { Badge } from "@/components/ui/badge";
+import { useLastOrderDistributor } from "@/hooks/useLastOrderDistributor";
+import { useDistributorBySlug } from "@/hooks/useCities";
 import type { City } from "@/hooks/useCities";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -18,6 +21,11 @@ const LAST_CITY_KEY = "aqua:lastCity";
 const Index = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isDistributor, user } = useAuth();
+  const lastOrderDistributor = useLastOrderDistributor();
+  const { data: availableLastDistributor } = useDistributorBySlug(lastOrderDistributor?.slug ?? "");
+  const lastAvailableDistributor = lastOrderDistributor && availableLastDistributor?.id === lastOrderDistributor.id
+    ? availableLastDistributor
+    : null;
   const [preferredCity, setPreferredCity] = useState<Pick<City, "id" | "name" | "state" | "slug"> | null>(() => {
     try {
       const raw = sessionStorage.getItem(LAST_CITY_KEY);
@@ -174,14 +182,21 @@ const Index = () => {
               </div>
             </div>
             {preferredCity && (
-              <button
-                type="button"
-                onClick={() => navigate(`/distribuidoras/${preferredCity.slug}`)}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
-              >
+              <Button variant="link" onClick={() => navigate(`/distribuidoras/${preferredCity.slug}`)} className="h-auto p-0 text-xs font-semibold text-accent">
                 Continuar em {preferredCity.name} - {preferredCity.state}
                 <ChevronRight className="h-4 w-4" />
-              </button>
+              </Button>
+            )}
+            {lastAvailableDistributor && (
+              <div className="flex w-full flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+                <div className="flex min-w-0 items-center gap-2">
+                  <Badge variant="outline" className="shrink-0 border-accent text-primary">Último pedido</Badge>
+                  <span className="truncate text-sm font-semibold text-foreground">{lastAvailableDistributor.name}</span>
+                </div>
+                <Button variant="link" className="h-auto p-0 text-xs font-semibold text-accent" onClick={() => navigate(`/order/${lastAvailableDistributor.slug}`)}>
+                  Fazer pedido <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </div>
             )}
           </section>
 
