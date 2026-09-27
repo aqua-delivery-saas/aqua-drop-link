@@ -23,6 +23,9 @@ const Index = () => {
   const { isAuthenticated, isDistributor, user } = useAuth();
   const lastOrderDistributor = useLastOrderDistributor();
   const { data: availableLastDistributor } = useDistributorBySlug(lastOrderDistributor?.slug ?? "");
+  const lastAvailableDistributor = lastOrderDistributor && availableLastDistributor?.id === lastOrderDistributor.id
+    ? availableLastDistributor
+    : null;
   const [preferredCity, setPreferredCity] = useState<Pick<City, "id" | "name" | "state" | "slug"> | null>(() => {
     try {
       const raw = sessionStorage.getItem(LAST_CITY_KEY);
@@ -184,13 +187,13 @@ const Index = () => {
                 <ChevronRight className="h-4 w-4" />
               </Button>
             )}
-            {lastOrderDistributor && availableLastDistributor?.id === lastOrderDistributor.id && (
+            {lastAvailableDistributor && (
               <div className="flex w-full flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
                 <div className="flex min-w-0 items-center gap-2">
                   <Badge variant="outline" className="shrink-0 border-accent text-primary">Último pedido</Badge>
-                  <span className="truncate text-sm font-semibold text-foreground">{availableLastDistributor.name}</span>
+                  <span className="truncate text-sm font-semibold text-foreground">{lastAvailableDistributor.name}</span>
                 </div>
-                <Button variant="link" className="h-auto p-0 text-xs font-semibold text-accent" onClick={() => navigate(`/order/${availableLastDistributor.slug}`)}>
+                <Button variant="link" className="h-auto p-0 text-xs font-semibold text-accent" onClick={() => navigate(`/order/${lastAvailableDistributor.slug}`)}>
                   Fazer pedido <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>
