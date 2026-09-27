@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateOrder } from "@/hooks/useDistributor";
+import { saveLastOrderDistributor } from "@/lib/lastOrderDistributor";
 import { format } from "date-fns";
 
 const ScheduleDelivery = () => {
@@ -158,6 +159,11 @@ const ScheduleDelivery = () => {
         }],
       });
 
+      saveLastOrderDistributor(user?.id ?? null, {
+        id: distribuidora.id,
+        name: distribuidora.name,
+        slug: distribuidora.slug,
+      });
       navigate("/schedule/confirmation", {
         state: {
           orderId: createdOrder.id,

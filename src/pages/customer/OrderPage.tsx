@@ -22,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useCreateOrder } from "@/hooks/useDistributor";
+import { saveLastOrderDistributor } from "@/lib/lastOrderDistributor";
 import { useCustomerLoyaltyPoints, useRedeemLoyaltyPoints } from "@/hooks/useCustomerLoyalty";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -362,6 +363,11 @@ const OrderPage = () => {
         }]
       });
       try { localStorage.removeItem(DRAFT_KEY); } catch {}
+      saveLastOrderDistributor(user?.id ?? null, {
+        id: distribuidora.id,
+        name: distribuidora.name,
+        slug: distribuidora.slug,
+      });
       navigate("/order/confirmation", {
         state: {
           orderId: createdOrder.id,
