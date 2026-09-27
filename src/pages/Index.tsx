@@ -184,7 +184,7 @@ const Index = () => {
                 <ChevronRight className="h-4 w-4" />
               </Button>
             )}
-            {availableLastDistributor?.id === lastOrderDistributor?.id && (
+            {lastOrderDistributor && availableLastDistributor?.id === lastOrderDistributor.id && (
               <div className="flex w-full flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
                 <div className="flex min-w-0 items-center gap-2">
                   <Badge variant="outline" className="shrink-0 border-accent text-primary">Último pedido</Badge>
