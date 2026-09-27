@@ -1,0 +1,1 @@
+Store only the distributor identity of a successfully created order in user-scoped localStorage (guest uses a separate key), because the recent-order shortcut must persist without exposing another account's choice.
