@@ -1,4 +1,4 @@
-- [ ] Persist the distributor of successful immediate and scheduled orders in account-scoped browser storage.
-- [ ] Show the latest ordered distributor with a badge and shortcut on the home page.
-- [ ] Badge the same distributor on the city list, only when currently available.
-- [ ] Verify the UI and build status.
+- [x] Persist the distributor of successful immediate and scheduled orders in account-scoped browser storage.
+- [x] Show the latest ordered distributor with a badge and shortcut on the home page.
+- [x] Badge the same distributor on the city list, only when currently available.
+- [x] Verify the UI and build status.
