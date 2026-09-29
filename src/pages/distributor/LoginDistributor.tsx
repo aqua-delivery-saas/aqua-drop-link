@@ -147,6 +147,11 @@ const LoginDistributor = () => {
                 Criar conta da distribuidora
               </Button>
             </div>
+            <div className="mt-2 text-center text-sm">
+              <Button type="button" variant="link" className="h-auto p-0" onClick={() => navigate("/customer/login")}>
+                É cliente? Entrar como cliente
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
