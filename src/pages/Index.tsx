@@ -118,7 +118,7 @@ const Index = () => {
               )
             ) : (
               <Button variant="ghost" size="sm" className="text-primary" onClick={() => navigate("/customer/login")}>
-                Entrar
+                Entrar como cliente
               </Button>
             )}
           </div>
@@ -285,6 +285,16 @@ const Index = () => {
                   onClick={() => navigate("/distributor/signup")}
                 >
                   Cadastre-se gratuitamente
+                </Button>
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Já tem uma distribuidora?{" "}
+                <Button
+                  variant="link"
+                  className="h-auto p-0 text-xs font-bold text-accent"
+                  onClick={() => navigate("/distributor/login")}
+                >
+                  Entrar como distribuidora
                 </Button>
               </p>
             </section>

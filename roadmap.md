@@ -2,3 +2,5 @@
 - [x] Show the latest ordered distributor with a badge and shortcut on the home page.
 - [x] Badge the same distributor on the city list, only when currently available.
 - [x] Verify the UI and build status.
+- [x] Distinguish customer and distributor login links on the home page.
+- [x] Add a link between the customer and distributor login pages.

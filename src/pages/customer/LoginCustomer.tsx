@@ -137,6 +137,11 @@ const LoginCustomer = () => {
               <Button type="button" variant="link" onClick={() => navigate("/customer/signup")} className="p-0">
                 Ainda não tem conta? Criar conta grátis
               </Button>
+              <div>
+                <Button type="button" variant="link" onClick={() => navigate("/distributor/login")} className="h-auto p-0">
+                  É distribuidora? Entrar como distribuidora
+                </Button>
+              </div>
             </div>
 
             <div className="pt-2 text-center">
