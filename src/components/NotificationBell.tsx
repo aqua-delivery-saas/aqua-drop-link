@@ -30,19 +30,19 @@ export function NotificationBell() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-full bg-card text-primary shadow-[var(--shadow-soft)]" aria-label="Notificações">
           <Bell className={cn(
             "h-5 w-5 transition-all",
             unreadCount > 0 && "animate-pulse"
           )} />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-semibold animate-pulse">
+            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-semibold">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
+      <DropdownMenuContent align="end" className="w-[min(20rem,calc(100vw-2rem))]">
         <DropdownMenuLabel className="flex items-center justify-between">
           <span>Notificações</span>
           {unreadCount > 0 && (
@@ -76,7 +76,7 @@ export function NotificationBell() {
                     className={cn(
                       "flex flex-col items-start p-4 cursor-pointer rounded-lg",
                       isUnread 
-                        ? 'bg-primary text-white hover:bg-primary/90' 
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                         : 'bg-muted/30 hover:bg-muted/50'
                     )}
                     onClick={() => handleNotificationClick(notification.id, notification.link)}
@@ -87,19 +87,19 @@ export function NotificationBell() {
                         <div className="flex-1 min-w-0 space-y-1">
                           <p className={cn(
                             "text-sm font-semibold",
-                            isUnread ? "text-white" : "text-foreground"
+                            isUnread ? "text-primary-foreground" : "text-foreground"
                           )}>
                             {notification.title}
                           </p>
                           <p className={cn(
                             "text-sm line-clamp-2",
-                            isUnread ? "text-white/90" : "text-muted-foreground"
+                            isUnread ? "text-primary-foreground/90" : "text-muted-foreground"
                           )}>
                             {notification.message}
                           </p>
                           <p className={cn(
                             "text-xs",
-                            isUnread ? "text-white/70" : "text-muted-foreground/70"
+                            isUnread ? "text-primary-foreground/70" : "text-muted-foreground/70"
                           )}>
                             {formatDistanceToNow(notification.timestamp, {
                               addSuffix: true,
@@ -111,10 +111,11 @@ export function NotificationBell() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label={`Excluir notificação: ${notification.title}`}
                         className={cn(
                           "h-7 w-7 shrink-0",
                           isUnread 
-                            ? "text-white/70 hover:text-white hover:bg-white/20" 
+                            ? "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/20"
                             : "text-muted-foreground hover:text-destructive"
                         )}
                         onClick={(e) => {

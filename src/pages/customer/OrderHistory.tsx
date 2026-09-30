@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Droplets, RefreshCw, Calendar, X, Plus, Loader2, ClipboardList } from "lucide-react";
+import { Droplets, RefreshCw, Calendar, X, Plus, Loader2, ClipboardList } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { UserMenu } from "@/components/customer/UserMenu";
 import { CustomerBottomNav } from "@/components/customer/CustomerBottomNav";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const OrderHistory = () => {
   const navigate = useNavigate();
@@ -163,13 +164,7 @@ const OrderHistory = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              aria-label="Notificações"
-              className="relative flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-[var(--shadow-soft)] transition-transform active:scale-95"
-            >
-              <Bell className="h-5 w-5 text-primary" strokeWidth={1.8} />
-            </button>
+            <NotificationBell />
             <UserMenu />
           </div>
         </header>
