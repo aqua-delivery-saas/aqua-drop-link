@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
-import { Bell, MapPin, ChevronRight, ShieldCheck, Truck, CreditCard, Droplets, ClipboardList } from "lucide-react";
+import { MapPin, ChevronRight, ShieldCheck, Truck, CreditCard, Droplets, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { UserMenu } from "@/components/customer/UserMenu";
 import { CustomerBottomNav } from "@/components/customer/CustomerBottomNav";
+import { NotificationBell } from "@/components/NotificationBell";
 import { CitySearchCombobox } from "@/components/CitySearchCombobox";
 import { Badge } from "@/components/ui/badge";
 import { useLastOrderDistributor } from "@/hooks/useLastOrderDistributor";
@@ -96,18 +97,7 @@ const Index = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            {isAuthenticated && (
-              <button
-                type="button"
-                aria-label="Notificações"
-                className="relative flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-[var(--shadow-soft)] transition-transform active:scale-95"
-              >
-                <Bell className="h-5 w-5 text-primary" strokeWidth={1.8} />
-                <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-primary">
-                  2
-                </span>
-              </button>
-            )}
+            {isAuthenticated && !isDistributor() && <NotificationBell />}
             {isAuthenticated ? (
               isDistributor() ? (
                 <Button variant="ghost" size="sm" onClick={() => navigate("/distributor/dashboard")}>

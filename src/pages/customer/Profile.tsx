@@ -9,9 +9,10 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bell, Droplets, MapPin, UserRound, Lock, LocateFixed, Loader2 } from "lucide-react";
+import { Droplets, MapPin, UserRound, Lock, LocateFixed, Loader2 } from "lucide-react";
 import { UserMenu } from "@/components/customer/UserMenu";
 import { CustomerBottomNav } from "@/components/customer/CustomerBottomNav";
+import { NotificationBell } from "@/components/NotificationBell";
 import { CitySearchCombobox } from "@/components/CitySearchCombobox";
 import { detectCityFromBrowser } from "@/lib/geoLocateCity";
 import type { City } from "@/hooks/useCities";
@@ -144,13 +145,7 @@ const Profile = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              aria-label="Notificações"
-              className="relative flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-[var(--shadow-soft)] transition-transform active:scale-95"
-            >
-              <Bell className="h-5 w-5 text-primary" strokeWidth={1.8} />
-            </button>
+            <NotificationBell />
             <UserMenu />
           </div>
         </header>

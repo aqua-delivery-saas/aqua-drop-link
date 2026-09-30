@@ -4,3 +4,4 @@
 - [x] Verify the UI and build status.
 - [x] Distinguish customer and distributor login links on the home page.
 - [x] Add a link between the customer and distributor login pages.
+- [x] Connect customer notification bells to the real notification menu and remove the fixed counter.
