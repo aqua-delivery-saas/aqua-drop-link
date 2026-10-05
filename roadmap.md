@@ -5,3 +5,5 @@
 - [x] Distinguish customer and distributor login links on the home page.
 - [x] Add a link between the customer and distributor login pages.
 - [x] Connect customer notification bells to the real notification menu and remove the fixed counter.
+- [x] Add a direct order-panel link to distributor WhatsApp notifications.
+- [x] Open and highlight the linked order in the distributor panel.

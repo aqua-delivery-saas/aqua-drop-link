@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,15 +30,34 @@ const statusLabels: Record<string, { label: string; variant: 'default' | 'second
 };
 
 const Orders = () => {
+  const [searchParams] = useSearchParams();
   const { data: orders = [], isLoading } = useDistributorOrders();
   const updateOrderStatus = useUpdateOrderStatus();
   const { markOrderNotificationsAsRead, markNotificationByOrderId } = useNotifications();
   const [sortBy, setSortBy] = useState<string>("date-desc");
+  const [activeTab, setActiveTab] = useState("all");
+  const highlightedOrderId = searchParams.get("order");
 
   // Mark all order notifications as read when page is viewed
   useEffect(() => {
     markOrderNotificationsAsRead();
   }, [markOrderNotificationsAsRead]);
+
+  useEffect(() => {
+    if (isLoading || !highlightedOrderId || !orders.some(order => order.id === highlightedOrderId)) {
+      return;
+    }
+
+    setActiveTab("all");
+    const animationFrame = window.requestAnimationFrame(() => {
+      document.getElementById(`order-${highlightedOrderId}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    });
+
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [highlightedOrderId, isLoading, orders]);
 
   const immediateOrders = useMemo(() => orders.filter(o => o.order_type === "immediate"), [orders]);
   const scheduledOrders = useMemo(() => orders.filter(o => o.order_type === "scheduled"), [orders]);
@@ -72,7 +92,12 @@ const Orders = () => {
   };
 
   const renderOrderCard = (order: typeof orders[0], index: number) => (
-    <Card key={order.id} className="hover-lift animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+    <Card
+      id={`order-${order.id}`}
+      key={order.id}
+      className={`hover-lift animate-fade-in ${highlightedOrderId === order.id ? "ring-2 ring-primary" : ""}`}
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
@@ -189,7 +214,7 @@ const Orders = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="all" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full max-w-md mb-6">
           <TabsTrigger value="immediate" className="flex-1">Imediatos<Badge variant="secondary" className="ml-2">{immediateOrders.length}</Badge></TabsTrigger>
           <TabsTrigger value="scheduled" className="flex-1">Agendados{scheduledCount > 0 && <Badge className="ml-2 bg-primary animate-pulse">{scheduledCount}</Badge>}</TabsTrigger>
