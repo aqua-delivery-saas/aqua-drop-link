@@ -277,6 +277,10 @@ Deno.serve(async (req) => {
           orderMessage += `\n📝 *Observações:* ${body.notes}`;
         }
 
+        const publicSiteUrl = (Deno.env.get('PUBLIC_SITE_URL') || 'https://aqua-drop-link.lovable.app').replace(/\/$/, '');
+        const panelOrderUrl = `${publicSiteUrl}/distributor/orders?order=${encodeURIComponent(createdOrder.id)}`;
+        orderMessage += `\n\n🔗 *Abrir pedido no painel:*\n${panelOrderUrl}`;
+
         // Send WhatsApp notification
         const whatsappResponse = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp`, {
           method: 'POST',

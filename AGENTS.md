@@ -1,1 +1,2 @@
 Store only the distributor identity of a successfully created order in user-scoped localStorage (guest uses a separate key), because the recent-order shortcut must persist without exposing another account's choice.
+Distributor order deep links use `/distributor/orders?order=<order-id>` so notifications can open and highlight one order while preserving role protection.
